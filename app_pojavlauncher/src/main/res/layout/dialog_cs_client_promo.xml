@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#B0000000"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center">
+
+    <LinearLayout
+        android:id="@+id/cs_promo_card"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_cs_client_promo_card"
+        android:elevation="16dp"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:layout_margin="20dp">
+
+        <!-- Glowing Brand Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <FrameLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_deck_icon_tile"
+                android:elevation="4dp">
+
+                <ImageView
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="CS CLIENT — 80% COMPLETED!"
+                android:textColor="#FFFFFF"
+                android:textSize="17sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Official Mobile Optimized Minecraft Client"
+                android:textColor="#FFB74D"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#33FF8C00"
+            android:layout_marginBottom="14dp" />
+
+        <!-- English Promo Message -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:id="@+id/tv_cs_promo_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CS Client is our premier Mobile Optimized Minecraft Client featuring built-in FPS boosts, advanced rendering optimizations, custom HUD overlays, and maximum gameplay features.\n\nWe are currently at 80% completion! Want early access and release day launch?\n\nHelp us reach 1,000 Subscribers on the official Craft Studio YouTube channel and we will launch CS Client immediately!"
+                android:textColor="#EDEDF2"
+                android:textSize="13.5sp"
+                android:lineSpacingExtra="4dp" />
+        </ScrollView>
+
+        <!-- YouTube Subscribe CTA -->
+        <TextView
+            android:id="@+id/btn_cs_promo_youtube"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@drawable/bg_youtube_cta"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="► SUBSCRIBE ON YOUTUBE (1K GOAL)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Close Button -->
+        <TextView
+            android:id="@+id/btn_cs_promo_close"
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_settings_row"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="CLOSE"
+            android:textColor="#C9CBD6"
+            android:textSize="12.5sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</FrameLayout>

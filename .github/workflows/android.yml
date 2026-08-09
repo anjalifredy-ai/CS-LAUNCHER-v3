@@ -1,0 +1,169 @@
+name: CS Launcher V3 CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      # ── Java ────────────────────────────────────────────────────────────────
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # ── JRE 8 Runtime ───────────────────────────────────────────────────────
+      # Artifact storage/CDN downloads occasionally time out. Keep the first
+      # attempt non-fatal and retry once with a fresh action invocation.
+      - name: Download JRE 8 (attempt 1)
+        id: download_jre8_primary
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: build.yml
+          path: app_pojavlauncher/src/main/assets/components/jre
+          workflow_conclusion: success
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre8
+          name: jre8-pojav
+
+      - name: Download JRE 8 (retry after timeout)
+        if: steps.download_jre8_primary.outcome == 'failure'
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: build.yml
+          path: app_pojavlauncher/src/main/assets/components/jre
+          workflow_conclusion: success
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre8
+          name: jre8-pojav
+
+      # ── Gradle ──────────────────────────────────────────────────────────────
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        continue-on-error: true
+        with:
+          validate-wrappers: false
+          gradle-version: "8.11"
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      # ── Signing keystore ─────────────────────────────────────────────────────
+      - name: Decode signing keystore (or use default embedded release keystore)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        run: |
+          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 --decode > keystore.jks
+            echo "KEYSTORE_PATH=${{ github.workspace }}/keystore.jks" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${SIGNING_KEY_ALIAS}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${SIGNING_KEY_PASSWORD}" >> $GITHUB_ENV
+            echo "STORE_PASSWORD=${SIGNING_STORE_PASSWORD}" >> $GITHUB_ENV
+            echo "Keystore decoded successfully."
+          else
+            echo "KEYSTORE_PATH=${{ github.workspace }}/app_pojavlauncher/release.keystore" >> $GITHUB_ENV
+            echo "KEY_ALIAS=cslauncher" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=cslauncher2026" >> $GITHUB_ENV
+            echo "STORE_PASSWORD=cslauncher2026" >> $GITHUB_ENV
+            echo "Using default 2048-bit RSA release keystore for automatic signing"
+          fi
+
+      # ── Language list ────────────────────────────────────────────────────────
+      - name: Update language list
+        run: |
+          chmod +x ./scripts/languagelist_updater.sh
+          ./scripts/languagelist_updater.sh
+          mkdir -p out
+
+      # ── Release APK (ONE AND ONLY BUILD — signed, shrunk) ────────────────────
+      # Single clean artifact: CS-LAUNCHER-V3.apk
+      # No DEBUG build, no NO-RUNTIME build, no run-number / timestamp clutter.
+      - name: Build Release APK
+        run: |
+          SIGNING_ARGS=""
+          if [ -n "$KEYSTORE_PATH" ]; then
+            SIGNING_ARGS="-PsigningKeystore=$KEYSTORE_PATH \
+                          -PsigningKeyAlias=$KEY_ALIAS \
+                          -PsigningKeyPassword=$KEY_PASSWORD \
+                          -PsigningStorePassword=$STORE_PASSWORD"
+          fi
+          ./gradlew :app_pojavlauncher:assembleRelease $SIGNING_ARGS \
+            -Pandroid.enableR8.fullMode=true \
+            --no-daemon \
+            --stacktrace
+
+          RELEASE_APK=$(find app_pojavlauncher/build/outputs/apk/release -name "*.apk" ! -name "*unsigned*" | head -n 1)
+          if [ -n "$RELEASE_APK" ]; then
+            cp "$RELEASE_APK" out/CS-LAUNCHER-V3.apk
+            md5sum    out/CS-LAUNCHER-V3.apk > out/CS-LAUNCHER-V3.md5
+            sha256sum out/CS-LAUNCHER-V3.apk > out/CS-LAUNCHER-V3.sha256
+          else
+            echo "ERROR: Signed Release APK not found" && exit 1
+          fi
+
+      # ── Verify APK Signature ─────────────────────────────────────────────────
+      - name: Verify Signed APK
+        run: |
+          ls -lh out/CS-LAUNCHER-V3.apk
+          echo "Verifying APK signature..."
+          jarsigner -verify -verbose -certs out/CS-LAUNCHER-V3.apk | head -n 25 || true
+
+      # ── APK size report ──────────────────────────────────────────────────────
+      - name: APK size report
+        run: |
+          SIZE=$(du -sh out/CS-LAUNCHER-V3.apk | cut -f1)
+          echo "## APK Size" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CS-LAUNCHER-V3.apk | $SIZE |" >> $GITHUB_STEP_SUMMARY
+
+      # ── Upload artifact ──────────────────────────────────────────────────────
+      # Clean static name — no run-number / timestamp suffixes.
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: CS-LAUNCHER-V3
+          path: |
+            out/CS-LAUNCHER-V3.apk
+            out/CS-LAUNCHER-V3.md5
+            out/CS-LAUNCHER-V3.sha256
+          retention-days: 2
+
+      # ── GitHub Release (single rolling release, always the latest APK) ───────
+      # One fixed tag "v3" + allowUpdates → the release updates in place on
+      # every main push instead of piling up "Build #N" releases with notes.
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          artifacts: "out/CS-LAUNCHER-V3.apk,out/CS-LAUNCHER-V3.md5,out/CS-LAUNCHER-V3.sha256"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "v3"
+          name: "CS Launcher V3"
+          body: |
+            ## CS Launcher V3
+
+            **Download:** `CS-LAUNCHER-V3.apk` — signed release build with bundled JRE 8.
+
+            > Verify integrity with the `.md5` / `.sha256` checksum files.
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          replacesArtifacts: true

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CS CLIENT Featured Glowing Card Background -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#2A180E"
+                android:centerColor="#1E1410"
+                android:endColor="#141414"
+                android:type="linear" />
+            <corners android:radius="14dp" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#FF8C00" />
+        </shape>
+    </item>
+</layer-list>

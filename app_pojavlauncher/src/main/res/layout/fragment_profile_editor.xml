@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ═══════════════════════════════════════════════════════════════════
+     PROFILE STUDIO — CS Premium redesign (portrait)
+     Identity: deep-space dark, violet glass, soft glow. All legacy view
+     IDs are preserved so existing fragment logic keeps working.
+     ═══════════════════════════════════════════════════════════════════ -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_profile_editor_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_cs_page_bg"
+    android:orientation="vertical">
+
+    <!-- ── HERO HEADER — collapses away on scroll (profile banner) ───── -->
+    <FrameLayout
+        android:id="@+id/vprof_hero_container"
+        android:layout_width="match_parent"
+        android:layout_height="196dp">
+
+        <ImageView
+            android:id="@+id/vprof_editor_background_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="#101014"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_cs_banner_scrim" />
+
+        <Button
+            android:id="@+id/vprof_editor_background_button"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="14dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="14dp"
+            android:text="@string/change_background"
+            android:textAllCaps="true"
+            android:textColor="#E4E4EA"
+            android:textSize="10.5sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.06"
+            android:background="@drawable/bg_cs_ghost_button" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            android:paddingHorizontal="18dp"
+            android:paddingBottom="14dp">
+
+            <FrameLayout
+                android:id="@+id/profile_icon_container"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:background="@drawable/bg_cs_icon_ring"
+                android:padding="2.5dp">
+
+                <ImageView
+                    android:id="@+id/vprof_editor_profile_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_profile_icon_rounded"
+                    android:padding="4dp"
+                    tools:src="@tools:sample/avatars" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="bottom|end"
+                    android:src="@drawable/ic_edit_profile"
+                    android:background="@drawable/background_icon_edit_new"
+                    android:padding="4dp"
+                    android:elevation="4dp" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cs_studio_title"
+                    android:textColor="#9CA3AF"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.22" />
+
+                <TextView
+                    android:id="@+id/vprof_hdr_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#FFFFFF"
+                    android:textSize="19sp"
+                    android:textStyle="bold"
+                    tools:text="My Survival World" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/vprof_hdr_version_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="26dp"
+                            android:gravity="center"
+                            android:paddingHorizontal="11dp"
+                            android:background="@drawable/bg_cs_chip_accent"
+                            android:textColor="#E4E4EA"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold"
+                            tools:text="1.21" />
+
+                        <TextView
+                            android:id="@+id/vprof_hdr_loader_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="26dp"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center"
+                            android:paddingHorizontal="11dp"
+                            android:background="@drawable/bg_cs_chip"
+                            android:textColor="#9CA3AF"
+                            android:textSize="10.5sp"
+                            android:textStyle="bold"
+                            tools:text="Fabric" />
+
+                        <TextView
+                            android:id="@+id/vprof_hdr_runtime_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="26dp"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center"
+                            android:paddingHorizontal="11dp"
+                            android:background="@drawable/bg_cs_chip"
+                            android:textColor="#9CA3AF"
+                            android:textSize="10.5sp"
+                            tools:text="Java 21" />
+
+                        <TextView
+                            android:id="@+id/vprof_hdr_lastplayed_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="26dp"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center"
+                            android:paddingHorizontal="11dp"
+                            android:background="@drawable/bg_cs_chip"
+                            android:textColor="#9CA3AF"
+                            android:textSize="10.5sp"
+                            tools:text="Played 2d ago" />
+
+                        <TextView
+                            android:id="@+id/vprof_hdr_size_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="26dp"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center"
+                            android:paddingHorizontal="11dp"
+                            android:background="@drawable/bg_cs_chip"
+                            android:textColor="#9CA3AF"
+                            android:textSize="10.5sp"
+                            tools:text="842 MB" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- ── EDITING WORKSPACE — slim section rail + full-width workspace ── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <ScrollView
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/vprof_studio_sidebar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="7dp"
+                android:paddingTop="12dp">
+
+                <LinearLayout android:id="@+id/vprof_nav_general" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_general" android:contentDescription="@string/cs_section_general" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_general" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_java" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_java" android:contentDescription="@string/cs_section_java" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_java" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_memory" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_memory" android:contentDescription="@string/cs_section_memory" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_memory" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_graphics" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_graphics" android:contentDescription="@string/cs_section_graphics" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_graphics" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_mods" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_mods" android:contentDescription="@string/cs_section_mods" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_mods" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_rpacks" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_rpacks" android:contentDescription="@string/cs_section_rpacks" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_rpacks" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_shaders" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_shaders" android:contentDescription="@string/cs_section_shaders" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_shaders" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_skin" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_skin" android:contentDescription="@string/cs_section_skin" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_skin" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_cape" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_cape" android:contentDescription="@string/cs_section_cape" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_cape" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_runtime" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_runtime" android:contentDescription="@string/cs_section_runtime" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_runtime" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_advanced" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_advanced" android:contentDescription="@string/cs_section_advanced" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_advanced" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/vprof_nav_worlds" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_worlds" android:contentDescription="@string/cs_section_worlds" />
+                    <TextView style="@style/CsRailLabel" android:text="@string/cs_section_worlds" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#14FFFFFF" />
+
+
+
+    <!-- ── CONTENT — premium section cards ──────────────────────────── -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/vprof_studio_scroll"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="24dp">
+
+            <!-- ══ GENERAL ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_general"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_general" />
+
+                <TextView
+                    android:id="@+id/vprof_editor_profile_name_sub"
+                    style="@style/CsFieldLabel"
+                    android:text="@string/profiles_profile_name" />
+
+                <EditText
+                    android:id="@+id/vprof_editor_profile_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_cs_input_field"
+                    android:hint="@string/unnamed"
+                    android:inputType="textPersonName"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#6B7280"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/textView4"
+                    style="@style/CsFieldLabel"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/profiles_profile_version" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/vprof_editor_version_spinner"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_cs_input_field"
+                        android:gravity="center_vertical"
+                        android:hint="@string/version_select_hint"
+                        android:paddingHorizontal="14dp"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#6B7280"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/vprof_editor_version_button"
+                        style="@style/CsMiniAction"
+                        android:text="@string/global_select" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/vprof_editor_beginPathView"
+                    style="@style/CsFieldLabel"
+                    android:layout_marginTop="18dp"
+                    android:text="Game Directory" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/vprof_editor_path"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_cs_input_field"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:hint=".minecraft"
+                        android:maxLines="2"
+                        android:paddingHorizontal="14dp"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#6B7280"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/vprof_editor_path_button"
+                        style="@style/CsMiniAction"
+                        android:text="@string/global_select" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/vprof_editor_background_sub"
+                    style="@style/CsFieldHint"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/profile_background" />
+            </LinearLayout>
+
+            <!-- ══ JAVA ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_java"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_java" />
+
+                <TextView
+                    android:id="@+id/textView6"
+                    style="@style/CsFieldLabel"
+                    android:text="@string/pvc_jvmArgs" />
+
+                <EditText
+                    android:id="@+id/vprof_editor_jre_args"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_cs_input_field"
+                    android:hint="@string/use_global_default"
+                    android:inputType="text"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#6B7280"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- ══ MEMORY ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_memory"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_memory" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="RAM Allocation"
+                        android:textColor="#D7D9E4"
+                        android:textSize="13.5sp" />
+
+                    <TextView
+                        android:id="@+id/vprof_ram_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#C9CBD6"
+                        android:textSize="13.5sp"
+                        android:textStyle="bold"
+                        tools:text="4096 MB" />
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/vprof_ram_seekbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:max="8192"
+                    android:progress="2048"
+                    android:progressDrawable="@drawable/bg_settings_seekbar_progress"
+                    android:thumb="@drawable/bg_settings_seekbar_thumb" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+
+                    <TextView
+                        android:id="@+id/vprof_ram_hint"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/cs_ram_global_hint"
+                        android:textColor="#6B7280"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/vprof_ram_total"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6B7280"
+                        android:textSize="11sp"
+                        tools:text="Device: 12 GB" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ══ GRAPHICS ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_graphics"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_graphics" />
+
+                <TextView
+                    android:id="@+id/textView3"
+                    style="@style/CsFieldLabel"
+                    android:text="@string/pedit_renderer" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp">
+
+                    <Spinner
+                        android:id="@+id/vprof_editor_profile_renderer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_cs_input_field"
+                        android:dropDownWidth="match_parent"
+                        android:paddingHorizontal="12dp"
+                        android:popupBackground="#1C1C1C" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="14dp"
+                        android:rotation="180"
+                        android:src="@drawable/spinner_arrow"
+                        app:tint="#9CA3AF" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- ══ MODS ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_mods"
+                style="@style/CsSectionCard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/vprof_editor_mods_header"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/cs_section_mods"
+                        android:textAllCaps="true"
+                        android:textColor="#E4E4EA"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.18" />
+
+                    <ImageButton
+                        android:id="@+id/vprof_editor_mods_import"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_cs_glass_card_sm"
+                        android:contentDescription="@string/cs_section_mods"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_add"
+                        app:tint="#C9CBD6" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/vprof_editor_mods_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
+
+                <TextView
+                    android:id="@+id/vprof_editor_mods_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_empty_state"
+                    android:gravity="center"
+                    android:padding="20dp"
+                    android:text="@string/manage_mods_empty"
+                    android:textColor="#6B7280"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- ══ RESOURCE PACKS ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_rpacks"
+                style="@style/CsSectionCard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/vprof_editor_resource_packs_header"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mcl_button_resource_packs"
+                        android:textAllCaps="true"
+                        android:textColor="#E4E4EA"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.18" />
+
+                    <ImageButton
+                        android:id="@+id/vprof_editor_resource_packs_import"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_cs_glass_card_sm"
+                        android:contentDescription="@string/cs_section_rpacks"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_add"
+                        app:tint="#C9CBD6" />
+
+                    <ImageButton
+                        android:id="@+id/vprof_editor_resource_packs_folder"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_cs_glass_card_sm"
+                        android:contentDescription="@string/cs_section_rpacks"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_folder"
+                        app:tint="#C9CBD6" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/vprof_editor_resource_packs_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
+
+                <TextView
+                    android:id="@+id/vprof_editor_resource_packs_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_empty_state"
+                    android:gravity="center"
+                    android:padding="20dp"
+                    android:text="No resource packs installed."
+                    android:textColor="#6B7280"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- ══ SHADERS ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_shaders"
+                style="@style/CsSectionCard">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/vprof_editor_shader_packs_header"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/mcl_button_shader_packs"
+                        android:textAllCaps="true"
+                        android:textColor="#E4E4EA"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.18" />
+
+                    <ImageButton
+                        android:id="@+id/vprof_editor_shader_packs_import"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_cs_glass_card_sm"
+                        android:contentDescription="@string/cs_section_shaders"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_add"
+                        app:tint="#C9CBD6" />
+
+                    <ImageButton
+                        android:id="@+id/vprof_editor_shader_packs_folder"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_cs_glass_card_sm"
+                        android:contentDescription="@string/cs_section_shaders"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_folder"
+                        app:tint="#C9CBD6" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/vprof_editor_shader_packs_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
+
+                <TextView
+                    android:id="@+id/vprof_editor_shader_packs_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_empty_state"
+                    android:gravity="center"
+                    android:padding="20dp"
+                    android:text="No shader packs installed."
+                    android:textColor="#6B7280"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- ══ SKIN ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_skin"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_skin" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Change your account skin, preview it and apply it to this profile."
+                    android:textColor="#9CA3AF"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp" />
+
+                <Button
+                    android:id="@+id/vprof_btn_open_skins"
+                    style="@style/CsWideGhostAction"
+                    android:text="Open Skin Studio" />
+            </LinearLayout>
+
+            <!-- ══ CAPE ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_cape"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_cape" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Capes linked to your Microsoft account can be selected from the Skin Studio."
+                    android:textColor="#9CA3AF"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp" />
+
+                <Button
+                    android:id="@+id/vprof_btn_open_capes"
+                    style="@style/CsWideGhostAction"
+                    android:text="Open Cape Picker" />
+            </LinearLayout>
+
+            <!-- ══ RUNTIME ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_runtime"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_runtime" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    style="@style/CsFieldLabel"
+                    android:text="@string/pedit_java_runtime" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp">
+
+                    <Spinner
+                        android:id="@+id/vprof_editor_spinner_runtime"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_cs_input_field"
+                        android:paddingHorizontal="12dp"
+                        android:popupBackground="#1C1C1C" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="14dp"
+                        android:rotation="180"
+                        android:src="@drawable/spinner_arrow"
+                        app:tint="#9CA3AF" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- ══ ADVANCED ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_advanced"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="@string/cs_section_advanced" />
+
+                <TextView
+                    android:id="@+id/textView7"
+                    style="@style/CsFieldLabel"
+                    android:text="@string/default_control" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/vprof_editor_ctrl_spinner"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_cs_input_field"
+                        android:gravity="center_vertical"
+                        android:hint="@string/use_global_default"
+                        android:paddingHorizontal="14dp"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#6B7280"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/vprof_editor_ctrl_button"
+                        style="@style/CsMiniAction"
+                        android:text="@string/global_select" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
+
+    <!-- ── BOTTOM ACTION BAR — Cancel | Save | Delete ───────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#0B0B0E"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="14dp"
+        android:elevation="10dp">
+
+        <Button
+            android:id="@+id/vprof_editor_cancel_button"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="10dp"
+            android:text="@string/cs_cancel"
+            android:textAllCaps="true"
+            android:textColor="#9CA3AF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:background="@drawable/bg_cs_ghost_button" />
+
+        <Button
+            android:id="@+id/vprof_editor_save_button"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1.35"
+            android:layout_marginEnd="10dp"
+            android:text="@string/global_save"
+            android:textAllCaps="true"
+            android:textColor="#0D0D0D"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:elevation="6dp"
+            android:background="@drawable/bg_cs_primary_button" />
+
+        <Button
+            android:id="@+id/vprof_editor_delete_button"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="@string/global_delete"
+            android:textAllCaps="true"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:background="@drawable/bg_cs_danger_button" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ════════════════════════════════════════════════════════════════
+     Runtime install STAGE CARD — horizontal deck edition (Phase 5, Req-5).
+     Wide card living in the horizontal stage carousel: luminous icon tile,
+     state chip, big live percent, MB/speed/ETA stats and a full-width
+     gradient progress rail. Every id the activity updates is preserved.
+══════════════════════════════════════════════════════════════════ -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/install_row_root"
+    android:layout_width="232dp"
+    android:layout_height="wrap_content"
+    android:minHeight="158dp"
+    android:layout_marginEnd="12dp"
+    android:background="@drawable/bg_rs_stage_card"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Header: icon tile + name/chip + spinner/check slot -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_deck_icon_tile">
+
+            <TextView
+                android:id="@+id/install_major_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="sans-serif-light"
+                android:textColor="#F2F2F5"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="17" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/install_name_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#F0F0F3"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="Java 17" />
+
+            <TextView
+                android:id="@+id/install_state_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_runtime_chip_neutral"
+                android:letterSpacing="0.08"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="2dp"
+                android:textColor="#9C9CA8"
+                android:textSize="8.5sp"
+                android:textStyle="bold"
+                tools:text="QUEUED" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="8dp">
+
+            <ImageView
+                android:id="@+id/install_check"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_check_circle"
+                android:padding="5dp"
+                android:src="@drawable/ic_check_small"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <ProgressBar
+                android:id="@+id/install_spinner"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:indeterminateTint="#C9A6FF"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Big live percent — the stage number -->
+    <TextView
+        android:id="@+id/install_big_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif-light"
+        android:text="0%"
+        android:textColor="#F4F4F8"
+        android:textSize="30sp"
+        android:textStyle="bold" />
+
+    <!-- Stats line -->
+    <TextView
+        android:id="@+id/install_stats_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="#92929E"
+        android:textSize="10.5sp"
+        tools:text="12.4 / 55 MB  •  4.2 MB/s  •  ~10s" />
+
+    <!-- Full-width gradient progress rail -->
+    <ProgressBar
+        android:id="@+id/install_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="10dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/bg_rs_stage_track" />
+
+</LinearLayout>
