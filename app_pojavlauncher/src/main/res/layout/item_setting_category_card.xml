@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="112dp"
+    android:layout_height="136dp"
     android:background="@drawable/bg_settings_deck_row"
     android:clickable="true"
     android:focusable="true"
@@ -12,18 +12,18 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="42dp"
+        android:layout_height="50dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
         <FrameLayout
             android:id="@+id/category_card_icon_well"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@drawable/bg_setting_unique_icon_well">
             <ImageView
                 android:id="@+id/category_card_icon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
                 android:layout_gravity="center"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_menu_settings"
@@ -42,7 +42,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="#F1F1F4"
-                android:textSize="12.5sp"
+                android:textSize="13.5sp"
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/category_card_summary"
@@ -50,9 +50,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="#7E808A"
-                android:textSize="8.5sp" />
+                android:maxLines="2"
+                android:textColor="#858792"
+                android:textSize="9.5sp" />
         </LinearLayout>
     </LinearLayout>
 

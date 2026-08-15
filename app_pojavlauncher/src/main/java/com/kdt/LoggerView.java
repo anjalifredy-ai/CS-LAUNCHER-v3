@@ -321,7 +321,7 @@ public class LoggerView extends ConstraintLayout {
         mCliOverlay.setScaleX(0.97f);
         mCliOverlay.setScaleY(0.97f);
         mCliOverlay.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                .setDuration(180).withLayer().start();
+                .setDuration(240).withLayer().start();
         mCliCommand.setText("▋");
         mCliBrand.setAlpha(0f);
         mCliBrand.setScaleX(0.92f);
@@ -342,20 +342,20 @@ public class LoggerView extends ConstraintLayout {
                     if (charIndex < command.length()) {
                         charIndex++;
                         mCliCommand.setText(command.substring(0, charIndex) + "▋");
-                        postDelayed(this, 18L);
+                        postDelayed(this, 30L);
                         return;
                     }
                     mCliCommand.setText(command);
                     mCliBrand.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                            .setDuration(240)
+                            .setDuration(320)
                             .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
                             .withLayer().start();
                     stage = 1;
-                    postDelayed(this, 210L);
+                    postDelayed(this, 380L);
                     return;
                 }
 
-                progress = Math.min(100, progress + 8);
+                progress = Math.min(100, progress + 6);
                 String status;
                 if (progress < 32) {
                     status = "[OK] Runtime ready\n[" + spinner[spin++ % spinner.length] + "] Checking renderer";
@@ -374,9 +374,9 @@ public class LoggerView extends ConstraintLayout {
                 bar.append("] ").append(progress).append('%');
                 mCliProgressText.setText(bar.toString());
                 if (progress < 100) {
-                    postDelayed(this, 48L);
+                    postDelayed(this, 85L);
                 } else {
-                    postDelayed(() -> hideCliOverlayAndFinish(false), 90L);
+                    postDelayed(() -> hideCliOverlayAndFinish(false), 240L);
                 }
             }
         };
@@ -395,7 +395,7 @@ public class LoggerView extends ConstraintLayout {
             return;
         }
         mCliOverlay.animate().alpha(0f).scaleX(0.985f).scaleY(0.985f)
-                .setDuration(170).withLayer()
+                .setDuration(220).withLayer()
                 .withEndAction(() -> {
                     mCliOverlay.setVisibility(GONE);
                     mCliOverlay.setAlpha(1f);

@@ -1651,8 +1651,8 @@ public final class Tools {
             crashIntent.putExtra(CrashActivity.EXTRA_LOG_PATH, logPath);
             crashIntent.putExtra(CrashActivity.EXTRA_EXIT_CODE, exitCode);
             crashIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             activity.startActivity(crashIntent);
         } catch (Throwable ignored) {
             // Fall back to the legacy dialog if the crash screen can't start
@@ -1660,7 +1660,7 @@ public final class Tools {
         } finally {
             // Kill the game process so the surface/EGL context is released.
             new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
-                    () -> android.os.Process.killProcess(android.os.Process.myPid()), 300);
+                    () -> android.os.Process.killProcess(android.os.Process.myPid()), 800);
         }
     }
 

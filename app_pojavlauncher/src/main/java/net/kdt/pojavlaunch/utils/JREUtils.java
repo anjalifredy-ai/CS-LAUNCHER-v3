@@ -561,6 +561,9 @@ public class JREUtils {
             if (exitCode != 0) {
                 net.kdt.pojavlaunch.Tools.captureCrashLog();
                 net.kdt.pojavlaunch.Tools.routeToCrashScreen(activity, exitCode);
+                // Do not fall through to fullyExit(): the launcher process needs
+                // enough time to display the dedicated crash-analysis activity.
+                return;
             }
         } finally {
             if (shouldStopLocalSkinServerAfterLaunch && net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.getPort() > 0) {
