@@ -227,9 +227,11 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
         try {
-            File latestLogFile = new File(Tools.DIR_GAME_HOME, "latestlog.txt");
-            if(!latestLogFile.exists() && !latestLogFile.createNewFile())
-                throw new IOException("Failed to create a new log file");
+            // Exactly one latest launch log is retained for each profile.
+            // Logger.begin truncates this profile's previous session without
+            // touching logs belonging to any other instance.
+            File latestLogFile = net.kdt.pojavlaunch.profiles.ProfileLogStore
+                    .prepareForCurrentProfile(this);
             Logger.begin(latestLogFile.getAbsolutePath());
             // FIXME: is it safe for multi thread?
             GLOBAL_CLIPBOARD = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);

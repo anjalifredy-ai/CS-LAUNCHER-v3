@@ -9,6 +9,7 @@
     android:background="@drawable/bg_profile_card"
     android:stateListAnimator="@animator/card_press_anim"
     android:clipChildren="true"
+    android:clipToOutline="true"
     android:clickable="true"
     android:focusable="true">
 
@@ -38,9 +39,12 @@
         android:layout_marginEnd="10dp"
         android:background="@drawable/bg_cs_version_badge"
         android:elevation="2dp"
-        android:paddingHorizontal="9dp"
+        android:minWidth="54dp"
+        android:maxWidth="82dp"
+        android:gravity="center"
+        android:paddingHorizontal="8dp"
         android:paddingVertical="3dp"
-        android:textColor="#E9D8FF"
+        android:textColor="#F0F0F2"
         android:textSize="10sp"
         android:fontFamily="sans-serif-medium"
         android:letterSpacing="0.06"
@@ -54,7 +58,7 @@
         android:layout_height="34dp"
         android:layout_gravity="top|end"
         android:layout_marginTop="6dp"
-        android:layout_marginEnd="66dp"
+        android:layout_marginEnd="92dp"
         android:background="@drawable/bg_browse_button"
         android:contentDescription="Favorite profile"
         android:padding="7dp"
@@ -75,7 +79,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingStart="12dp"
-            android:paddingEnd="104dp"
+            android:paddingEnd="136dp"
             android:paddingTop="13dp"
             android:paddingBottom="7dp">
 

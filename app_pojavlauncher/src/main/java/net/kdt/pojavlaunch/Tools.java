@@ -1630,9 +1630,10 @@ public final class Tools {
         return runtime;
     }
 
-    /** Triggers the share intent chooser, with the latestlog file attached to it */
+    /** Shares the single latest log belonging to the currently selected profile. */
     public static void shareLog(Context context){
-        openPath(context, new File(Tools.DIR_GAME_HOME, "latestlog.txt"), true);
+        openPath(context,
+                net.kdt.pojavlaunch.profiles.ProfileLogStore.forCurrentProfile(context), true);
     }
 
     /**
@@ -1642,10 +1643,9 @@ public final class Tools {
      */
     public static void routeToCrashScreen(androidx.fragment.app.FragmentActivity activity, int exitCode) {
         try {
-            File crash = new File(Tools.DIR_GAME_HOME, LAST_CRASH_LOG_NAME);
-            String logPath = crash.exists() && crash.length() > 0
-                    ? crash.getAbsolutePath()
-                    : new File(Tools.DIR_GAME_HOME, LATEST_LOG_NAME).getAbsolutePath();
+            File latest = net.kdt.pojavlaunch.profiles.ProfileLogStore
+                    .forCurrentProfile(activity);
+            String logPath = latest.getAbsolutePath();
 
             Intent crashIntent = new Intent(activity, CrashActivity.class);
             crashIntent.putExtra(CrashActivity.EXTRA_LOG_PATH, logPath);
@@ -1669,37 +1669,17 @@ public final class Tools {
     public static final String LAST_CRASH_LOG_NAME = "last_crash.log";
 
     /**
-     * Persists the current launch log as the "last crash" log.
-     * Called automatically when the JVM exits with a non-zero code so the
-     * previous (failed) launch log is always retrievable, even after a
-     * subsequent launch overwrites latestlog.txt.
+     * Compatibility hook used by the crash flow. The active profile logger is
+     * already writing directly to its durable latestlog.txt, so creating a
+     * second crash copy would violate the one-log-per-profile storage policy.
      */
     public static void captureCrashLog() {
-        try {
-            File latest = new File(Tools.DIR_GAME_HOME, LATEST_LOG_NAME);
-            if (latest.exists() && latest.length() > 0) {
-                File crash = new File(Tools.DIR_GAME_HOME, LAST_CRASH_LOG_NAME);
-                try (java.io.FileInputStream in = new java.io.FileInputStream(latest);
-                     java.io.FileOutputStream out = new java.io.FileOutputStream(crash)) {
-                    byte[] buf = new byte[8192];
-                    int read;
-                    while ((read = in.read(buf)) != -1) out.write(buf, 0, read);
-                }
-                Logger.appendToLog("Crash log captured to " + crash.getAbsolutePath());
-            }
-        } catch (Throwable ignored) {
-            // Never let crash-log capture break the exit flow
-        }
+        // Intentionally no duplicate file.
     }
 
-    /** Triggers the share intent chooser with the last captured crash log */
+    /** Shares the current profile's latest session, including a failed session. */
     public static void shareLastCrashLog(Context context) {
-        File crash = new File(Tools.DIR_GAME_HOME, LAST_CRASH_LOG_NAME);
-        if (crash.exists() && crash.length() > 0) {
-            openPath(context, crash, true);
-        } else {
-            shareLog(context);
-        }
+        shareLog(context);
     }
 
     /**

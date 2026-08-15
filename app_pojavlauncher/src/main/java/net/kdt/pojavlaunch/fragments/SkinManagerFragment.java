@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import android.widget.Toast;
 
@@ -148,7 +149,7 @@ public class SkinManagerFragment extends Fragment {
             });
         }
         View expandPreview = view.findViewById(R.id.skin_preview_expand);
-        View closePreview = view.findViewById(R.id.skin_fullscreen_close);
+        View closePreview = view.findViewById(R.id.skin_preview_close_inline);
         if (expandPreview != null) expandPreview.setOnClickListener(v -> enterFullscreenPreview());
         if (closePreview != null) closePreview.setOnClickListener(v -> exitFullscreenPreview());
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
@@ -437,48 +438,82 @@ public class SkinManagerFragment extends Fragment {
         }
     }
 
+    /**
+     * Expands the existing preview in-place. GLSurfaceView must never be re-parented:
+     * moving it between ViewGroups destroys/recreates its Surface on several Android
+     * vendors and produced the reported all-black full-screen preview.
+     */
     private void enterFullscreenPreview() {
-        if (mPreviewFullscreen || mSkinPreviewSurface == null || mFullscreenOverlay == null
-                || mFullscreenPreviewHost == null) return;
-        ViewGroup currentParent = (ViewGroup) mSkinPreviewSurface.getParent();
-        if (currentParent != null) currentParent.removeView(mSkinPreviewSurface);
-        mFullscreenPreviewHost.removeAllViews();
-        mFullscreenPreviewHost.addView(mSkinPreviewSurface, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (mPreviewFullscreen || mSkinPreviewSurface == null) return;
+        View root = getView();
+        if (root == null) return;
+        View content = root.findViewById(R.id.skin_studio_content);
+        View previewCard = root.findViewById(R.id.skin_preview_card);
+        View tools = root.findViewById(R.id.skin_tools_scroll);
+        if (!(content instanceof LinearLayout) || previewCard == null) return;
+
         mPreviewFullscreen = true;
-        mFullscreenOverlay.setVisibility(View.VISIBLE);
-        mFullscreenOverlay.bringToFront();
-        mFullscreenOverlay.setAlpha(0f);
-        mFullscreenOverlay.setScaleX(0.99f);
-        mFullscreenOverlay.setScaleY(0.99f);
-        mFullscreenOverlay.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(220)
+        setVisible(root.findViewById(R.id.skin_top_bar), false);
+        setVisible(root.findViewById(R.id.skin_header_divider), false);
+        setVisible(tools, false);
+        setVisible(root.findViewById(R.id.skin_preview_expand), false);
+        setVisible(root.findViewById(R.id.skin_preview_close_inline), true);
+
+        ConstraintLayout.LayoutParams contentLp = (ConstraintLayout.LayoutParams) content.getLayoutParams();
+        contentLp.topToBottom = ConstraintLayout.LayoutParams.UNSET;
+        contentLp.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+        content.setLayoutParams(contentLp);
+        ((LinearLayout) content).setPadding(dp(8), dp(8), dp(8), dp(8));
+
+        LinearLayout.LayoutParams previewLp = (LinearLayout.LayoutParams) previewCard.getLayoutParams();
+        previewLp.width = 0;
+        previewLp.weight = 1f;
+        previewLp.setMarginEnd(0);
+        previewCard.setLayoutParams(previewLp);
+        previewCard.setAlpha(0.88f);
+        previewCard.animate().alpha(1f).setDuration(180)
                 .setInterpolator(new FastOutSlowInInterpolator()).start();
-        mSkinPreviewSurface.requestRender();
+        mSkinPreviewSurface.post(() -> mSkinPreviewSurface.requestRender());
     }
 
     private void exitFullscreenPreview() {
-        if (!mPreviewFullscreen || mFullscreenOverlay == null) return;
+        if (!mPreviewFullscreen) return;
+        View root = getView();
+        if (root == null) return;
+        View content = root.findViewById(R.id.skin_studio_content);
+        View previewCard = root.findViewById(R.id.skin_preview_card);
+        if (!(content instanceof LinearLayout) || previewCard == null) return;
+
         mPreviewFullscreen = false;
-        mFullscreenOverlay.animate().cancel();
-        mFullscreenOverlay.animate().alpha(0f).scaleX(0.99f).scaleY(0.99f).setDuration(180)
-                .setInterpolator(new FastOutSlowInInterpolator()).withEndAction(() -> {
-                    restoreInlinePreview();
-                    if (mFullscreenOverlay != null) {
-                        mFullscreenOverlay.setVisibility(View.GONE);
-                        mFullscreenOverlay.setScaleX(1f);
-                        mFullscreenOverlay.setScaleY(1f);
-                    }
-                }).start();
+        setVisible(root.findViewById(R.id.skin_top_bar), true);
+        setVisible(root.findViewById(R.id.skin_header_divider), true);
+        setVisible(root.findViewById(R.id.skin_tools_scroll), true);
+        setVisible(root.findViewById(R.id.skin_preview_expand), true);
+        setVisible(root.findViewById(R.id.skin_preview_close_inline), false);
+
+        ConstraintLayout.LayoutParams contentLp = (ConstraintLayout.LayoutParams) content.getLayoutParams();
+        contentLp.topToTop = ConstraintLayout.LayoutParams.UNSET;
+        contentLp.topToBottom = R.id.skin_header_divider;
+        content.setLayoutParams(contentLp);
+        ((LinearLayout) content).setPadding(dp(12), dp(12), dp(12), dp(12));
+
+        LinearLayout.LayoutParams previewLp = (LinearLayout.LayoutParams) previewCard.getLayoutParams();
+        previewLp.width = 0;
+        previewLp.weight = 0.42f;
+        previewLp.setMarginEnd(dp(7));
+        previewCard.setLayoutParams(previewLp);
+        previewCard.setAlpha(0.88f);
+        previewCard.animate().alpha(1f).setDuration(180)
+                .setInterpolator(new FastOutSlowInInterpolator()).start();
+        mSkinPreviewSurface.post(() -> mSkinPreviewSurface.requestRender());
     }
 
-    private void restoreInlinePreview() {
-        if (mSkinPreviewSurface == null || mInlinePreviewHost == null) return;
-        ViewGroup currentParent = (ViewGroup) mSkinPreviewSurface.getParent();
-        if (currentParent != null) currentParent.removeView(mSkinPreviewSurface);
-        mInlinePreviewHost.removeAllViews();
-        mInlinePreviewHost.addView(mSkinPreviewSurface, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        mSkinPreviewSurface.requestRender();
+    private void setVisible(@Nullable View view, boolean visible) {
+        if (view != null) view.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void animateEntry(@NonNull View root) {
@@ -499,7 +534,7 @@ public class SkinManagerFragment extends Fragment {
 
     private void applyInteractiveAnimations(@NonNull View root) {
         int[] animatedButtons = new int[]{R.id.skin_back_button, R.id.skin_preview_expand,
-                R.id.skin_fullscreen_close, R.id.btn_change_skin, R.id.btn_remove_skin,
+                R.id.skin_preview_close_inline, R.id.btn_change_skin, R.id.btn_remove_skin,
                 R.id.btn_reset_default, R.id.btn_change_cape, R.id.btn_remove_cape,
                 R.id.btn_save_skin_changes, R.id.btn_fetch_skin};
         for (int id : animatedButtons) applyPressAnimation(root.findViewById(id));

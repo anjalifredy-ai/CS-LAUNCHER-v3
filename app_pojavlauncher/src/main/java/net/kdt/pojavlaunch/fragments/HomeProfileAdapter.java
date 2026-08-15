@@ -310,18 +310,20 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
     }
 
     /**
-     * Pull a plain Minecraft version ("1.20.4", "1.8.9", snapshot "24w14a" is not
-     * matched — such ids simply hide the badge) out of a possibly compounded
-     * version id such as "fabric-loader-0.15.11-1.20.4" or "1.12.2-forge-14.23.5.2859".
-     * The first "1.x[.y]" token wins: loader ids always carry it exactly once.
+     * Extracts both legacy 1.x versions and Mojang's 2026+ year-based Java
+     * versions (26.1, 26.1.2, 26.2-snapshot-4) from compounded loader IDs.
      */
     @Nullable
     static String extractMcVersion(@Nullable String lastVersionId) {
         if (lastVersionId == null) return null;
-        java.util.regex.Matcher m =
-                java.util.regex.Pattern.compile("1\\.\\d+(?:\\.\\d+)?").matcher(lastVersionId);
-        if (m.find()) return m.group();
-        return null;
+        java.util.regex.Matcher modern = java.util.regex.Pattern
+                .compile("(?:^|[^0-9])((?:2[6-9]|[3-9][0-9])\\.\\d+(?:\\.\\d+)?)(?:$|[^0-9])")
+                .matcher(lastVersionId);
+        if (modern.find()) return modern.group(1);
+        java.util.regex.Matcher legacy = java.util.regex.Pattern
+                .compile("(?:^|[^0-9])(1\\.\\d+(?:\\.\\d+)?)(?:$|[^0-9])")
+                .matcher(lastVersionId);
+        return legacy.find() ? legacy.group(1) : null;
     }
 
     private void bindBackground(ImageView target, String profileKey, MinecraftProfile profile) {

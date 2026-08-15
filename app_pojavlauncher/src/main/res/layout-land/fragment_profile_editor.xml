@@ -261,6 +261,11 @@
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_advanced" />
                 </LinearLayout>
 
+                <LinearLayout android:id="@+id/vprof_nav_logs" style="@style/CsRailItem">
+                    <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_logs" android:contentDescription="Logs" />
+                    <TextView style="@style/CsRailLabel" android:text="Logs" />
+                </LinearLayout>
+
                 <LinearLayout android:id="@+id/vprof_nav_worlds" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_worlds" android:contentDescription="@string/cs_section_worlds" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_worlds" />
@@ -782,7 +787,61 @@
                     </FrameLayout>
                 </LinearLayout>
 
-                <!-- ══ ADVANCED ══ -->
+                <!-- ══ LOGS — one latest session per profile ══ -->
+            <LinearLayout
+                android:id="@+id/vprof_section_logs"
+                style="@style/CsSectionCard">
+
+                <TextView style="@style/CsSectionTitle" android:text="Latest Session Log" />
+                <TextView
+                    android:id="@+id/vprof_log_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="No launch log saved yet"
+                    android:textColor="#F0F0F2"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/vprof_log_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="This profile keeps exactly one latest launch session."
+                    android:textColor="#8F9199"
+                    android:textSize="10sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+                    <Button
+                        android:id="@+id/vprof_log_view"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1.2"
+                        android:background="@drawable/bg_cs_primary_button"
+                        android:minHeight="0dp"
+                        android:text="View Full Console"
+                        android:textColor="#101014"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+                    <Button
+                        android:id="@+id/vprof_log_share"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="7dp"
+                        android:layout_weight="0.8"
+                        android:background="@drawable/bg_cs_ghost_button"
+                        android:minHeight="0dp"
+                        android:text="Share File"
+                        android:textColor="#F0F0F2"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ══ ADVANCED ══ -->
                 <LinearLayout
                     android:id="@+id/vprof_section_advanced"
                     style="@style/CsSectionCard">

@@ -2,6 +2,7 @@ package net.kdt.pojavlaunch.fragments;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -94,15 +95,17 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private View mScrollView;
     private SeekBar mRamSeekbar;
     private TextView mRamValue, mRamTotal;
+    private TextView mProfileLogStatus, mProfileLogDetails;
     private boolean mDeleteArmed = false;
     private final Runnable mDeleteDisarm = () -> disarmDelete();
     private final int[] mNavIds = {
             R.id.vprof_nav_general, R.id.vprof_nav_java, R.id.vprof_nav_memory,
             R.id.vprof_nav_graphics, R.id.vprof_nav_mods, R.id.vprof_nav_rpacks,
             R.id.vprof_nav_shaders, R.id.vprof_nav_skin, R.id.vprof_nav_cape,
-            R.id.vprof_nav_runtime, R.id.vprof_nav_advanced, R.id.vprof_nav_worlds };
+            R.id.vprof_nav_runtime, R.id.vprof_nav_logs, R.id.vprof_nav_advanced,
+            R.id.vprof_nav_worlds };
     /** The last rail item opens the World Manager instead of scrolling. */
-    private static final int NAV_WORLDS_INDEX = 11;
+    private static final int NAV_WORLDS_INDEX = 12;
 
     // ── Phase 2/3: TRUE full-screen collapsing hero (space reclaim) ──
     private View mHeroContainer;
@@ -112,7 +115,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
             R.id.vprof_section_general, R.id.vprof_section_java, R.id.vprof_section_memory,
             R.id.vprof_section_graphics, R.id.vprof_section_mods, R.id.vprof_section_rpacks,
             R.id.vprof_section_shaders, R.id.vprof_section_skin, R.id.vprof_section_cape,
-            R.id.vprof_section_runtime, R.id.vprof_section_advanced };
+            R.id.vprof_section_runtime, R.id.vprof_section_logs, R.id.vprof_section_advanced };
     private final CropperUtils.CropperListener mBackgroundCropperListener = new CropperUtils.CropperListener() {
         @Override
         public void onCropped(Bitmap contentBitmap) {
@@ -182,6 +185,11 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private volatile String mEncodedBackgroundUri = null;
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService mBgExecutor = PojavApplication.sExecutorService;
+    private final net.kdt.pojavlaunch.profiles.ProfileGifSupport.OnAssetReadyListener mBackgroundReadyListener =
+            assetKey -> {
+                if (!isAdded() || mTempProfile == null || mTempProfile.background == null) return;
+                if (mTempProfile.background.equals(assetKey)) loadProfileBackground();
+            };
     private boolean mAsyncLoadComplete = false;
 
     public ProfileEditorFragment(){
@@ -206,6 +214,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         bindViews(view);
+        net.kdt.pojavlaunch.profiles.ProfileGifSupport.addAssetReadyListener(mBackgroundReadyListener);
 
         // Smooth 60/90 FPS layout animations
         View rootLayout = view.findViewById(R.id.fragment_profile_editor_root);
@@ -581,6 +590,77 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         View capes = root.findViewById(R.id.vprof_btn_open_capes);
         if (capes != null) capes.setOnClickListener(v ->
                 navigateToFragment(SkinLibraryOverviewFragment.class, SkinLibraryOverviewFragment.TAG, null));
+        View viewLog = root.findViewById(R.id.vprof_log_view);
+        View shareLog = root.findViewById(R.id.vprof_log_share);
+        if (viewLog != null) viewLog.setOnClickListener(v -> openProfileLog());
+        if (shareLog != null) shareLog.setOnClickListener(v -> {
+            File file = net.kdt.pojavlaunch.profiles.ProfileLogStore.forProfile(mProfileKey);
+            if (file.isFile() && file.length() > 0) Tools.openPath(requireContext(), file, true);
+            else Toast.makeText(requireContext(), "No log saved for this profile", Toast.LENGTH_SHORT).show();
+        });
+        net.kdt.pojavlaunch.UiMotion.pressFeedback(viewLog, shareLog);
+        refreshProfileLogSummary();
+    }
+
+    private void openProfileLog() {
+        if (mProfileKey == null || mTempProfile == null) return;
+        File file = net.kdt.pojavlaunch.profiles.ProfileLogStore.forProfile(mProfileKey);
+        Intent intent = new Intent(requireContext(), net.kdt.pojavlaunch.ProfileLogActivity.class);
+        intent.putExtra(net.kdt.pojavlaunch.ProfileLogActivity.EXTRA_LOG_PATH, file.getAbsolutePath());
+        intent.putExtra(net.kdt.pojavlaunch.ProfileLogActivity.EXTRA_PROFILE_NAME,
+                mTempProfile.name == null ? "Profile" : mTempProfile.name);
+        intent.putExtra(net.kdt.pojavlaunch.ProfileLogActivity.EXTRA_VERSION,
+                mTempProfile.lastVersionId == null ? "" : mTempProfile.lastVersionId);
+        startActivity(intent);
+    }
+
+    private void refreshProfileLogSummary() {
+        if (mProfileLogStatus == null || mProfileLogDetails == null || mProfileKey == null) return;
+        final File file = net.kdt.pojavlaunch.profiles.ProfileLogStore.forProfile(mProfileKey);
+        mBgExecutor.execute(() -> {
+            final boolean available = file.isFile() && file.length() > 0;
+            final long lines = available
+                    ? net.kdt.pojavlaunch.profiles.ProfileLogStore.countLines(file) : 0;
+            final String details;
+            if (available) {
+                String date = java.text.DateFormat.getDateTimeInstance(
+                        java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT)
+                        .format(new java.util.Date(file.lastModified()));
+                details = date + "  •  " + formatLogBytes(file.length()) + "  •  " + lines + " lines";
+            } else details = "This profile keeps exactly one latest launch session.";
+            mMainHandler.post(() -> {
+                if (!isAdded() || mProfileLogStatus == null || mProfileLogDetails == null) return;
+                mProfileLogStatus.setText(available ? "Latest launch log" : "No launch log saved yet");
+                mProfileLogDetails.setText(details);
+                View root = getView();
+                if (root != null) {
+                    View viewButton = root.findViewById(R.id.vprof_log_view);
+                    View shareButton = root.findViewById(R.id.vprof_log_share);
+                    if (viewButton != null) viewButton.setEnabled(available);
+                    if (shareButton != null) shareButton.setEnabled(available);
+                }
+            });
+        });
+    }
+
+    private static String formatLogBytes(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format(java.util.Locale.US, "%.1f KB", bytes / 1024f);
+        return String.format(java.util.Locale.US, "%.1f MB", bytes / (1024f * 1024f));
+    }
+
+    private void loadProfileBackground() {
+        if (mProfileBackground == null || mTempProfile == null) return;
+        Drawable bg = ProfileIconCache.fetchBackground(
+                getResources(), mProfileKey, mTempProfile.background);
+        if (bg != null) {
+            mProfileBackground.setImageDrawable(bg);
+            net.kdt.pojavlaunch.profiles.ProfileGifSupport.resumeDrawable(bg);
+        } else {
+            // Keep a designed neutral surface while a remote default GIF is
+            // downloading instead of exposing the old solid-black hero.
+            mProfileBackground.setImageResource(R.drawable.ic_profile_modpack);
+        }
     }
 
     /**
@@ -591,6 +671,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         if (mTempProfile == null) {
             mTempProfile = getProfile(profile);
         }
+        refreshProfileLogSummary();
 
         // Static UI population (cheap, on UI thread) — only string setters
         mProfileIcon.setImageDrawable(
@@ -602,11 +683,9 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mDefaultPath.setText(mTempProfile.gameDir == null ? "" : mTempProfile.gameDir);
         mDefaultControl.setText(mTempProfile.controlFile == null ? "" : mTempProfile.controlFile);
 
-        // Per-profile background banner preview
-        if (mTempProfile.background != null && mTempProfile.background.startsWith("data:")) {
-            Drawable bg = ProfileIconCache.fetchBackground(getResources(), mProfileKey, mTempProfile.background);
-            if (bg != null) mProfileBackground.setImageDrawable(bg);
-        }
+        // Per-profile background banner preview. Remote/default GIF URLs are
+        // valid backgrounds too; the old data:-only gate left the hero black.
+        loadProfileBackground();
 
         // TODO: Remove this jank when it's not relevant anymore
         if ("vulkan_zink".equals(mTempProfile.pojavRendererName)) {
@@ -759,6 +838,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         mRamSeekbar = view.findViewById(R.id.vprof_ram_seekbar);
         mRamValue = view.findViewById(R.id.vprof_ram_value);
         mRamTotal = view.findViewById(R.id.vprof_ram_total);
+        mProfileLogStatus = view.findViewById(R.id.vprof_log_status);
+        mProfileLogDetails = view.findViewById(R.id.vprof_log_details);
 
         // Background image change (separate from the profile icon) — GIF-aware:
         // animated GIFs bypass the cropper so their frames survive.
@@ -774,7 +855,14 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        refreshProfileLogSummary();
+    }
+
+    @Override
     public void onDestroyView() {
+        net.kdt.pojavlaunch.profiles.ProfileGifSupport.removeAssetReadyListener(mBackgroundReadyListener);
         // The collapsing hero owns a scroll listener + mutated LayoutParams.
         // Reset synchronously so a recreated view always starts fully expanded
         // and no listener can mutate a detached hero after fragmentation.

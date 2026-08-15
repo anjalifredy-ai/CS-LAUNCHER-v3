@@ -125,6 +125,11 @@
             android:name=".CrashActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|keyboard|navigation"
             android:screenOrientation="sensorLandscape" />
+        <activity
+            android:name=".ProfileLogActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|keyboard|navigation"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape" />
 
         <activity android:name=".ShowErrorActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|keyboard|navigation"

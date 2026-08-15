@@ -18,13 +18,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
         <FrameLayout android:id="@+id/skin_back_button" android:layout_width="38dp" android:layout_height="38dp" android:background="@drawable/bg_skin_slot_action" android:clickable="true" android:focusable="true">
-            <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="center" android:contentDescription="Back" android:src="@drawable/ic_arrow_back" app:tint="#E4E4EA" />
+            <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="center" android:contentDescription="Back" android:src="@drawable/ic_arrow_back" app:tint="#E9E9EB" />
         </FrameLayout>
         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
-            <TextView android:id="@+id/skin_page_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:letterSpacing="0.04" android:text="SKIN STUDIO" android:textColor="#F5F5F7" android:textSize="16sp" android:textStyle="bold" />
-            <TextView android:id="@+id/skin_page_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="Slot 1" android:textColor="#8B8D97" android:textSize="9sp" />
+            <TextView android:id="@+id/skin_page_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:letterSpacing="0.04" android:text="SKIN STUDIO" android:textColor="#FAFAFA" android:textSize="16sp" android:textStyle="bold" />
+            <TextView android:id="@+id/skin_page_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:text="Slot 1" android:textColor="#88898E" android:textSize="9sp" />
         </LinearLayout>
-        <TextView android:id="@+id/tv_server_status_chip" android:layout_width="wrap_content" android:layout_height="26dp" android:background="@drawable/bg_skin_status_chip_active" android:gravity="center" android:paddingHorizontal="10dp" android:text="SYNC READY" android:textColor="#C9CBD6" android:textSize="7sp" android:textStyle="bold" />
+        <TextView android:id="@+id/tv_server_status_chip" android:layout_width="wrap_content" android:layout_height="26dp" android:background="@drawable/bg_skin_status_chip_active" android:gravity="center" android:paddingHorizontal="10dp" android:text="SYNC READY" android:textColor="#C4C5C9" android:textSize="7sp" android:textStyle="bold" />
     </LinearLayout>
 
     <View android:id="@+id/skin_header_divider" android:layout_width="0dp" android:layout_height="1dp" android:background="#292A31" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/skin_top_bar" />
@@ -52,16 +52,19 @@
             android:padding="10dp">
             <LinearLayout android:layout_width="match_parent" android:layout_height="28dp" android:gravity="center_vertical" android:orientation="horizontal">
                 <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:letterSpacing="0.1" android:text="LIVE 3D PREVIEW" android:textColor="#22C9CB" android:textSize="8sp" android:textStyle="bold" />
-                <TextView android:id="@+id/tv_skin_status_chip" android:layout_width="wrap_content" android:layout_height="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="7dp" android:text="ACTIVE" android:textColor="#C9CBD6" android:textSize="6.8sp" android:textStyle="bold" />
+                <TextView android:id="@+id/tv_skin_status_chip" android:layout_width="wrap_content" android:layout_height="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="7dp" android:text="ACTIVE" android:textColor="#C4C5C9" android:textSize="6.8sp" android:textStyle="bold" />
                 <FrameLayout android:id="@+id/skin_preview_expand" android:layout_width="28dp" android:layout_height="28dp" android:layout_marginStart="6dp" android:background="@drawable/bg_skin_slot_action" android:clickable="true" android:focusable="true">
-                    <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="⛶" android:textColor="#E4E4EA" android:textSize="14sp" />
+                    <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="⛶" android:textColor="#E9E9EB" android:textSize="14sp" />
+                </FrameLayout>
+                <FrameLayout android:id="@+id/skin_preview_close_inline" android:layout_width="32dp" android:layout_height="28dp" android:layout_marginStart="6dp" android:background="@drawable/bg_skin_slot_danger" android:clickable="true" android:focusable="true" android:visibility="gone">
+                    <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="×" android:textColor="#FAFAFA" android:textSize="19sp" />
                 </FrameLayout>
             </LinearLayout>
             <FrameLayout android:id="@+id/skin_preview_inline_host" android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginTop="5dp" android:layout_weight="1" android:background="@drawable/bg_skin_slot_preview">
                 <android.opengl.GLSurfaceView android:id="@+id/skin_preview_surface" android:layout_width="match_parent" android:layout_height="match_parent" />
             </FrameLayout>
-            <TextView android:id="@+id/tv_preview_hint" android:layout_width="match_parent" android:layout_height="28dp" android:gravity="center" android:text="Drag to rotate • Pinch to zoom • Double-tap reset" android:textColor="#777984" android:textSize="7.5sp" />
-            <TextView android:id="@+id/tv_skin_path" android:layout_width="match_parent" android:layout_height="24dp" android:ellipsize="middle" android:gravity="center" android:maxLines="1" android:textColor="#9A9CA6" android:textSize="7.5sp" />
+            <TextView android:id="@+id/tv_preview_hint" android:layout_width="match_parent" android:layout_height="28dp" android:gravity="center" android:text="Drag to rotate • Pinch to zoom • Double-tap reset" android:textColor="#76777C" android:textSize="7.5sp" />
+            <TextView android:id="@+id/tv_skin_path" android:layout_width="match_parent" android:layout_height="24dp" android:ellipsize="middle" android:gravity="center" android:maxLines="1" android:textColor="#94959A" android:textSize="7.5sp" />
         </LinearLayout>
 
         <androidx.core.widget.NestedScrollView
@@ -80,33 +83,33 @@
                 <LinearLayout android:id="@+id/skin_skin_card" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_skin_library_panel" android:orientation="vertical" android:padding="10dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="28dp" android:gravity="center_vertical" android:orientation="horizontal">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="YOUR 3 SLOTS" android:textColor="#EDEDF1" android:textSize="11sp" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tap a slot to preview or switch" android:textColor="#777984" android:textSize="7.5sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="YOUR 3 SLOTS" android:textColor="#F0F0F2" android:textSize="11sp" android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tap a slot to preview or switch" android:textColor="#76777C" android:textSize="7.5sp" />
                         </LinearLayout>
-                        <TextView android:id="@+id/tv_cape_status_chip" android:layout_width="wrap_content" android:layout_height="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="7dp" android:text="3 SLOTS" android:textColor="#C9CBD6" android:textSize="6.8sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/tv_cape_status_chip" android:layout_width="wrap_content" android:layout_height="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="7dp" android:text="3 SLOTS" android:textColor="#C4C5C9" android:textSize="6.8sp" android:textStyle="bold" />
                     </LinearLayout>
                     <LinearLayout android:id="@+id/skin_slot_container" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:baselineAligned="false" android:orientation="horizontal" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/skin_fetch_card" android:layout_width="match_parent" android:layout_height="58dp" android:layout_marginTop="9dp" android:background="@drawable/bg_skin_library_panel" android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="10dp">
-                    <EditText android:id="@+id/et_skin_username" android:layout_width="0dp" android:layout_height="38dp" android:layout_weight="1" android:background="@drawable/bg_skin_slot_idle" android:hint="Minecraft username" android:maxLines="1" android:paddingHorizontal="11dp" android:textColor="#EDEDF1" android:textColorHint="#777984" android:textSize="9sp" />
-                    <Button android:id="@+id/btn_fetch_skin" android:layout_width="96dp" android:layout_height="38dp" android:layout_marginStart="7dp" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="FETCH USER" android:textColor="#E4E4EA" android:textSize="8sp" android:textStyle="bold" />
+                    <EditText android:id="@+id/et_skin_username" android:layout_width="0dp" android:layout_height="38dp" android:layout_weight="1" android:background="@drawable/bg_skin_slot_idle" android:hint="Minecraft username" android:maxLines="1" android:paddingHorizontal="11dp" android:textColor="#F0F0F2" android:textColorHint="#76777C" android:textSize="9sp" />
+                    <Button android:id="@+id/btn_fetch_skin" android:layout_width="96dp" android:layout_height="38dp" android:layout_marginStart="7dp" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="FETCH USER" android:textColor="#E9E9EB" android:textSize="8sp" android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/skin_cape_card" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginTop="9dp" android:background="@drawable/bg_skin_library_panel" android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="10dp">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CAPE" android:textColor="#EDEDF1" android:textSize="10sp" android:textStyle="bold" />
-                        <TextView android:id="@+id/tv_cape_path" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:ellipsize="middle" android:maxLines="1" android:text="No custom cape selected" android:textColor="#777984" android:textSize="7.5sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CAPE" android:textColor="#F0F0F2" android:textSize="10sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/tv_cape_path" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:ellipsize="middle" android:maxLines="1" android:text="No custom cape selected" android:textColor="#76777C" android:textSize="7.5sp" />
                     </LinearLayout>
-                    <Button android:id="@+id/btn_change_cape" android:layout_width="76dp" android:layout_height="36dp" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="IMPORT" android:textColor="#E4E4EA" android:textSize="7.5sp" android:textStyle="bold" />
-                    <Button android:id="@+id/btn_remove_cape" android:layout_width="76dp" android:layout_height="36dp" android:layout_marginStart="6dp" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="REMOVE" android:textColor="#D08C92" android:textSize="7.5sp" android:textStyle="bold" />
+                    <Button android:id="@+id/btn_change_cape" android:layout_width="76dp" android:layout_height="36dp" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="IMPORT" android:textColor="#E9E9EB" android:textSize="7.5sp" android:textStyle="bold" />
+                    <Button android:id="@+id/btn_remove_cape" android:layout_width="76dp" android:layout_height="36dp" android:layout_marginStart="6dp" android:background="@drawable/bg_skin_slot_danger" android:minHeight="0dp" android:stateListAnimator="@null" android:text="REMOVE" android:textColor="#FF737D" android:textSize="7.5sp" android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/skin_action_card" android:layout_width="match_parent" android:layout_height="62dp" android:layout_marginTop="9dp" android:background="@drawable/bg_skin_library_panel" android:gravity="center_vertical" android:orientation="horizontal" android:padding="9dp">
-                    <Button android:id="@+id/btn_change_skin" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="IMPORT / REPLACE" android:textColor="#E4E4EA" android:textSize="7.5sp" android:textStyle="bold" />
-                    <Button android:id="@+id/btn_remove_skin" android:layout_width="0dp" android:layout_height="42dp" android:layout_marginStart="6dp" android:layout_weight="0.78" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="DELETE" android:textColor="#D08C92" android:textSize="7.5sp" android:textStyle="bold" />
-                    <Button android:id="@+id/btn_reset_default" android:layout_width="0dp" android:layout_height="42dp" android:layout_marginStart="6dp" android:layout_weight="0.82" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="RESET ALL" android:textColor="#B7B9C2" android:textSize="7.5sp" android:textStyle="bold" />
-                    <Button android:id="@+id/btn_save_skin_changes" android:layout_width="0dp" android:layout_height="42dp" android:layout_marginStart="6dp" android:layout_weight="1.15" android:background="@drawable/bg_skin_slot_active" android:minHeight="0dp" android:stateListAnimator="@null" android:text="USE THIS SKIN" android:textColor="#F5F5F7" android:textSize="7.5sp" android:textStyle="bold" />
+                    <Button android:id="@+id/btn_change_skin" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="IMPORT / REPLACE" android:textColor="#E9E9EB" android:textSize="7.5sp" android:textStyle="bold" />
+                    <Button android:id="@+id/btn_remove_skin" android:layout_width="0dp" android:layout_height="42dp" android:layout_marginStart="6dp" android:layout_weight="0.78" android:background="@drawable/bg_skin_slot_danger" android:minHeight="0dp" android:stateListAnimator="@null" android:text="DELETE" android:textColor="#FF737D" android:textSize="7.5sp" android:textStyle="bold" />
+                    <Button android:id="@+id/btn_reset_default" android:layout_width="0dp" android:layout_height="42dp" android:layout_marginStart="6dp" android:layout_weight="0.82" android:background="@drawable/bg_skin_slot_action" android:minHeight="0dp" android:stateListAnimator="@null" android:text="RESET ALL" android:textColor="#B4B5B9" android:textSize="7.5sp" android:textStyle="bold" />
+                    <Button android:id="@+id/btn_save_skin_changes" android:layout_width="0dp" android:layout_height="42dp" android:layout_marginStart="6dp" android:layout_weight="1.15" android:background="@drawable/bg_skin_slot_active" android:minHeight="0dp" android:stateListAnimator="@null" android:text="USE THIS SKIN" android:textColor="#FAFAFA" android:textSize="7.5sp" android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout android:id="@+id/skin_status_card" android:layout_width="match_parent" android:layout_height="1dp" android:visibility="gone" />
@@ -131,9 +134,9 @@
         <LinearLayout android:layout_width="wrap_content" android:layout_height="40dp" android:layout_gravity="top|start" android:layout_margin="22dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="12dp">
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:letterSpacing="0.08" android:text="FULL 3D PREVIEW" android:textColor="#22C9CB" android:textSize="8sp" android:textStyle="bold" />
         </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="32dp" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="14dp" android:text="Drag to rotate • Pinch to zoom • Double-tap reset" android:textColor="#C9CBD6" android:textSize="8sp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="32dp" android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="14dp" android:text="Drag to rotate • Pinch to zoom • Double-tap reset" android:textColor="#C4C5C9" android:textSize="8sp" />
         <FrameLayout android:id="@+id/skin_fullscreen_close" android:layout_width="40dp" android:layout_height="40dp" android:layout_gravity="top|end" android:layout_margin="22dp" android:background="@drawable/bg_skin_slot_action" android:clickable="true" android:focusable="true">
-            <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="×" android:textColor="#F5F5F7" android:textSize="22sp" />
+            <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="×" android:textColor="#FAFAFA" android:textSize="22sp" />
         </FrameLayout>
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

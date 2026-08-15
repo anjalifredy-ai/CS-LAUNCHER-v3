@@ -14,24 +14,24 @@
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="26dp" android:gravity="center_vertical" android:orientation="horizontal">
         <TextView android:id="@+id/overview_slot_number" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:letterSpacing="0.12" android:text="SLOT 1" android:textColor="#22C9CB" android:textSize="8.5sp" android:textStyle="bold" />
-        <TextView android:id="@+id/overview_slot_status" android:layout_width="wrap_content" android:layout_height="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="8dp" android:text="EMPTY" android:textColor="#9A9CA6" android:textSize="7sp" android:textStyle="bold" />
+        <TextView android:id="@+id/overview_slot_status" android:layout_width="wrap_content" android:layout_height="20dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="8dp" android:text="EMPTY" android:textColor="#94959A" android:textSize="7sp" android:textStyle="bold" />
     </LinearLayout>
 
     <FrameLayout android:layout_width="match_parent" android:layout_height="166dp" android:layout_marginTop="5dp" android:background="@drawable/bg_skin_slot_preview">
         <net.kdt.pojavlaunch.skins.SkinSlotPreviewView android:id="@+id/overview_slot_preview" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="7dp" />
         <LinearLayout android:id="@+id/overview_slot_empty" android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical">
-            <TextView android:layout_width="42dp" android:layout_height="42dp" android:background="@drawable/bg_skin_slot_action" android:gravity="center" android:text="+" android:textColor="#C9CBD6" android:textSize="24sp" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="7dp" android:letterSpacing="0.08" android:text="ADD A SKIN" android:textColor="#858792" android:textSize="8sp" android:textStyle="bold" />
+            <TextView android:layout_width="42dp" android:layout_height="42dp" android:background="@drawable/bg_skin_slot_action" android:gravity="center" android:text="+" android:textColor="#C4C5C9" android:textSize="24sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="7dp" android:letterSpacing="0.08" android:text="ADD A SKIN" android:textColor="#838489" android:textSize="8sp" android:textStyle="bold" />
         </LinearLayout>
     </FrameLayout>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginTop="8dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-            <TextView android:id="@+id/overview_slot_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:maxLines="1" android:text="Empty Slot" android:textColor="#EDEDF1" android:textSize="11.5sp" android:textStyle="bold" />
-            <TextView android:id="@+id/overview_slot_model" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:letterSpacing="0.04" android:text="NO SKIN SAVED" android:textColor="#777984" android:textSize="7.5sp" android:textStyle="bold" />
+            <TextView android:id="@+id/overview_slot_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="end" android:maxLines="1" android:text="Empty Slot" android:textColor="#F0F0F2" android:textSize="11.5sp" android:textStyle="bold" />
+            <TextView android:id="@+id/overview_slot_model" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:letterSpacing="0.04" android:text="NO SKIN SAVED" android:textColor="#76777C" android:textSize="7.5sp" android:textStyle="bold" />
         </LinearLayout>
         <FrameLayout android:layout_width="32dp" android:layout_height="32dp" android:background="@drawable/bg_skin_slot_action">
-            <ImageView android:layout_width="13dp" android:layout_height="13dp" android:layout_gravity="center" android:src="@drawable/ic_chevron_right" app:tint="#E4E4EA" />
+            <ImageView android:layout_width="13dp" android:layout_height="13dp" android:layout_gravity="center" android:src="@drawable/ic_chevron_right" app:tint="#E9E9EB" />
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>
