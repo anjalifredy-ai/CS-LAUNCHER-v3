@@ -214,112 +214,86 @@
                 android:overScrollMode="never"
                 android:paddingVertical="6dp" />
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/log_cli_overlay"
-                android:layout_width="500dp"
-                android:layout_height="310dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:background="@drawable/bg_cli_splash"
-                android:elevation="12dp"
-                android:orientation="vertical"
-                android:padding="18dp"
+                android:background="#F208090C"
                 android:visibility="gone">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="28dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    <View android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/bg_log_dot_live" />
+                    android:layout_width="520dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
                     <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="CRAFT STUDIO TERMINAL"
-                        android:textColor="#858792"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
+                        android:id="@+id/log_cli_command"
+                        android:layout_width="match_parent"
+                        android:layout_height="32dp"
+                        android:gravity="center_vertical"
+                        android:fontFamily="monospace"
+                        android:textColor="#D7D8DE"
+                        android:textSize="10sp" />
+
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/log_cli_brand"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="SMART BOOT"
-                        android:textColor="#6F717C"
-                        android:textSize="7.5sp"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:letterSpacing="0.02"
+                        android:text="CS LAUNCHER"
+                        android:textColor="#FFFFFF"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/log_cli_subtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="VERSION 3  •  CRAFT STUDIO"
+                        android:textColor="#777984"
+                        android:textSize="8.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/log_cli_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="54dp"
+                        android:layout_marginTop="17dp"
+                        android:gravity="center_vertical"
+                        android:fontFamily="monospace"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="#C7C9D0"
+                        android:textSize="9.5sp" />
+
+                    <ProgressBar
+                        android:id="@+id/log_cli_progress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="5dp"
+                        android:layout_marginTop="10dp"
+                        android:max="100"
+                        android:progress="0"
+                        android:progressDrawable="@drawable/bg_cli_progress" />
+
+                    <TextView
+                        android:id="@+id/log_cli_progress_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:fontFamily="monospace"
+                        android:text="[----------] 0%"
+                        android:textColor="#8C8E98"
+                        android:textSize="8.5sp" />
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/log_cli_command"
-                    android:layout_width="match_parent"
-                    android:layout_height="30dp"
-                    android:gravity="center_vertical"
-                    android:fontFamily="monospace"
-                    android:textColor="#D7D8DE"
-                    android:textSize="10sp" />
-
-                <Space android:layout_width="match_parent" android:layout_height="10dp" />
-
-                <TextView
-                    android:id="@+id/log_cli_brand"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:letterSpacing="0.04"
-                    android:text="CS LAUNCHER"
-                    android:textColor="#FFFFFF"
-                    android:textSize="27sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/log_cli_subtitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:gravity="center"
-                    android:text="VERSION 3  •  CRAFT STUDIO"
-                    android:textColor="#777984"
-                    android:textSize="8.5sp"
-                    android:textStyle="bold" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="14dp"
-                    android:layout_marginBottom="13dp"
-                    android:background="#303139" />
-
-                <TextView
-                    android:id="@+id/log_cli_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:gravity="center_vertical"
-                    android:fontFamily="monospace"
-                    android:lineSpacingExtra="4dp"
-                    android:textColor="#C7C9D0"
-                    android:textSize="9.5sp" />
-
-                <ProgressBar
-                    android:id="@+id/log_cli_progress"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="6dp"
-                    android:layout_marginTop="10dp"
-                    android:max="100"
-                    android:progress="0"
-                    android:progressDrawable="@drawable/bg_cli_progress" />
-
-                <TextView
-                    android:id="@+id/log_cli_progress_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:fontFamily="monospace"
-                    android:text="[----------] 0%"
-                    android:textColor="#8C8E98"
-                    android:textSize="8.5sp" />
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
     </LinearLayout>
 
