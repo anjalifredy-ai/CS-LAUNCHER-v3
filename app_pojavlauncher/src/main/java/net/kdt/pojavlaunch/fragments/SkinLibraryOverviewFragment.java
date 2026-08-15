@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.MotionEvent;
 import android.widget.LinearLayout;
+
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -35,8 +38,12 @@ public class SkinLibraryOverviewFragment extends Fragment {
         view.findViewById(R.id.skin_overview_back).setOnClickListener(v ->
                 requireActivity().getOnBackPressedDispatcher().onBackPressed());
         loadLibrary();
-        view.findViewById(R.id.skin_overview_header).setAlpha(0f);
-        view.findViewById(R.id.skin_overview_header).animate().alpha(1f).setDuration(180).start();
+        View header = view.findViewById(R.id.skin_overview_header);
+        header.setAlpha(0f);
+        header.setTranslationY(-12f * getResources().getDisplayMetrics().density);
+        header.animate().alpha(1f).translationY(0f).setDuration(240)
+                .setInterpolator(new FastOutSlowInInterpolator()).start();
+        applyPressAnimation(view.findViewById(R.id.skin_overview_back));
     }
 
     @Override public void onResume() { super.onResume(); if (slotContainer != null) loadLibrary(); }
@@ -48,9 +55,10 @@ public class SkinLibraryOverviewFragment extends Fragment {
             return;
         }
         store = new SkinSlotStore(requireContext(), account);
-        accountText.setText(account.username + "  •  Three saved looks, one active skin");
+        accountText.setText(account.username);
         int active = store.getActiveSlot();
-        activeText.setText(active >= 0 ? "ACTIVE • SLOT " + (active + 1) : "NO ACTIVE SKIN");
+        activeText.setText(active >= 0 ? "SLOT " + (active + 1) + " ACTIVE" : "NO ACTIVE SKIN");
+        activeText.setTextColor(active >= 0 ? 0xFF82F3F4 : 0xFFC9CBD6);
         slotContainer.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         for (int i = 0; i < SkinSlotStore.SLOT_COUNT; i++) {
@@ -61,7 +69,7 @@ public class SkinLibraryOverviewFragment extends Fragment {
             ((TextView) card.findViewById(R.id.overview_slot_number)).setText("SKIN SLOT " + (i + 1));
             TextView status = card.findViewById(R.id.overview_slot_status);
             status.setText(isActive ? "ACTIVE" : filled ? "SAVED" : "EMPTY");
-            status.setTextColor(isActive ? 0xFFC5F0D0 : 0xFF8CAF96);
+            status.setTextColor(isActive ? 0xFF82F3F4 : 0xFF9A9CA6);
             ((TextView) card.findViewById(R.id.overview_slot_name)).setText(
                     filled ? store.get(i).name : "Empty Slot");
             ((TextView) card.findViewById(R.id.overview_slot_model)).setText(
@@ -70,9 +78,11 @@ public class SkinLibraryOverviewFragment extends Fragment {
             preview.setSkin(filled ? store.fileFor(i) : null);
             card.findViewById(R.id.overview_slot_empty).setVisibility(filled ? View.GONE : View.VISIBLE);
             card.setOnClickListener(v -> openStudio(slot));
-            card.setAlpha(0f); card.setTranslationY(14f);
-            card.animate().alpha(1f).translationY(0f).setStartDelay(i * 55L)
-                    .setDuration(240).start();
+            applyPressAnimation(card);
+            card.setAlpha(0f);
+            card.setTranslationY(12f * getResources().getDisplayMetrics().density);
+            card.animate().alpha(1f).translationY(0f).setStartDelay(i * 35L)
+                    .setDuration(240).setInterpolator(new FastOutSlowInInterpolator()).start();
             slotContainer.addView(card);
             if (i < SkinSlotStore.SLOT_COUNT - 1) {
                 ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) card.getLayoutParams();
@@ -80,6 +90,20 @@ public class SkinLibraryOverviewFragment extends Fragment {
                 card.setLayoutParams(lp);
             }
         }
+    }
+
+    private void applyPressAnimation(@Nullable View target) {
+        if (target == null) return;
+        target.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                v.animate().scaleX(0.98f).scaleY(0.98f).setDuration(90).start();
+            } else if (event.getActionMasked() == MotionEvent.ACTION_UP
+                    || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+                v.animate().scaleX(1f).scaleY(1f).setDuration(120)
+                        .setInterpolator(new FastOutSlowInInterpolator()).start();
+            }
+            return false;
+        });
     }
 
     private void openStudio(int slot) {

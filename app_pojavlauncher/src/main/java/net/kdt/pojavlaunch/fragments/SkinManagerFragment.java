@@ -23,8 +23,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -78,6 +82,10 @@ public class SkinManagerFragment extends Fragment {
     private EditText mEtUsername;
     private Button mBtnFetch;
     private LinearLayout mSlotContainer;
+    private FrameLayout mInlinePreviewHost;
+    private FrameLayout mFullscreenPreviewHost;
+    private View mFullscreenOverlay;
+    private boolean mPreviewFullscreen;
     private SkinSlotStore mSlotStore;
     private MinecraftAccount mActiveAccount;
     private int mSelectedSlot;
@@ -95,7 +103,7 @@ public class SkinManagerFragment extends Fragment {
         public void run() {
             if (mSkinRenderer != null && mSkinRenderer.mAutoRotate && isAdded()) {
                 mSkinPreviewSurface.requestRender();
-                mAutoRotateHandler.postDelayed(this, 33);
+                mAutoRotateHandler.postDelayed(this, 42);
             }
         }
     };
@@ -128,11 +136,29 @@ public class SkinManagerFragment extends Fragment {
         mEtUsername = view.findViewById(R.id.et_skin_username);
         mBtnFetch = view.findViewById(R.id.btn_fetch_skin);
         mSlotContainer = view.findViewById(R.id.skin_slot_container);
+        mInlinePreviewHost = view.findViewById(R.id.skin_preview_inline_host);
+        mFullscreenPreviewHost = view.findViewById(R.id.skin_fullscreen_preview_host);
+        mFullscreenOverlay = view.findViewById(R.id.skin_fullscreen_overlay);
 
         View backButton = view.findViewById(R.id.skin_back_button);
         if (backButton != null) {
-            backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+            backButton.setOnClickListener(v -> {
+                if (mPreviewFullscreen) exitFullscreenPreview();
+                else getParentFragmentManager().popBackStack();
+            });
         }
+        view.findViewById(R.id.skin_preview_expand).setOnClickListener(v -> enterFullscreenPreview());
+        view.findViewById(R.id.skin_fullscreen_close).setOnClickListener(v -> exitFullscreenPreview());
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override public void handleOnBackPressed() {
+                        if (mPreviewFullscreen) exitFullscreenPreview();
+                        else {
+                            setEnabled(false);
+                            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+                        }
+                    }
+                });
 
         mSkinPreviewSurface.setEGLContextClientVersion(2);
         mSkinRenderer = new SkinRenderer(requireContext());
@@ -163,9 +189,7 @@ public class SkinManagerFragment extends Fragment {
         }
         mImportTargetSlot = mSelectedSlot;
         syncPendingSkinFromSelectedSlot();
-        TextView pageSubtitle = view.findViewById(R.id.skin_page_subtitle);
-        if (pageSubtitle != null) pageSubtitle.setText("Editing Skin Slot " + (mSelectedSlot + 1)
-                + " • Preview, replace or make active");
+        updateStudioSubtitle(view);
         mPendingCapeUri = localCapeFile.exists() ? Uri.fromFile(localCapeFile).toString() : null;
 
         updatePathText(mTvSkinPath, mPendingSkinUri, "No skin in selected slot");
@@ -226,6 +250,8 @@ public class SkinManagerFragment extends Fragment {
             mPendingSkinUri = null;
             updatePathText(mTvSkinPath, null, "No skin in selected slot");
         }
+        View root = getView();
+        if (root != null) updateStudioSubtitle(root);
     }
 
     private void bindSkinSlots() {
@@ -243,7 +269,7 @@ public class SkinManagerFragment extends Fragment {
             ((TextView) card.findViewById(R.id.skin_slot_number)).setText("SLOT " + (i + 1));
             TextView status = card.findViewById(R.id.skin_slot_status);
             status.setText(active ? "ACTIVE" : filled ? "SAVED" : "EMPTY");
-            status.setTextColor(active ? 0xFFC5F0D0 : 0xFF83A48E);
+            status.setTextColor(active ? 0xFF82F3F4 : 0xFF9A9CA6);
             ((TextView) card.findViewById(R.id.skin_slot_name)).setText(mSlotStore.get(i).name);
             ((TextView) card.findViewById(R.id.skin_slot_model)).setText(
                     filled ? mSlotStore.get(i).model.toUpperCase() : "NO SKIN");
@@ -256,7 +282,7 @@ public class SkinManagerFragment extends Fragment {
             action.setText(!filled ? "ADD" : active ? "REPLACE" : "USE");
             card.setOnClickListener(v -> selectSkinSlot(slotIndex));
             action.setOnClickListener(v -> {
-                mSelectedSlot = slotIndex;
+                selectSkinSlot(slotIndex);
                 if (!filled || active) {
                     mImportTargetSlot = slotIndex;
                     openFilePicker(REQUEST_CODE_SKIN);
@@ -275,8 +301,11 @@ public class SkinManagerFragment extends Fragment {
                             syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updatePreview(); updateAccountInfo(); refreshAccountFaces();
                         }).show();
             });
-            card.setAlpha(0f); card.setTranslationY(10f);
-            card.animate().alpha(1f).translationY(0f).setStartDelay(i * 35L).setDuration(210).start();
+            applyPressAnimation(card);
+            card.setAlpha(0f);
+            card.setTranslationY(8f * getResources().getDisplayMetrics().density);
+            card.animate().alpha(1f).translationY(0f).setStartDelay(i * 35L).setDuration(220)
+                    .setInterpolator(new FastOutSlowInInterpolator()).start();
             mSlotContainer.addView(card);
             if (i < SkinSlotStore.SLOT_COUNT - 1) {
                 android.view.ViewGroup.MarginLayoutParams lp = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
@@ -286,14 +315,22 @@ public class SkinManagerFragment extends Fragment {
     }
 
     private void selectSkinSlot(int index) {
-        mSelectedSlot = index; mImportTargetSlot = index;
+        mSelectedSlot = index;
+        mImportTargetSlot = index;
         View root = getView();
-        if (root != null) {
-            TextView subtitle = root.findViewById(R.id.skin_page_subtitle);
-            if (subtitle != null) subtitle.setText("Editing Skin Slot " + (index + 1)
-                    + " • Preview, replace or make active");
-        }
-        syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updatePreview(); updateAccountInfo();
+        if (root != null) updateStudioSubtitle(root);
+        syncPendingSkinFromSelectedSlot();
+        bindSkinSlots();
+        updatePreview();
+        updateAccountInfo();
+    }
+
+    private void updateStudioSubtitle(@NonNull View root) {
+        TextView subtitle = root.findViewById(R.id.skin_page_subtitle);
+        if (subtitle == null) return;
+        String name = mSlotStore != null && mSlotStore.isFilled(mSelectedSlot)
+                ? mSlotStore.get(mSelectedSlot).name : "Empty slot";
+        subtitle.setText("Slot " + (mSelectedSlot + 1) + "  •  " + name);
     }
 
     private void deleteSelectedSlot() {
@@ -398,21 +435,71 @@ public class SkinManagerFragment extends Fragment {
         }
     }
 
+    private void enterFullscreenPreview() {
+        if (mPreviewFullscreen || mSkinPreviewSurface == null || mFullscreenOverlay == null
+                || mFullscreenPreviewHost == null) return;
+        ViewGroup currentParent = (ViewGroup) mSkinPreviewSurface.getParent();
+        if (currentParent != null) currentParent.removeView(mSkinPreviewSurface);
+        mFullscreenPreviewHost.removeAllViews();
+        mFullscreenPreviewHost.addView(mSkinPreviewSurface, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mPreviewFullscreen = true;
+        mFullscreenOverlay.setVisibility(View.VISIBLE);
+        mFullscreenOverlay.bringToFront();
+        mFullscreenOverlay.setAlpha(0f);
+        mFullscreenOverlay.setScaleX(0.99f);
+        mFullscreenOverlay.setScaleY(0.99f);
+        mFullscreenOverlay.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(220)
+                .setInterpolator(new FastOutSlowInInterpolator()).start();
+        mSkinPreviewSurface.requestRender();
+    }
+
+    private void exitFullscreenPreview() {
+        if (!mPreviewFullscreen || mFullscreenOverlay == null) return;
+        mPreviewFullscreen = false;
+        mFullscreenOverlay.animate().cancel();
+        mFullscreenOverlay.animate().alpha(0f).scaleX(0.99f).scaleY(0.99f).setDuration(180)
+                .setInterpolator(new FastOutSlowInInterpolator()).withEndAction(() -> {
+                    restoreInlinePreview();
+                    if (mFullscreenOverlay != null) {
+                        mFullscreenOverlay.setVisibility(View.GONE);
+                        mFullscreenOverlay.setScaleX(1f);
+                        mFullscreenOverlay.setScaleY(1f);
+                    }
+                }).start();
+    }
+
+    private void restoreInlinePreview() {
+        if (mSkinPreviewSurface == null || mInlinePreviewHost == null) return;
+        ViewGroup currentParent = (ViewGroup) mSkinPreviewSurface.getParent();
+        if (currentParent != null) currentParent.removeView(mSkinPreviewSurface);
+        mInlinePreviewHost.removeAllViews();
+        mInlinePreviewHost.addView(mSkinPreviewSurface, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mSkinPreviewSurface.requestRender();
+    }
+
     private void animateEntry(@NonNull View root) {
-        int[] ids = new int[]{R.id.skin_top_bar, R.id.skin_preview_card, R.id.skin_status_card, R.id.skin_fetch_card, R.id.skin_skin_card, R.id.skin_cape_card, R.id.skin_action_card};
+        int[] ids = new int[]{R.id.skin_top_bar, R.id.skin_preview_card, R.id.skin_skin_card,
+                R.id.skin_fetch_card, R.id.skin_cape_card, R.id.skin_action_card};
+        float distance = 12f * getResources().getDisplayMetrics().density;
         long delay = 0L;
         for (int id : ids) {
             View target = root.findViewById(id);
             if (target == null) continue;
             target.setAlpha(0f);
-            target.setTranslationY(id == R.id.skin_top_bar ? -28f : 28f);
-            target.animate().alpha(1f).translationY(0f).setStartDelay(delay).setDuration(320).start();
-            delay += 70L;
+            target.setTranslationY(id == R.id.skin_top_bar ? -distance : distance);
+            target.animate().alpha(1f).translationY(0f).setStartDelay(delay).setDuration(240)
+                    .setInterpolator(new FastOutSlowInInterpolator()).start();
+            delay += 35L;
         }
     }
 
     private void applyInteractiveAnimations(@NonNull View root) {
-        int[] animatedButtons = new int[]{R.id.skin_back_button, R.id.btn_change_skin, R.id.btn_remove_skin, R.id.btn_reset_default, R.id.btn_change_cape, R.id.btn_remove_cape, R.id.btn_save_skin_changes, R.id.btn_fetch_skin};
+        int[] animatedButtons = new int[]{R.id.skin_back_button, R.id.skin_preview_expand,
+                R.id.skin_fullscreen_close, R.id.btn_change_skin, R.id.btn_remove_skin,
+                R.id.btn_reset_default, R.id.btn_change_cape, R.id.btn_remove_cape,
+                R.id.btn_save_skin_changes, R.id.btn_fetch_skin};
         for (int id : animatedButtons) applyPressAnimation(root.findViewById(id));
     }
 
@@ -420,9 +507,14 @@ public class SkinManagerFragment extends Fragment {
         if (target == null) return;
         target.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80).start(); break;
+                case MotionEvent.ACTION_DOWN:
+                    v.animate().scaleX(0.98f).scaleY(0.98f).setDuration(90).start();
+                    break;
                 case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL: v.animate().scaleX(1f).scaleY(1f).setDuration(130).start(); break;
+                case MotionEvent.ACTION_CANCEL:
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(120)
+                            .setInterpolator(new FastOutSlowInInterpolator()).start();
+                    break;
             }
             return false;
         });
@@ -466,7 +558,7 @@ public class SkinManagerFragment extends Fragment {
                         mAutoRotateHandler.postDelayed(() -> {
                             if (mSkinRenderer != null) {
                                 mSkinRenderer.mAutoRotate = true;
-                                mAutoRotateHandler.postDelayed(mAutoRotateRunnable, 33);
+                                mAutoRotateHandler.postDelayed(mAutoRotateRunnable, 42);
                             }
                         }, 1800);
                         break;
@@ -559,7 +651,7 @@ public class SkinManagerFragment extends Fragment {
             mSkinPreviewSurface.onResume();
             if (mSkinRenderer != null && mSkinRenderer.mAutoRotate) {
                 mAutoRotateHandler.removeCallbacks(mAutoRotateRunnable);
-                mAutoRotateHandler.postDelayed(mAutoRotateRunnable, 33);
+                mAutoRotateHandler.postDelayed(mAutoRotateRunnable, 42);
             }
         }
     }
@@ -574,10 +666,15 @@ public class SkinManagerFragment extends Fragment {
     @Override
     public void onDestroyView() {
         mAutoRotateHandler.removeCallbacks(mAutoRotateRunnable);
+        if (mFullscreenOverlay != null) mFullscreenOverlay.animate().cancel();
         if (mSkinRenderer != null) mSkinRenderer.onPause();
         if (mSkinPreviewSurface != null) mSkinPreviewSurface.onPause();
+        mPreviewFullscreen = false;
         mSkinPreviewSurface = null;
         mSkinRenderer = null;
+        mInlinePreviewHost = null;
+        mFullscreenPreviewHost = null;
+        mFullscreenOverlay = null;
         super.onDestroyView();
     }
 

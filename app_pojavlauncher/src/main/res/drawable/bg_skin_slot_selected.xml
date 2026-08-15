@@ -1,1 +1,2 @@
-<?xml version="1.0" encoding="utf-8"?><shape xmlns:android="http://schemas.android.com/apk/res/android"><gradient android:angle="315" android:startColor="#1A3023" android:endColor="#102016"/><stroke android:width="1.5dp" android:color="#6A9A78"/><corners android:radius="12dp"/></shape>
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#3022C9CB"><item><shape><solid android:color="#1D1E24"/><stroke android:width="1dp" android:color="#669B9DA5"/><corners android:radius="18dp"/></shape></item></ripple>
