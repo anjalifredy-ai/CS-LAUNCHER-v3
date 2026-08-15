@@ -296,12 +296,12 @@ public class LoggerView extends ConstraintLayout {
 
         final String command = "> cs-launcher boot --logs=smart";
         final String[] logo = {
-                "   ██████╗ ███████╗",
-                "  ██╔════╝ ██╔════╝",
-                "  ██║      ███████╗",
-                "  ██║      ╚════██║",
-                "  ╚██████╗ ███████║",
-                "   ╚═════╝ ╚══════╝"
+                "    ######    ######",
+                "   ##        ##",
+                "   ##         #####",
+                "   ##             ##",
+                "   ##        ##    ##",
+                "    ######    ######"
         };
         final String[] spinner = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴"};
 
