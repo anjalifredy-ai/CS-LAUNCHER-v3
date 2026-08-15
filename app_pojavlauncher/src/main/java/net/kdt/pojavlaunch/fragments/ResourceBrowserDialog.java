@@ -294,8 +294,8 @@ public final class ResourceBrowserDialog extends DialogFragment {
         boolean packs = mType == TYPE_PACKS;
         mTabPacks.setBackgroundResource(packs ? R.drawable.bg_cs_tab_pill_active : R.drawable.bg_cs_tab_pill_idle);
         mTabShaders.setBackgroundResource(packs ? R.drawable.bg_cs_tab_pill_idle : R.drawable.bg_cs_tab_pill_active);
-        mTabPacks.setTextColor(packs ? 0xFF151518 : 0xFFC9CBD6);
-        mTabShaders.setTextColor(packs ? 0xFFC9CBD6 : 0xFF151518);
+        mTabPacks.setTextColor(packs ? 0xFF151518 : 0xFF22C9CB);
+        mTabShaders.setTextColor(packs ? 0xFF22C9CB : 0xFF151518);
     }
 
     // ───────────────────────── Modrinth catalogue ─────────────────────────
@@ -496,7 +496,7 @@ public final class ResourceBrowserDialog extends DialogFragment {
                     h.install.setEnabled(false);
                     h.install.setText(e.progress > 0 ? e.progress + "%" : "…");
                     h.install.setBackgroundResource(R.drawable.bg_cs_tab_pill_idle);
-                    h.install.setTextColor(0xFFC9CBD6);
+                    h.install.setTextColor(0xFF22C9CB);
                     break;
                 case ST_INSTALLED:
                     h.install.setEnabled(false);

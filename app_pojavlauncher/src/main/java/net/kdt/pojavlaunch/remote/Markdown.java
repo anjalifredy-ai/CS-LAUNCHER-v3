@@ -69,7 +69,7 @@ public final class Markdown {
         m = code.matcher(sb);
         while (m.find()) {
             sb.setSpan(new TypefaceSpan("monospace"), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            sb.setSpan(new ForegroundColorSpan(0xFFB39DDB), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            sb.setSpan(new ForegroundColorSpan(0xFF22C9CB), m.start(), m.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         Pattern link = Pattern.compile("\\[([^\\]]+)\\]\\((https?://[^)]+)\\)");

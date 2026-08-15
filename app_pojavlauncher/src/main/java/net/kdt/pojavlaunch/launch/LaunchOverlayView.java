@@ -136,7 +136,7 @@ public final class LaunchOverlayView extends View {
         mChipPaint.setTextSize(dp(10));
         mChipPaint.setFakeBoldText(true);
         mChipBgPaint.setStyle(Paint.Style.FILL);
-        mChipBgPaint.setColor(0xFFE4E4EA);
+        mChipBgPaint.setColor(0xFFE8E8E8);
     }
 
     // ───────────────────────── public API ─────────────────────────
@@ -339,11 +339,11 @@ public final class LaunchOverlayView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         float beamWidth = Math.min(w - dp(64), dp(260));
         mBeamGradient = new LinearGradient(0, 0, beamWidth, 0,
-                new int[]{0x00E4E4EA, 0x88E4E4EA, 0xFFC9CBD6, 0xFFE4E4EA, 0x00E4E4EA},
+                new int[]{0x00E8E8E8, 0x88E8E8E8, 0xFF22C9CB, 0xFFE8E8E8, 0x00E8E8E8},
                 new float[]{0f, 0.30f, 0.52f, 0.72f, 1f}, Shader.TileMode.CLAMP);
         mBeamPaint.setShader(mBeamGradient);
         mGlowGradient = new RadialGradient(0, 0, dp(110),
-                new int[]{0x55C9CBD6, 0x22C9CBD6, 0x00C9CBD6},
+                new int[]{0x5522C9CB, 0x2222C9CB, 0x0022C9CB},
                 new float[]{0f, 0.55f, 1f}, Shader.TileMode.CLAMP);
         mGlowPaint.setShader(mGlowGradient);
     }
@@ -428,7 +428,7 @@ public final class LaunchOverlayView extends View {
 
         // glowing tip dot
         float tipX = cx - beamW + sweepX - beamW * 0.5f + beamW;
-        mBeamGlowPaint.setColor(0xCCC9CBD6);
+        mBeamGlowPaint.setColor(0xCC22C9CB);
         float tipAlpha = tipX > cx - beamW * 0.5f && tipX < cx + beamW * 0.5f ? 1f : 0f;
         if (tipAlpha > 0f) {
             canvas.drawCircle(tipX, beamY + beamH * 0.5f, dp(6), mBeamGlowPaint);
@@ -439,7 +439,7 @@ public final class LaunchOverlayView extends View {
             int life = mPLife[i];
             if (life <= 0) continue;
             int alpha = Math.min(200, life * 8);
-            mParticlePaint.setColor((alpha << 24) | (i % 3 == 0 ? 0xC9CBD6 : 0xE4E4EA));
+            mParticlePaint.setColor((alpha << 24) | (i % 3 == 0 ? 0x22C9CB : 0xE8E8E8));
             canvas.drawCircle(mPX[i], mPY[i], dp(i % 4 == 0 ? 1.8f : 1.1f), mParticlePaint);
         }
 

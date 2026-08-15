@@ -72,7 +72,7 @@
             android:paddingHorizontal="16dp"
             android:text="@string/global_select"
             android:textAllCaps="false"
-            android:textColor="#E4E4EA"
+            android:textColor="#E8E8E8"
             android:textSize="12.5sp" />
     </LinearLayout>
 

@@ -2,6 +2,6 @@
 <!-- Tiny violet spine on the leading edge of each menu tile -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <gradient android:angle="90"
-        android:startColor="#8E9099" android:centerColor="#C9CBD6" android:endColor="#40C9CBD6" />
+        android:startColor="#888888" android:centerColor="#22C9CB" android:endColor="#4022C9CB" />
     <corners android:radius="2dp" />
 </shape>

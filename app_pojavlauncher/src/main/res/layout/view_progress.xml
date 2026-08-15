@@ -41,7 +41,7 @@
             android:padding="11dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_download"
-            android:tint="#E4E4EA"
+            android:tint="#E8E8E8"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint" />
@@ -274,7 +274,7 @@
             android:layout_width="15dp"
             android:layout_height="15dp"
             android:src="@drawable/ic_download_trend"
-            android:tint="#E4E4EA" />
+            android:tint="#E8E8E8" />
 
         <TextView
             android:id="@+id/console_pill_percent"

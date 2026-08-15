@@ -471,7 +471,7 @@ public final class ProfileShortcutHelper {
         try {
             return context.getResources().getColor(R.color.premium_cyan);
         } catch (Exception e) {
-            return Color.parseColor("#C9CBD6");
+            return Color.parseColor("#22C9CB");
         }
     }
 

@@ -6,7 +6,7 @@
     android:paddingTop="16dp"
     android:paddingBottom="8dp"
     android:paddingStart="4dp"
-    android:textColor="#C9CBD6"
+    android:textColor="#22C9CB"
     android:textSize="12sp"
     android:textStyle="bold"
     android:textAllCaps="true"

@@ -106,7 +106,7 @@
                             android:layout_height="21dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_auth_microsoft"
-                            android:tint="#E4E4EA" />
+                            android:tint="#E8E8E8" />
                     </FrameLayout>
 
                     <LinearLayout

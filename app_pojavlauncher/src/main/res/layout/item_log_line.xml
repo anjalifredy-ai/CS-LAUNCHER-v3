@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:textIsSelectable="false"
-    android:textColor="#C9CBD6"
+    android:textColor="#22C9CB"
     android:textSize="10.5sp"
     android:lineSpacingMultiplier="1.14"
     android:minHeight="24dp"

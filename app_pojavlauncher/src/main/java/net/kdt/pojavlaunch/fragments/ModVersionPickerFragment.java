@@ -572,7 +572,7 @@ public class ModVersionPickerFragment extends Fragment {
                     case CHANNEL_LATEST:
                         holder.recBadge.setVisibility(View.VISIBLE);
                         holder.recBadge.setText(R.string.mp_channel_latest);
-                        holder.recBadge.setTextColor(0xFFC9A6FF);
+                        holder.recBadge.setTextColor(0xFF6EDFE0);
                         holder.recBadge.setBackgroundResource(R.drawable.bg_mp_tag_latest);
                         break;
                     case CHANNEL_STABLE:

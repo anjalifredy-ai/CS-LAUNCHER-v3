@@ -13,20 +13,25 @@ import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutorTask;
 import net.kdt.pojavlaunch.progresskeeper.ProgressKeeper;
 import net.kdt.pojavlaunch.tasks.AsyncMinecraftDownloader;
+import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.utils.NotificationUtils;
 
 public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneListener, ContextExecutorTask {
     private final String mErrorString;
     private final String mNormalizedVersionid;
+    private final String mProfileKey;
 
     public ContextAwareDoneListener(Context baseContext, String versionId) {
         this.mErrorString = baseContext.getString(R.string.mc_download_failed);
         this.mNormalizedVersionid = versionId;
+        this.mProfileKey = LauncherPreferences.DEFAULT_PREF.getString(
+                LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "default");
     }
 
     private Intent createGameStartIntent(Context context) {
         Intent mainIntent = new Intent(context, MainActivity.class);
         mainIntent.putExtra(INTENT_MINECRAFT_VERSION, mNormalizedVersionid);
+        mainIntent.putExtra(MainActivity.EXTRA_PROFILE_KEY, mProfileKey);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         // Shortcut launches asked for the launch-log screen on arrival. The flag
         // is one-shot and consumed here so manual launches stay unaffected.

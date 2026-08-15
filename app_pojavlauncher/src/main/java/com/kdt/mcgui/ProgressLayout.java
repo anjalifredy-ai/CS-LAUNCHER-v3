@@ -54,7 +54,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
     public static final String EXTRACT_SINGLE_FILES = "extract_single_files";
 
     private static final int COLOR_TEXT_PRIMARY = 0xFFF0F0F3;
-    private static final int COLOR_TEXT_SECONDARY = 0xFFE4E4EA;
+    private static final int COLOR_TEXT_SECONDARY = 0xFFE8E8E8;
     private static final int COLOR_SUCCESS = 0xFF9FD6AC;
     private static final int COLOR_AMBER = 0xFFD8C79A;
 

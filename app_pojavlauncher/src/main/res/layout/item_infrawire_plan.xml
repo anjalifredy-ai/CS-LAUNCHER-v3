@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="$4.83/month"
-            android:textColor="#C9CBD6"
+            android:textColor="#22C9CB"
             android:textSize="11.5sp"
             android:textStyle="bold"
             android:layout_marginTop="2dp" />

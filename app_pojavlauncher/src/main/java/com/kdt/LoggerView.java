@@ -251,7 +251,7 @@ public class LoggerView extends ConstraintLayout {
             mLiveDot.getBackground().setTint(mPaused ? 0xFFFFB020 : 0xFF22C55E);
         }
         ImageButton pause = findViewById(R.id.log_btn_pause);
-        if (pause != null) pause.setColorFilter(mPaused ? 0xFFFFB020 : 0xFFE4E4EA);
+        if (pause != null) pause.setColorFilter(mPaused ? 0xFFFFB020 : 0xFFE8E8E8);
         updateStatus();
     }
 
@@ -644,7 +644,7 @@ public class LoggerView extends ConstraintLayout {
 
     /** Severity highlighting: error → red, warn → amber, success → green, info → silver. */
     private CharSequence colorizeLine(String line) {
-        int color = 0xFFC9CBD6; // default body tone
+        int color = 0xFF22C9CB; // default body tone
         String up = line.toUpperCase(java.util.Locale.US);
         if (up.contains("ERROR") || up.contains("FATAL") || up.contains("EXCEPTION")
                 || up.contains("CAUSED BY") || up.contains("FAILED")) {
@@ -657,7 +657,7 @@ public class LoggerView extends ConstraintLayout {
                 || up.contains("SUCCESSFULLY")) {
             color = 0xFF22C55E; // success green
         } else if (up.startsWith("[INFO]") || up.contains(" INFO ")) {
-            color = 0xFFE4E4EA; // silver
+            color = 0xFFE8E8E8; // silver
         } else if (up.contains("DEBUG")) {
             color = 0xFF6B7280; // dim
         }

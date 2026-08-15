@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- CSP BIG CARD — deep glass panel for category/pin cards -->
-<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14E4E4EA">
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#14E8E8E8">
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
             <corners android:radius="20dp" />

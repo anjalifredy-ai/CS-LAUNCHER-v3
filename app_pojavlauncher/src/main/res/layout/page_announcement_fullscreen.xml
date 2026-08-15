@@ -62,7 +62,7 @@
             android:id="@+id/tv_ann_page_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#E4E4EA"
+            android:textColor="#E8E8E8"
             android:textSize="15sp"
             android:lineSpacingExtra="4dp"
             android:textIsSelectable="true" />

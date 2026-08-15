@@ -282,14 +282,18 @@ public class SkinManagerFragment extends Fragment {
             View delete = card.findViewById(R.id.skin_slot_delete);
             delete.setVisibility(filled ? View.VISIBLE : View.GONE);
             TextView action = card.findViewById(R.id.skin_slot_action);
-            action.setText(!filled ? "ADD" : active ? "REPLACE" : "USE");
+            action.setText(!filled ? "ADD" : active ? "ACTIVE" : "USE");
             card.setOnClickListener(v -> selectSkinSlot(slotIndex));
             action.setOnClickListener(v -> {
                 selectSkinSlot(slotIndex);
-                if (!filled || active) {
+                if (!filled) {
                     mImportTargetSlot = slotIndex;
                     openFilePicker(REQUEST_CODE_SKIN);
-                } else saveSkinChanges();
+                } else if (!active) {
+                    saveSkinChanges();
+                } else {
+                    Toast.makeText(requireContext(), "This skin is already active", Toast.LENGTH_SHORT).show();
+                }
             });
             delete.setOnClickListener(v -> {
                 new androidx.appcompat.app.AlertDialog.Builder(requireContext())

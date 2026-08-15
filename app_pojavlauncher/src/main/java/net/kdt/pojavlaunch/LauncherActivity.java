@@ -1025,7 +1025,7 @@ public class LauncherActivity extends BaseActivity {
         final float density = getResources().getDisplayMetrics().density;
         final TextView chip = new TextView(this);
         chip.setText(labelRes);
-        chip.setTextColor(0xFFE4E4EA);
+        chip.setTextColor(0xFFE8E8E8);
         chip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 10.5f);
         chip.setTypeface(Typeface.DEFAULT_BOLD);
         chip.setLetterSpacing(0.05f);

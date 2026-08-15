@@ -161,7 +161,7 @@ public class CustomToggleView extends View {
 
         // Violet energy halo when enabled
         if (mAnimProgress > 0.05f) {
-            mPaint.setColor(blendColors(0x00C9CBD6, 0x4DC9CBD6, mAnimProgress));
+            mPaint.setColor(blendColors(0x0022C9CB, 0x4D22C9CB, mAnimProgress));
             canvas.drawCircle(thumbX, thumbY, thumbRadius + padding * 0.8f, mPaint);
         }
 

@@ -68,19 +68,47 @@ public final class SkinSlotStore {
 
     public void activate(int index) throws Exception {
         if (!isFilled(index)) throw new IllegalArgumentException("Skin slot is empty");
-        File skinsDir = new File(Tools.DIR_DATA, "skins");
-        //noinspection ResultOfMethodCallIgnored
-        skinsDir.mkdirs();
-        File active = new File(skinsDir, account.username + "_skin.png");
-        File temp = new File(skinsDir, account.username + "_skin.tmp");
-        FileUtils.copyFile(fileFor(index), temp);
-        if (active.exists() && !active.delete()) throw new Exception("Could not replace active skin");
-        if (!temp.renameTo(active)) { FileUtils.copyFile(temp, active); temp.delete(); }
-        Tools.write(new File(skinsDir, account.username + "_metadata.json").getAbsolutePath(),
-                "{\n  \"model\": \"" + slots[index].model + "\",\n  \"slot\": " + (index + 1) + "\n}");
-        activeSlot = index;
-        save();
-        account.clearFaceCache();
+
+        // Activation is a non-destructive operation. Preserve all three library
+        // files before touching the compatibility skin so vendor/filesystem
+        // quirks can never make the previously active slot disappear.
+        File[] backups = new File[SLOT_COUNT];
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            File slot = fileFor(i);
+            if (!slot.isFile()) continue;
+            backups[i] = new File(root, ".activate_keep_" + (i + 1));
+            FileUtils.copyFile(slot, backups[i]);
+        }
+
+        try {
+            File skinsDir = new File(Tools.DIR_DATA, "skins");
+            //noinspection ResultOfMethodCallIgnored
+            skinsDir.mkdirs();
+            File active = new File(skinsDir, account.username + "_skin.png");
+            File temp = new File(skinsDir, account.username + "_skin.tmp");
+            FileUtils.copyFile(fileFor(index), temp);
+            // copyFile overwrites the compatibility target without ever moving
+            // or deleting the source slot file.
+            FileUtils.copyFile(temp, active);
+            //noinspection ResultOfMethodCallIgnored
+            temp.delete();
+            Tools.write(new File(skinsDir, account.username + "_metadata.json").getAbsolutePath(),
+                    "{\n  \"model\": \"" + slots[index].model + "\",\n  \"slot\": " + (index + 1) + "\n}");
+            activeSlot = index;
+            save();
+            account.clearFaceCache();
+        } finally {
+            for (int i = 0; i < SLOT_COUNT; i++) {
+                File backup = backups[i];
+                if (backup == null || !backup.isFile()) continue;
+                File slot = fileFor(i);
+                if (!slot.isFile() || !FileUtils.contentEquals(slot, backup)) {
+                    FileUtils.copyFile(backup, slot);
+                }
+                //noinspection ResultOfMethodCallIgnored
+                backup.delete();
+            }
+        }
     }
 
     public void deleteSlot(int index) {

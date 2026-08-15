@@ -42,7 +42,7 @@
             android:paddingHorizontal="14dp"
             android:text="@string/change_background"
             android:textAllCaps="true"
-            android:textColor="#E4E4EA"
+            android:textColor="#E8E8E8"
             android:textSize="10.5sp"
             android:textStyle="bold"
             android:letterSpacing="0.06"
@@ -127,7 +127,7 @@
                             android:gravity="center"
                             android:paddingHorizontal="11dp"
                             android:background="@drawable/bg_cs_chip_accent"
-                            android:textColor="#E4E4EA"
+                            android:textColor="#E8E8E8"
                             android:textSize="10.5sp"
                             android:textStyle="bold"
                             tools:text="1.21" />
@@ -446,7 +446,7 @@
                         android:id="@+id/vprof_ram_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#C9CBD6"
+                        android:textColor="#22C9CB"
                         android:textSize="13.5sp"
                         android:textStyle="bold"
                         tools:text="4096 MB" />
@@ -542,7 +542,7 @@
                         android:layout_weight="1"
                         android:text="@string/cs_section_mods"
                         android:textAllCaps="true"
-                        android:textColor="#E4E4EA"
+                        android:textColor="#E8E8E8"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.18" />
@@ -555,7 +555,7 @@
                         android:contentDescription="@string/cs_section_mods"
                         android:padding="7dp"
                         android:src="@drawable/ic_add"
-                        app:tint="#C9CBD6" />
+                        app:tint="#22C9CB" />
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -597,7 +597,7 @@
                         android:layout_weight="1"
                         android:text="@string/mcl_button_resource_packs"
                         android:textAllCaps="true"
-                        android:textColor="#E4E4EA"
+                        android:textColor="#E8E8E8"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.18" />
@@ -611,7 +611,7 @@
                         android:contentDescription="@string/cs_section_rpacks"
                         android:padding="7dp"
                         android:src="@drawable/ic_add"
-                        app:tint="#C9CBD6" />
+                        app:tint="#22C9CB" />
 
                     <ImageButton
                         android:id="@+id/vprof_editor_resource_packs_folder"
@@ -621,7 +621,7 @@
                         android:contentDescription="@string/cs_section_rpacks"
                         android:padding="7dp"
                         android:src="@drawable/ic_folder"
-                        app:tint="#C9CBD6" />
+                        app:tint="#22C9CB" />
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -663,7 +663,7 @@
                         android:layout_weight="1"
                         android:text="@string/mcl_button_shader_packs"
                         android:textAllCaps="true"
-                        android:textColor="#E4E4EA"
+                        android:textColor="#E8E8E8"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.18" />
@@ -677,7 +677,7 @@
                         android:contentDescription="@string/cs_section_shaders"
                         android:padding="7dp"
                         android:src="@drawable/ic_add"
-                        app:tint="#C9CBD6" />
+                        app:tint="#22C9CB" />
 
                     <ImageButton
                         android:id="@+id/vprof_editor_shader_packs_folder"
@@ -687,7 +687,7 @@
                         android:contentDescription="@string/cs_section_shaders"
                         android:padding="7dp"
                         android:src="@drawable/ic_folder"
-                        app:tint="#C9CBD6" />
+                        app:tint="#22C9CB" />
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView

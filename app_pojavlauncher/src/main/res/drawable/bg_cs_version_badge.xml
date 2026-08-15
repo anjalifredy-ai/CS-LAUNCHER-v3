@@ -9,7 +9,7 @@
                 android:startColor="#33281C2E"
                 android:endColor="#661C1526" />
             <corners android:radius="999dp" />
-            <stroke android:width="1dp" android:color="#73B46AF0" />
+            <stroke android:width="1dp" android:color="#7322C9CB" />
         </shape>
     </item>
     <!-- inner top-light hairline -->

@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/infrawire_powered_badge"
-        android:textColor="#C9CBD6"
+        android:textColor="#22C9CB"
         android:textSize="10.5sp"
         android:textStyle="bold"
         android:letterSpacing="0.03" />

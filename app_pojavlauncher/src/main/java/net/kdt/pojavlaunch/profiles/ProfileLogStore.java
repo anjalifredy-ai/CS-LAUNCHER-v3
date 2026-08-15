@@ -20,13 +20,22 @@ import java.io.IOException;
 public final class ProfileLogStore {
     private static final String ROOT_DIR = "profile_logs";
     private static final String LATEST_NAME = "latestlog.txt";
+    private static volatile String sActiveProfileKey;
 
     private ProfileLogStore() {}
 
+    /** Pins the exact profile key passed across the launcher → game process boundary. */
+    public static void setActiveProfileKey(@Nullable String profileKey) {
+        sActiveProfileKey = profileKey;
+    }
+
     @NonNull
     public static File forCurrentProfile(@NonNull Context context) {
-        String key = LauncherPreferences.DEFAULT_PREF.getString(
-                LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "default");
+        String key = sActiveProfileKey;
+        if (key == null || key.isEmpty()) {
+            key = LauncherPreferences.DEFAULT_PREF.getString(
+                    LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "default");
+        }
         return forProfile(key);
     }
 

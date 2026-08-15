@@ -89,7 +89,7 @@
         android:paddingTop="6dp"
         android:paddingEnd="10dp"
         android:paddingBottom="6dp"
-        android:textColor="#E4E4EA"
+        android:textColor="#E8E8E8"
         android:textSize="11sp"
         android:textStyle="bold" />
 

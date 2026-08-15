@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_8sdp"
             android:text="★ RECOMMENDED"
-            android:textColor="#E4E4EA"
+            android:textColor="#E8E8E8"
             android:textSize="9sp"
             android:textStyle="bold"
             android:letterSpacing="0.08"
@@ -72,7 +72,7 @@
             android:textStyle="bold"
             android:letterSpacing="0.06"
             android:background="@drawable/bg_stat_chip"
-            android:textColor="#C9CBD6"
+            android:textColor="#22C9CB"
             android:visibility="gone"
             tools:text="Fabric"
             tools:visibility="visible" />

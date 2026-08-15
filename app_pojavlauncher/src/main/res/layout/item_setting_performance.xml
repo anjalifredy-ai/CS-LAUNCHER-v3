@@ -75,7 +75,7 @@
             android:paddingTop="3dp"
             android:paddingBottom="4dp"
             android:text="LIVE"
-            android:textColor="#E4E4EA"
+            android:textColor="#E8E8E8"
             android:textSize="9sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -235,7 +235,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Thermals"
-                android:textColor="#C9CBD6"
+                android:textColor="#22C9CB"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -265,7 +265,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Frame Pacing"
-                android:textColor="#C9CBD6"
+                android:textColor="#22C9CB"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 
@@ -295,7 +295,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="GPU Load"
-                android:textColor="#C9CBD6"
+                android:textColor="#22C9CB"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 

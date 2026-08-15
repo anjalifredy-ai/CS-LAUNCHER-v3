@@ -84,6 +84,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     public static volatile ClipboardManager GLOBAL_CLIPBOARD;
     public static final String TAG = "MainActivity";
     public static final String INTENT_MINECRAFT_VERSION = "intent_version";
+    public static final String EXTRA_PROFILE_KEY = "cs_launch_profile_key";
     /** Extra marking a shortcut-booted launch: open straight onto the launch logs. */
     public static final String EXTRA_AUTO_SHOW_LOGS = "cs_auto_show_logs";
     /** One-shot flag armed by the shortcut router for the next game start. */
@@ -141,6 +142,12 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         }
 
         minecraftProfile = LauncherProfiles.getCurrentProfile();
+        String launchProfileKey = getIntent().getStringExtra(EXTRA_PROFILE_KEY);
+        if (launchProfileKey == null || launchProfileKey.isEmpty()) {
+            launchProfileKey = LauncherPreferences.DEFAULT_PREF.getString(
+                    LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "default");
+        }
+        net.kdt.pojavlaunch.profiles.ProfileLogStore.setActiveProfileKey(launchProfileKey);
 
         String gameDirPath = Tools.getGameDirPath(minecraftProfile).getAbsolutePath();
         MCOptionUtils.load(gameDirPath);

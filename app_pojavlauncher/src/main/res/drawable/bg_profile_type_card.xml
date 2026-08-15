@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Profile-type meta card — charcoal stack with a soft silver ripple -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#22E4E4EA">
+    android:color="#22E8E8E8">
     <item>
         <shape android:shape="rectangle">
             <gradient

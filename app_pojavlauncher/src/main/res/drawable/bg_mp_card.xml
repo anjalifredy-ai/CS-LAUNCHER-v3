@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- MP MOD CARD — hero media card: lifted body, rim light, violet edge whisper -->
-<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#24E4E4EA">
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#24E8E8E8">
     <item android:id="@android:id/background">
         <layer-list>
             <item>
@@ -13,7 +13,7 @@
                 <shape android:shape="rectangle">
                     <corners android:radius="20dp" />
                     <gradient android:angle="135" android:startColor="#1E2028" android:endColor="#101116" />
-                    <stroke android:width="1dp" android:color="#2DE4E4EA" />
+                    <stroke android:width="1dp" android:color="#2DE8E8E8" />
                 </shape>
             </item>
             <item android:top="1dp" android:bottom="1.5dp">
@@ -25,7 +25,7 @@
             <item android:top="1dp">
                 <shape android:shape="rectangle">
                     <corners android:radius="19dp" />
-                    <gradient android:angle="0" android:startColor="#1FC9CBD6" android:centerColor="#08C9CBD6" android:endColor="#00C9CBD6" />
+                    <gradient android:angle="0" android:startColor="#1F22C9CB" android:centerColor="#0822C9CB" android:endColor="#0022C9CB" />
                 </shape>
             </item>
         </layer-list>
