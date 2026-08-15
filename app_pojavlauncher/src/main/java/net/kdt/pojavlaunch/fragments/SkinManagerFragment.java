@@ -57,6 +57,7 @@ import java.nio.FloatBuffer;
 public class SkinManagerFragment extends Fragment {
 
     public static final String TAG = "SKIN_MANAGER_FRAGMENT";
+    public static final String ARG_SELECTED_SLOT = "selected_skin_slot";
     private static final int REQUEST_CODE_SKIN = 1001;
     private static final int REQUEST_CODE_CAPE = 1002;
     private static final float PREVIEW_MODEL_HALF_HEIGHT = 16.0f;
@@ -151,10 +152,20 @@ public class SkinManagerFragment extends Fragment {
 
         File localCapeFile = new File(capesDir, activeAccount.username + "_cape.png");
         mSlotStore = new SkinSlotStore(requireContext(), activeAccount);
-        mSelectedSlot = mSlotStore.getActiveSlot() >= 0 ? mSlotStore.getActiveSlot() : firstFilledSlot();
-        if (mSelectedSlot < 0) mSelectedSlot = 0;
+        int requestedSlot = getArguments() != null
+                ? getArguments().getInt(ARG_SELECTED_SLOT, -1) : -1;
+        if (requestedSlot >= 0 && requestedSlot < SkinSlotStore.SLOT_COUNT) {
+            mSelectedSlot = requestedSlot;
+        } else {
+            mSelectedSlot = mSlotStore.getActiveSlot() >= 0
+                    ? mSlotStore.getActiveSlot() : firstFilledSlot();
+            if (mSelectedSlot < 0) mSelectedSlot = 0;
+        }
         mImportTargetSlot = mSelectedSlot;
         syncPendingSkinFromSelectedSlot();
+        TextView pageSubtitle = view.findViewById(R.id.skin_page_subtitle);
+        if (pageSubtitle != null) pageSubtitle.setText("Editing Skin Slot " + (mSelectedSlot + 1)
+                + " • Preview, replace or make active");
         mPendingCapeUri = localCapeFile.exists() ? Uri.fromFile(localCapeFile).toString() : null;
 
         updatePathText(mTvSkinPath, mPendingSkinUri, "No skin in selected slot");
@@ -276,6 +287,12 @@ public class SkinManagerFragment extends Fragment {
 
     private void selectSkinSlot(int index) {
         mSelectedSlot = index; mImportTargetSlot = index;
+        View root = getView();
+        if (root != null) {
+            TextView subtitle = root.findViewById(R.id.skin_page_subtitle);
+            if (subtitle != null) subtitle.setText("Editing Skin Slot " + (index + 1)
+                    + " • Preview, replace or make active");
+        }
         syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updatePreview(); updateAccountInfo();
     }
 

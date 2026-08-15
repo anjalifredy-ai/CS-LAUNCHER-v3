@@ -19,8 +19,8 @@
             <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="center" android:src="@drawable/ic_arrow_back" app:tint="#DAE7DE" android:contentDescription="Back" />
         </FrameLayout>
         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SKIN LIBRARY" android:textColor="#EDF5F0" android:textSize="16sp" android:textStyle="bold" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Three saved looks • one active skin" android:textColor="#70877A" android:textSize="9sp" />
+            <TextView android:id="@+id/skin_page_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SKIN STUDIO" android:textColor="#EDF5F0" android:textSize="16sp" android:textStyle="bold" />
+            <TextView android:id="@+id/skin_page_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Edit, preview and activate a saved skin" android:textColor="#70877A" android:textSize="9sp" />
         </LinearLayout>
         <TextView android:id="@+id/tv_server_status_chip" android:layout_width="wrap_content" android:layout_height="24dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="9dp" android:text="SYNC READY" android:textColor="#A9C9B3" android:textSize="7.5sp" android:textStyle="bold" />
     </LinearLayout>

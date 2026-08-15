@@ -577,10 +577,10 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
                 mCancelButton, mSaveButton, mDeleteButton);
         View skins = root.findViewById(R.id.vprof_btn_open_skins);
         if (skins != null) skins.setOnClickListener(v ->
-                navigateToFragment(SkinManagerFragment.class, SkinManagerFragment.TAG, null));
+                navigateToFragment(SkinLibraryOverviewFragment.class, SkinLibraryOverviewFragment.TAG, null));
         View capes = root.findViewById(R.id.vprof_btn_open_capes);
         if (capes != null) capes.setOnClickListener(v ->
-                navigateToFragment(SkinManagerFragment.class, SkinManagerFragment.TAG, null));
+                navigateToFragment(SkinLibraryOverviewFragment.class, SkinLibraryOverviewFragment.TAG, null));
     }
 
     /**

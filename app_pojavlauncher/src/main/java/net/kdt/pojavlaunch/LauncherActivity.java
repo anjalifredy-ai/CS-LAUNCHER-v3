@@ -16,7 +16,7 @@ import net.kdt.pojavlaunch.value.MinecraftAccount;
 import net.kdt.pojavlaunch.fragments.ModsSearchFragment;
 import net.kdt.pojavlaunch.fragments.AboutFragment;
 import net.kdt.pojavlaunch.fragments.CursorCustomizationFragment;
-import net.kdt.pojavlaunch.fragments.SkinManagerFragment;
+import net.kdt.pojavlaunch.fragments.SkinLibraryOverviewFragment;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -1194,9 +1194,10 @@ public class LauncherActivity extends BaseActivity {
                 Fragment frag = getVisibleFragment("ROOT");
                 if (frag instanceof MainMenuFragment) {
                     ((MainMenuFragment) frag).openChildPane(
-                            SkinManagerFragment.class, SkinManagerFragment.TAG, null);
+                            SkinLibraryOverviewFragment.class, SkinLibraryOverviewFragment.TAG, null);
                 } else {
-                    Tools.swapFragment(this, SkinManagerFragment.class, SkinManagerFragment.TAG, null);
+                    Tools.swapFragment(this, SkinLibraryOverviewFragment.class,
+                            SkinLibraryOverviewFragment.TAG, null);
                 }
             });
         }

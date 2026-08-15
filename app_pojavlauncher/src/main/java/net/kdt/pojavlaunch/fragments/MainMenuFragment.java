@@ -209,7 +209,8 @@ public class MainMenuFragment extends Fragment {
         if (mDiscordButton != null) mDiscordButton.setOnClickListener(v -> Tools.openURL(requireActivity(), getString(R.string.discord_invite)));
         if (mCustomControlButton != null) mCustomControlButton.setOnClickListener(v -> startActivity(new Intent(requireContext(), CustomControlsActivity.class)));
         if (mCursorCustomButton != null) mCursorCustomButton.setOnClickListener(v -> Tools.swapFragment(requireActivity(), CursorCustomizationFragment.class, CursorCustomizationFragment.TAG, null));
-        if (mManageSkinButton != null) mManageSkinButton.setOnClickListener(v -> openPane(SkinManagerFragment.class, SkinManagerFragment.TAG, null));
+        if (mManageSkinButton != null) mManageSkinButton.setOnClickListener(v ->
+                openPane(SkinLibraryOverviewFragment.class, SkinLibraryOverviewFragment.TAG, null));
 
         if (mInstallJarButton != null) {
             if (hasOnlineProfile()) {
