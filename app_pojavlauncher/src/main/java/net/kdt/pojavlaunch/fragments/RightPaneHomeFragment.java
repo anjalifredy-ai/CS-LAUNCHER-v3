@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.kdt.pojavlaunch.R;
@@ -24,7 +25,6 @@ import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +35,8 @@ public class RightPaneHomeFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private HomeProfileAdapter mAdapter;
+    private ItemTouchHelper mProfileTouchHelper;
+    private boolean mProfileOrderDirty;
 
     public RightPaneHomeFragment() {
         super(R.layout.fragment_right_pane_home);
@@ -48,6 +50,7 @@ public class RightPaneHomeFragment extends Fragment {
 
         mRecyclerView = view.findViewById(R.id.rv_home_profiles);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        setupProfileDragAndDrop();
         setupProfileAdapter();
 
         // Floating "+" FAB opens the Version Setup Hub (3-category grid)
@@ -115,6 +118,54 @@ public class RightPaneHomeFragment extends Fragment {
         if (v != null) loadCustomWallpaper(v);
     }
 
+    private void setupProfileDragAndDrop() {
+        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
+            @Override public boolean isLongPressDragEnabled() { return false; }
+            @Override public boolean isItemViewSwipeEnabled() { return false; }
+
+            @Override public int getMovementFlags(@NonNull RecyclerView recyclerView,
+                                                  @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN
+                        | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, 0);
+            }
+
+            @Override public boolean onMove(@NonNull RecyclerView recyclerView,
+                                            @NonNull RecyclerView.ViewHolder source,
+                                            @NonNull RecyclerView.ViewHolder target) {
+                if (mAdapter == null) return false;
+                int from = source.getBindingAdapterPosition();
+                int to = target.getBindingAdapterPosition();
+                if (!mAdapter.isSameFavoriteGroup(from, to)) return false;
+                boolean moved = mAdapter.moveItem(from, to);
+                if (moved) mProfileOrderDirty = true;
+                return moved;
+            }
+
+            @Override public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {}
+
+            @Override public void onSelectedChanged(@Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
+                super.onSelectedChanged(viewHolder, actionState);
+                if (viewHolder != null && actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                    viewHolder.itemView.animate().scaleX(1.025f).scaleY(1.025f).setDuration(100).start();
+                    viewHolder.itemView.setElevation(12f * getResources().getDisplayMetrics().density);
+                }
+            }
+
+            @Override public void clearView(@NonNull RecyclerView recyclerView,
+                                            @NonNull RecyclerView.ViewHolder viewHolder) {
+                super.clearView(recyclerView, viewHolder);
+                viewHolder.itemView.animate().scaleX(1f).scaleY(1f).setDuration(130).start();
+                viewHolder.itemView.setElevation(0f);
+                if (mProfileOrderDirty && mAdapter != null) {
+                    mProfileOrderDirty = false;
+                    mAdapter.dispatchOrderChanged();
+                }
+            }
+        };
+        mProfileTouchHelper = new ItemTouchHelper(callback);
+        mProfileTouchHelper.attachToRecyclerView(mRecyclerView);
+    }
+
     private void setupProfileAdapter() {
         LauncherProfiles.loadAsync(() -> {
             if (!isAdded() || getContext() == null) return;
@@ -127,12 +178,7 @@ public class RightPaneHomeFragment extends Fragment {
 
             if (profilesMap != null && !profilesMap.isEmpty()) {
                 List<Map.Entry<String, MinecraftProfile>> entries =
-                        new ArrayList<>(profilesMap.entrySet());
-                Collections.sort(entries, (a, b) -> {
-                    String ua = a.getValue().lastUsed != null ? a.getValue().lastUsed : "";
-                    String ub = b.getValue().lastUsed != null ? b.getValue().lastUsed : "";
-                    return ub.compareTo(ua);
-                });
+                        LauncherProfiles.getOrderedEntries();
                 for (Map.Entry<String, MinecraftProfile> entry : entries) {
                     String key = entry.getKey();
                     MinecraftProfile profile = entry.getValue();
@@ -199,8 +245,24 @@ public class RightPaneHomeFragment extends Fragment {
                                 args);
                     }
                 }
+
+                @Override
+                public void onProfileFavoriteChanged(String profileKey, MinecraftProfile profile,
+                                                     boolean favorite) {
+                    if (LauncherProfiles.setFavorite(profileKey, favorite)) {
+                        setupProfileAdapter();
+                    }
+                }
+
+                @Override
+                public void onProfileOrderChanged(List<String> orderedProfileKeys) {
+                    LauncherProfiles.applyProfileOrder(orderedProfileKeys);
+                }
             });
 
+            mAdapter.setDragStartListener(holder -> {
+                if (mProfileTouchHelper != null) mProfileTouchHelper.startDrag(holder);
+            });
             mRecyclerView.setAdapter(mAdapter);
         });
     }

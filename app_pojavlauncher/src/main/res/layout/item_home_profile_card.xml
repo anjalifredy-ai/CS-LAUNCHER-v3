@@ -47,6 +47,20 @@
         android:maxLines="1"
         android:visibility="gone" />
 
+    <!-- Favorite state is independent from launch selection. -->
+    <ImageButton
+        android:id="@+id/btn_profile_favorite"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="66dp"
+        android:background="@drawable/bg_browse_button"
+        android:contentDescription="Favorite profile"
+        android:padding="7dp"
+        android:src="@drawable/ic_csp_star_outline"
+        android:tint="#A9ABB4" />
+
     <!-- Main content -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -61,7 +75,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingStart="12dp"
-            android:paddingEnd="62dp"
+            android:paddingEnd="104dp"
             android:paddingTop="13dp"
             android:paddingBottom="7dp">
 
@@ -175,6 +189,25 @@
                     android:layout_gravity="center"
                     android:src="@drawable/ic_shortcut_add"
                     android:tint="@color/premium_cyan" />
+            </FrameLayout>
+
+            <!-- Dedicated reorder handle. Only this view can start a drag. -->
+            <FrameLayout
+                android:id="@+id/btn_profile_drag"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/bg_browse_button"
+                android:clickable="true"
+                android:contentDescription="Hold and drag to reorder profile"
+                android:focusable="true"
+                android:stateListAnimator="@animator/card_press_anim">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_profile_drag_handle"
+                    android:tint="#B9BBC4" />
             </FrameLayout>
 
             <!-- Browse Resources -->

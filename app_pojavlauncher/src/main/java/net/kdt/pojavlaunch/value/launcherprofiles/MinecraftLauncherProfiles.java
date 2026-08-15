@@ -7,6 +7,8 @@ import net.kdt.pojavlaunch.*;
 @Keep
 public class MinecraftLauncherProfiles {
 	public Map<String, MinecraftProfile> profiles = new HashMap<>();
+    /** Schema version for favorite/manual profile ordering metadata. */
+    public int profileOrderVersion;
 	public boolean profilesWereMigrated;
 	public String clientToken;
 	public Map<String, MinecraftAuthenticationDatabase> authenticationDatabase;

@@ -29,6 +29,11 @@ public class MinecraftProfile {
 	public String controlFile;
 	public MinecraftResolution[] resolution;
 
+    /** User organization metadata. Orders are independent so un-starring restores normal placement. */
+    public boolean favorite = false;
+    public long favoriteOrder = Long.MAX_VALUE;
+    public long normalOrder = Long.MAX_VALUE;
+
 
 	public static MinecraftProfile createTemplate(){
 		MinecraftProfile TEMPLATE = new MinecraftProfile();
@@ -66,6 +71,9 @@ public class MinecraftProfile {
 		pojavRendererName = profile.pojavRendererName;
 		controlFile = profile.controlFile;
 		resolution = profile.resolution;
+        favorite = profile.favorite;
+        favoriteOrder = profile.favoriteOrder;
+        normalOrder = profile.normalOrder;
 	}
 
 	/**

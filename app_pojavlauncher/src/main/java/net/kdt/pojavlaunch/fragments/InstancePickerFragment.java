@@ -50,12 +50,11 @@ public class InstancePickerFragment extends Fragment {
         List<String> keys = new ArrayList<>();
         // Validate profiles — skip null keys, null/empty names
         if (profiles != null) {
-            for (Map.Entry<String, MinecraftProfile> entry : profiles.entrySet()) {
+            for (Map.Entry<String, MinecraftProfile> entry : LauncherProfiles.getOrderedEntries()) {
                 String key = entry.getKey();
                 MinecraftProfile p = entry.getValue();
                 if (key == null || key.isEmpty()) continue;
-                if (p == null) continue;
-                if (p.name == null || p.name.trim().isEmpty()) continue;
+                if (p == null || p.name == null || p.name.trim().isEmpty()) continue;
                 keys.add(key);
             }
         }

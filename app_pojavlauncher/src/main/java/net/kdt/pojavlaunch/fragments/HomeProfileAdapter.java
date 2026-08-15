@@ -23,7 +23,11 @@ import net.kdt.pojavlaunch.profiles.ProfileIconCache;
 import net.kdt.pojavlaunch.ui.PremiumPlayButtonView;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.ViewHolder> {
 
@@ -34,7 +38,8 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
     private final List<MinecraftProfile> mProfileList;
     private final List<String> mProfileKeys;
     private final OnProfileActionListener mListener;
-    private final int[] mModCountCache;
+    private final Map<String, Integer> mModCountCache = new ConcurrentHashMap<>();
+    private OnStartDragListener mDragStartListener;
     private boolean mModCountsReady;
     private int mBoundCount = 0;
 
@@ -43,14 +48,19 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         void onProfileBrowse(String profileKey, MinecraftProfile profile);
         void onProfileEdit(String profileKey, MinecraftProfile profile);
         void onProfileAddShortcut(String profileKey, MinecraftProfile profile);
+        void onProfileFavoriteChanged(String profileKey, MinecraftProfile profile, boolean favorite);
+        void onProfileOrderChanged(List<String> orderedProfileKeys);
+    }
+
+    public interface OnStartDragListener {
+        void onStartDrag(@NonNull RecyclerView.ViewHolder holder);
     }
 
     public HomeProfileAdapter(List<String> profileKeys, List<MinecraftProfile> profiles,
                               OnProfileActionListener listener) {
-        mProfileKeys = profileKeys;
-        mProfileList = profiles;
+        mProfileKeys = new ArrayList<>(profileKeys);
+        mProfileList = new ArrayList<>(profiles);
         mListener = listener;
-        mModCountCache = new int[profiles.size()];
         setHasStableIds(true);
         preloadModCounts();
     }
@@ -62,10 +72,12 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
 
     private void preloadVisualAssets(@NonNull android.content.res.Resources resources) {
         if (mProfileList.isEmpty()) return;
+        final List<MinecraftProfile> profileSnapshot = new ArrayList<>(mProfileList);
+        final List<String> keySnapshot = new ArrayList<>(mProfileKeys);
         PojavApplication.sExecutorService.execute(() -> {
-            for (int i = 0; i < mProfileList.size(); i++) {
-                MinecraftProfile profile = mProfileList.get(i);
-                String key = mProfileKeys.get(i);
+            for (int i = 0; i < profileSnapshot.size(); i++) {
+                MinecraftProfile profile = profileSnapshot.get(i);
+                String key = keySnapshot.get(i);
                 try {
                     ProfileIconCache.fetchIcon(resources, key, profile.icon);
                     ProfileIconCache.fetchBackground(resources, key, profile.background);
@@ -76,9 +88,11 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
 
     private void preloadModCounts() {
         if (mProfileList.isEmpty()) return;
+        final List<MinecraftProfile> profileSnapshot = new ArrayList<>(mProfileList);
+        final List<String> keySnapshot = new ArrayList<>(mProfileKeys);
         PojavApplication.sExecutorService.execute(() -> {
-            for (int i = 0; i < mProfileList.size(); i++) {
-                MinecraftProfile profile = mProfileList.get(i);
+            for (int i = 0; i < profileSnapshot.size(); i++) {
+                MinecraftProfile profile = profileSnapshot.get(i);
                 int count = 0;
                 try {
                     java.io.File gameDir = profile.resolveGameDir();
@@ -91,7 +105,7 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
                         }
                     }
                 } catch (Throwable ignored) {}
-                mModCountCache[i] = count;
+                mModCountCache.put(keySnapshot.get(i), count);
             }
             mModCountsReady = true;
             Tools.runOnUiThread(() -> notifyItemRangeChanged(0, mProfileList.size(), PAYLOAD_MOD_COUNT));
@@ -127,7 +141,8 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         if (!payloads.isEmpty()) {
             for (Object payload : payloads) {
                 if (payload instanceof Integer && (Integer) payload == PAYLOAD_MOD_COUNT) {
-                    int modCount = mModCountCache[position];
+                    String key = mProfileKeys.get(position);
+                    int modCount = mModCountCache.getOrDefault(key, 0);
                     holder.tvModCount.setText("Installed Mods: " + modCount);
                     return;
                 }
@@ -147,7 +162,7 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         holder.tvVersion.setText(version);
 
         // Mod count (may not be loaded yet)
-        int modCount = mModCountsReady ? mModCountCache[position] : 0;
+        int modCount = mModCountsReady ? mModCountCache.getOrDefault(profileKey, 0) : 0;
         holder.tvModCount.setText("Installed Mods: " + modCount);
 
         // RAM chip shows the effective global allocation (per-profile RAM was removed)
@@ -173,16 +188,9 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
             if (mListener != null) mListener.onProfileEdit(profileKey, profile);
         });
 
-        // Long-press opens the shortcut creator. Without this the whole shortcut
-        // feature was unreachable: onProfileAddShortcut was declared and
-        // implemented, but nothing ever invoked it.
-        holder.cardRoot.setOnLongClickListener(v -> {
-            if (mListener == null) return false;
-            // Short haptic tick so the gesture is discoverable by feel.
-            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-            mListener.onProfileAddShortcut(profileKey, profile);
-            return true;
-        });
+        // Whole-card long press is intentionally unassigned. Reordering starts
+        // only from the dedicated drag handle; the explicit Shortcut button stays.
+        holder.cardRoot.setOnLongClickListener(null);
 
         holder.btnPlay.setOnClickListener(v -> {
             // Phase 3: "launch" is a unique morph, not the old download pulse.
@@ -195,7 +203,25 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
             if (mListener != null) mListener.onProfileBrowse(profileKey, profile);
         });
 
-        // Explicit affordance for users who never discover long-press.
+        holder.btnFavorite.setImageResource(profile.favorite
+                ? R.drawable.ic_csp_star_filled : R.drawable.ic_csp_star_outline);
+        holder.btnFavorite.setColorFilter(profile.favorite ? 0xFFFFD166 : 0xFFA9ABB4);
+        holder.btnFavorite.setContentDescription(profile.favorite
+                ? "Remove profile from favorites" : "Add profile to favorites");
+        holder.btnFavorite.setOnClickListener(v -> {
+            boolean next = !profile.favorite;
+            v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            if (mListener != null) mListener.onProfileFavoriteChanged(profileKey, profile, next);
+        });
+
+        holder.dragHandle.setOnLongClickListener(v -> {
+            if (mDragStartListener == null) return false;
+            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            mDragStartListener.onStartDrag(holder);
+            return true;
+        });
+
+        // Explicit shortcut button remains available; only card long-press was removed.
         if (holder.btnShortcut != null) {
             holder.btnShortcut.setOnClickListener(v -> {
                 if (mListener != null) mListener.onProfileAddShortcut(profileKey, profile);
@@ -333,6 +359,41 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         return ContextCompat.getDrawable(target.getContext(), resId);
     }
 
+    public void setDragStartListener(@Nullable OnStartDragListener listener) {
+        mDragStartListener = listener;
+    }
+
+    public boolean isSameFavoriteGroup(int from, int to) {
+        return from >= 0 && to >= 0 && from < mProfileList.size() && to < mProfileList.size()
+                && mProfileList.get(from).favorite == mProfileList.get(to).favorite;
+    }
+
+    public boolean moveItem(int from, int to) {
+        if (!isSameFavoriteGroup(from, to) || from == to) return false;
+        if (from < to) {
+            for (int i = from; i < to; i++) {
+                Collections.swap(mProfileList, i, i + 1);
+                Collections.swap(mProfileKeys, i, i + 1);
+            }
+        } else {
+            for (int i = from; i > to; i--) {
+                Collections.swap(mProfileList, i, i - 1);
+                Collections.swap(mProfileKeys, i, i - 1);
+            }
+        }
+        notifyItemMoved(from, to);
+        return true;
+    }
+
+    @NonNull
+    public List<String> getOrderedProfileKeys() {
+        return new ArrayList<>(mProfileKeys);
+    }
+
+    public void dispatchOrderChanged() {
+        if (mListener != null) mListener.onProfileOrderChanged(getOrderedProfileKeys());
+    }
+
     @Override
     public int getItemCount() {
         return mProfileList.size();
@@ -347,9 +408,11 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         final TextView tvModCount;
         final TextView tvRam;
         final TextView tvVersionBadge;
+        final ImageView btnFavorite;
         final PremiumPlayButtonView btnPlay;
         final FrameLayout btnBrowse;
         final View btnShortcut;
+        final View dragHandle;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -361,9 +424,11 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
             tvModCount = itemView.findViewById(R.id.tv_profile_mod_count);
             tvRam = itemView.findViewById(R.id.tv_profile_ram);
             tvVersionBadge = itemView.findViewById(R.id.tv_version_badge);
+            btnFavorite = itemView.findViewById(R.id.btn_profile_favorite);
             btnPlay = itemView.findViewById(R.id.btn_profile_play);
             btnBrowse = itemView.findViewById(R.id.btn_profile_browse);
             btnShortcut = itemView.findViewById(R.id.btn_profile_shortcut);
+            dragHandle = itemView.findViewById(R.id.btn_profile_drag);
         }
     }
 }

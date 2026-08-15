@@ -37,7 +37,7 @@ public class LauncherProfiles {
     /** Set when a lenient parse rescued a corrupted profiles file; consumed after the model is normalized. */
     private static boolean sRecoveredLenient;
 
-    public static void load(){
+    public static synchronized void load(){
         if (launcherProfilesFile.exists()) {
             try {
                 String json = Tools.read(launcherProfilesFile.getAbsolutePath());
@@ -100,6 +100,9 @@ public class LauncherProfiles {
         if(normalizeProfileIds(mainProfileJson)){
             write();
             load();
+        } else if (ProfileOrderManager.ensure(mainProfileJson)) {
+            // One-time migration plus append-order initialization for new profiles.
+            write();
         } else {
             // Notify listeners when profiles are reloaded
             for (Runnable listener : new java.util.ArrayList<>(sProfileUpdateListeners)) {
@@ -328,8 +331,9 @@ public class LauncherProfiles {
     }
 
     /** Apply the current configuration into a file */
-    public static void write() {
+    public static synchronized void write() {
         try {
+            ProfileOrderManager.ensure(mainProfileJson);
             Tools.write(launcherProfilesFile.getAbsolutePath(), mainProfileJson.toJson());
             for (Runnable listener : new java.util.ArrayList<>(sProfileUpdateListeners)) {
                 if (listener != null) Tools.runOnUiThread(listener);
@@ -338,6 +342,26 @@ public class LauncherProfiles {
             Log.e(LauncherProfiles.class.toString(), "Failed to write profile file", e);
             throw new RuntimeException(e);
         }
+    }
+
+    /** Stable favorite-first order shared by every profile selector. */
+    public static synchronized @NonNull List<Map.Entry<String, MinecraftProfile>> getOrderedEntries() {
+        if (mainProfileJson == null) load();
+        return ProfileOrderManager.orderedEntries(mainProfileJson);
+    }
+
+    public static synchronized boolean setFavorite(@NonNull String profileKey, boolean favorite) {
+        if (mainProfileJson == null) load();
+        boolean changed = ProfileOrderManager.setFavorite(mainProfileJson, profileKey, favorite);
+        if (changed) write();
+        return changed;
+    }
+
+    public static synchronized boolean applyProfileOrder(@NonNull List<String> orderedKeys) {
+        if (mainProfileJson == null) load();
+        boolean changed = ProfileOrderManager.applyVisibleOrder(mainProfileJson, orderedKeys);
+        if (changed) write();
+        return changed;
     }
 
     public static @NonNull MinecraftProfile getCurrentProfile() {
@@ -354,6 +378,7 @@ public class LauncherProfiles {
      */
     public static void insertMinecraftProfile(MinecraftProfile minecraftProfile) {
         mainProfileJson.profiles.put(getFreeProfileKey(), minecraftProfile);
+        ProfileOrderManager.ensure(mainProfileJson);
     }
 
     /**
