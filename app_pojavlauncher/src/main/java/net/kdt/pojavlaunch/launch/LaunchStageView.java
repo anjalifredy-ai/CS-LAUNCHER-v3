@@ -154,47 +154,9 @@ public class LaunchStageView extends FrameLayout {
             if (mStaticStage != null) mStaticStage.setBackgroundColor(stageColor);
         } catch (Throwable ignored) {}
 
-        // CS Customisation: user can force the classic black stage even when a
-        // GIF file exists (Settings → Launcher Customisation → Launch Screen).
-        String style = "gif";
-        try {
-            style = net.kdt.pojavlaunch.prefs.LauncherPreferences.DEFAULT_PREF
-                    .getString("launch_screen_style", "gif");
-        } catch (Throwable ignored) {}
-        if ("black".equals(style)) {
-            Log.i(TAG, "bind: launch screen style = black (user choice) — skipping GIF");
-            return;
-        }
-
-        // No GIF imported → classic black stage, absolutely nothing to do.
-        File gif = gifFileFor(getContext());
-        if (!gif.isFile() || gif.length() <= 0) {
-            Log.i(TAG, "bind: no launch GIF imported — classic black stage");
-            return;
-        }
-        Log.i(TAG, "bind: user GIF found (" + gif.length() + " bytes) — staging");
-
-        // Attach directly inside LaunchStageView (replacing mStaticStage visual layer)
-        // so that all launcher & game-loading controls in activity_basemain.xml
-        // remain 100% functional above the background GIF.
-        mGifHost = this;
-        GifStageView gifView = new GifStageView(getContext());
-        mGifView = gifView;
-        this.addView(gifView, 0, new FrameLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        mHandler.postDelayed(mLoadWatchdog, LOAD_WATCHDOG_MS);
-        gifView.load(gif, new GifStageView.LoadCallback() {
-            @Override public void onReady() {
-                Log.i(TAG, "gif: first painted frame on screen — stage live");
-                if (mStaticStage != null) mStaticStage.setVisibility(View.INVISIBLE);
-                mHandler.removeCallbacks(mLoadWatchdog);
-            }
-            @Override public void onFailed() {
-                Log.w(TAG, "gif: decode failed — classic black stage");
-                if (mStaticStage != null) mStaticStage.setVisibility(View.VISIBLE);
-                postDropIfSame(gifView);
-            }
-        });
+        // GIF launch backgrounds were retired: a static color stage is lighter,
+        // deterministic, and avoids decode work during the critical game handoff.
+        Log.i(TAG, "bind: static launch stage active");
     }
 
     /** Drop the stage only if this exact view is still the active one. */

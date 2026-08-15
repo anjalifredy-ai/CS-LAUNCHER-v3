@@ -44,6 +44,7 @@ public class LoggerView extends ConstraintLayout {
     private View mLiveDot;
     private View mCliOverlay;
     private TextView mCliCommand;
+    private TextView mCliAscii;
     private TextView mCliBrand;
     private TextView mCliStatus;
     private TextView mCliProgressText;
@@ -102,6 +103,7 @@ public class LoggerView extends ConstraintLayout {
         mLiveDot = findViewById(R.id.log_live_dot);
         mCliOverlay = findViewById(R.id.log_cli_overlay);
         mCliCommand = findViewById(R.id.log_cli_command);
+        mCliAscii = findViewById(R.id.log_cli_ascii);
         mCliBrand = findViewById(R.id.log_cli_brand);
         mCliStatus = findViewById(R.id.log_cli_status);
         mCliProgress = findViewById(R.id.log_cli_progress);
@@ -309,7 +311,7 @@ public class LoggerView extends ConstraintLayout {
         mReadySummaryShown = false;
         mSessionStartedAt = android.os.SystemClock.elapsedRealtime();
 
-        final String command = "> cs-launcher boot --logs=smart";
+        final String command = "> Initializing CS Launcher...";
         final String[] spinner = {"-", "\\", "|", "/"};
         if (mCliOverlay == null) {
             mCliIntroFinished = true;
@@ -323,6 +325,8 @@ public class LoggerView extends ConstraintLayout {
         mCliOverlay.animate().alpha(1f).scaleX(1f).scaleY(1f)
                 .setDuration(240).withLayer().start();
         mCliCommand.setText("▋");
+        mCliAscii.setAlpha(0f);
+        mCliAscii.setTranslationY(8f * getResources().getDisplayMetrics().density);
         mCliBrand.setAlpha(0f);
         mCliBrand.setScaleX(0.92f);
         mCliBrand.setScaleY(0.92f);
@@ -346,8 +350,12 @@ public class LoggerView extends ConstraintLayout {
                         return;
                     }
                     mCliCommand.setText(command);
+                    mCliAscii.animate().alpha(1f).translationY(0f)
+                            .setDuration(360)
+                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
+                            .withLayer().start();
                     mCliBrand.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                            .setDuration(320)
+                            .setStartDelay(110L).setDuration(320)
                             .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
                             .withLayer().start();
                     stage = 1;
@@ -358,13 +366,13 @@ public class LoggerView extends ConstraintLayout {
                 progress = Math.min(100, progress + 6);
                 String status;
                 if (progress < 32) {
-                    status = "[OK] Runtime ready\n[" + spinner[spin++ % spinner.length] + "] Checking renderer";
+                    status = "> Runtime ........ READY\n> Renderer ....... " + spinner[spin++ % spinner.length];
                 } else if (progress < 65) {
-                    status = "[OK] Runtime ready\n[OK] Renderer ready";
+                    status = "> Runtime ........ READY\n> Renderer ....... READY";
                 } else if (progress < 92) {
-                    status = "[OK] Renderer ready\n[" + spinner[spin++ % spinner.length] + "] Scanning mod loader";
+                    status = "> Renderer ....... READY\n> Mod loader ..... " + spinner[spin++ % spinner.length];
                 } else {
-                    status = "[OK] Mod loader ready\n[>] Starting Minecraft process";
+                    status = "> Mod loader ..... READY\n> Starting Minecraft...";
                 }
                 mCliStatus.setText(status);
                 mCliProgress.setProgress(progress);
@@ -524,17 +532,16 @@ public class LoggerView extends ConstraintLayout {
         if (up.contains("IMMEDIATELYFAST")) return "[MOD] ImmediatelyFast active";
         if (up.contains("LITHIUM")) return "[MOD] Lithium optimization active";
 
-        if (up.contains("MOBILEGLUES")) return "[GRAPHICS] MobileGlues renderer ready";
-        if (up.contains(" ZINK") || up.contains("GALLIUM_DRIVER=ZINK"))
-            return "[GRAPHICS] Zink Vulkan renderer ready";
-        if (up.contains("GL4ES")) return "[GRAPHICS] GL4ES renderer ready";
-        if (up.contains("OPENGL VENDOR")) return "[GRAPHICS] GPU driver connected";
-        if (up.contains("BACKEND LIBRARY") || up.contains("LWJGL VERSION"))
-            return "[GRAPHICS] LWJGL graphics bridge ready";
-
-        if (up.contains("JAVA VERSION") || up.contains("JAVA RUNTIME"))
-            return "[JAVA] Compatible Java runtime loaded";
-        if (up.contains("JVM INITIALIZED")) return "[JAVA] Java virtual machine ready";
+        // Renderer/JVM implementation chatter is intentionally hidden in Smart
+        // mode; the CLI intro already reports readiness. Real failures/warnings
+        // were handled above and are never suppressed.
+        if (up.contains("MOBILEGLUES") || up.contains(" ZINK")
+                || up.contains("GALLIUM_DRIVER=ZINK") || up.contains("GL4ES")
+                || up.contains("OPENGL VENDOR") || up.contains("BACKEND LIBRARY")
+                || up.contains("LWJGL VERSION") || up.contains("JAVA VERSION")
+                || up.contains("JAVA RUNTIME") || up.contains("JVM INITIALIZED")) {
+            return null;
+        }
 
         if (up.contains("SOUND ENGINE STARTED") || up.contains("OPENAL INITIALIZED"))
             return "[AUDIO] Game audio engine ready";

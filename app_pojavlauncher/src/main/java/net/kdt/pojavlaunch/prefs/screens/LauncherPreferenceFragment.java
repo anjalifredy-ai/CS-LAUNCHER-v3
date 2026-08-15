@@ -452,23 +452,7 @@ public class LauncherPreferenceFragment extends Fragment {
                                 net.kdt.pojavlaunch.utils.CsPopup.show(requireActivity(),
                                         getString(R.string.preference_custom_bg_removed));
                             }));
-                    // ── Launch screen GIF (set/remove — moved here so ALL
-                    // customisation lives in ONE page, user req) ──
-                    custItems.add(new SettingItem("set_launch_gif", SettingItem.TYPE_ACTION,
-                            getString(R.string.cs_launch_gif_title),
-                            getString(R.string.cs_launch_gif_summary), null)
-                            .setAction(() -> mGifPickerLauncher.launch("image/gif")));
-                    custItems.add(new SettingItem("remove_launch_gif", SettingItem.TYPE_ACTION,
-                            getString(R.string.cs_launch_gif_remove_title),
-                            getString(R.string.cs_launch_gif_remove_summary), null)
-                            .setAction(this::removeLaunchGif));
-                    // ── Launch screen (which screen shows while the game loads) ──
-                    custItems.add(new SettingItem("launch_screen_style", SettingItem.TYPE_DROPDOWN,
-                            "Launch Screen",
-                            "Classic black, or the custom GIF you imported (Set/Remove in Launcher Settings)",
-                            "gif")
-                            .setDropdownOptions(new String[]{"Classic Black", "Custom GIF"},
-                                    new String[]{"black", "gif"}));
+                    // Launch GIF import retired; the launch stage uses the lightweight static color.
                     custItems.add(new SettingItem("launch_stage_color_action", SettingItem.TYPE_ACTION,
                             "Launch Screen Color",
                             "Pick the loading screen background color", null)
@@ -861,6 +845,16 @@ public class LauncherPreferenceFragment extends Fragment {
     }
 
     private boolean isItemVisible(SettingItem item, SharedPreferences draftPrefs) {
+        if ("notification_permission_request".equals(item.key)) {
+            Activity activity = getActivity();
+            return !(activity instanceof LauncherActivity)
+                    || !((LauncherActivity) activity).checkForNotificationPermission();
+        }
+        if ("microphone_permission_request".equals(item.key)) {
+            Activity activity = getActivity();
+            return !(activity instanceof LauncherActivity)
+                    || !((LauncherActivity) activity).checkForMicrophonePermission();
+        }
         if ("ignoreNotch".equals(item.key)) {
             return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P && LauncherPreferences.PREF_NOTCH_SIZE > 0;
         }
@@ -1348,6 +1342,9 @@ public class LauncherPreferenceFragment extends Fragment {
                                 if (checkedVal) {
                                     la.askForNotificationPermission(() -> {
                                         toggle.setChecked(la.checkForNotificationPermission(), false);
+                                        if (la.checkForNotificationPermission()) {
+                                            mRecyclerView.post(this::notifyDataSetChanged);
+                                        }
                                     });
                                 }
                             }
@@ -1358,6 +1355,9 @@ public class LauncherPreferenceFragment extends Fragment {
                                 if (checkedVal) {
                                     la.askForMicrophonePermission(() -> {
                                         toggle.setChecked(la.checkForMicrophonePermission(), false);
+                                        if (la.checkForMicrophonePermission()) {
+                                            mRecyclerView.post(this::notifyDataSetChanged);
+                                        }
                                     });
                                 }
                             }
