@@ -242,15 +242,20 @@ public class LauncherPreferenceFragment extends Fragment {
     private void setupCategoryRail() {
         if (mCategoryRail == null || mCategoryRailScroll == null) return;
         mCategoryRail.removeAllViews();
-
-        if (mCategoryName == null) {
-            mCategoryRailScroll.setVisibility(View.GONE);
-            if (mDockSpacer != null) mDockSpacer.setVisibility(View.VISIBLE);
-            return;
-        }
-        if (mDockSpacer != null) mDockSpacer.setVisibility(View.GONE);
-
         LayoutInflater inflater = LayoutInflater.from(requireContext());
+
+        View homeView = inflater.inflate(R.layout.item_settings_nav_chip, mCategoryRail, false);
+        TextView homeText = homeView.findViewById(R.id.settings_nav_chip_text);
+        boolean homeSelected = mCategoryName == null;
+        homeText.setText("Home");
+        homeText.setBackgroundResource(homeSelected
+                ? R.drawable.bg_settings_nav_active : R.drawable.bg_settings_nav_idle);
+        homeText.setTextColor(Color.parseColor(homeSelected ? "#F2F2F5" : "#858792"));
+        homeText.setOnClickListener(v -> {
+            if (!homeSelected) returnToSettingsHome();
+        });
+        mCategoryRail.addView(homeView);
+
         for (SettingItem item : buildRootCategoryItems()) {
             if (item.type != SettingItem.TYPE_CATEGORY_LINK || item.categoryLinkTarget == null) continue;
             View chipView = inflater.inflate(R.layout.item_settings_nav_chip, mCategoryRail, false);
@@ -260,14 +265,26 @@ public class LauncherPreferenceFragment extends Fragment {
             chipText.setBackgroundResource(selected
                     ? R.drawable.bg_settings_nav_active : R.drawable.bg_settings_nav_idle);
             chipText.setTextColor(Color.parseColor(selected ? "#F2F2F5" : "#858792"));
-            if (selected) chipText.setText("•  " + shortenCategoryLabel(item.title));
             chipText.setOnClickListener(v -> {
                 if (!selected) openCategoryPage(item.categoryLinkTarget);
             });
             mCategoryRail.addView(chipView);
         }
+        if (mDockSpacer != null) mDockSpacer.setVisibility(View.GONE);
         mCategoryRailScroll.setVisibility(View.VISIBLE);
-        mCategoryRailScroll.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in_slide_up));
+    }
+
+    private void returnToSettingsHome() {
+        androidx.fragment.app.FragmentManager fm = requireActivity().getSupportFragmentManager();
+        int guard = 20;
+        while (guard-- > 0 && fm.getBackStackEntryCount() > 0) {
+            if (!fm.popBackStackImmediate()) break;
+            Fragment visible = fm.findFragmentById(R.id.container_fragment);
+            if (visible instanceof LauncherPreferenceFragment) {
+                Bundle args = visible.getArguments();
+                if (args == null || args.getString("category", null) == null) break;
+            }
+        }
     }
 
     private void openCategoryPage(@NonNull String categoryName) {
@@ -1563,30 +1580,21 @@ public class LauncherPreferenceFragment extends Fragment {
         private void bindDashboardHolder(@NonNull CategoryViewHolder holder,
                                          @NonNull SettingCategory cat,
                                          @NonNull LayoutInflater inflater) {
-            holder.categoryTitle.setText("BROWSE SETTINGS");
+            holder.categoryTitle.setText("SETTINGS HOME");
             holder.categoryCount.setVisibility(View.VISIBLE);
             holder.categoryCount.setText(String.valueOf(cat.items.size()));
             holder.container.removeAllViews();
-
-            holder.container.addView(createDashboardSectionHeader(
-                    holder.itemView.getContext(),
-                    "CONTROL CENTER",
-                    "Choose a settings category",
-                    "Focused groups, consistent controls, and one safe Apply action."
-            ));
 
             Context gridCtx = holder.itemView.getContext();
             LinearLayout categoryGrid = new LinearLayout(gridCtx);
             categoryGrid.setOrientation(LinearLayout.VERTICAL);
             categoryGrid.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
-
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             final int gap = dp(7);
             LinearLayout currentRow = null;
             int cardIndex = 0;
             for (SettingItem item : cat.items) {
-                if (cardIndex % 2 == 0) {
+                if (cardIndex % 3 == 0) {
                     currentRow = new LinearLayout(gridCtx);
                     currentRow.setOrientation(LinearLayout.HORIZONTAL);
                     categoryGrid.addView(currentRow);
@@ -1604,22 +1612,21 @@ public class LauncherPreferenceFragment extends Fragment {
                     badge.setVisibility(View.VISIBLE);
                 }
                 card.setOnClickListener(v -> {
-                    v.animate().scaleX(0.985f).scaleY(0.985f).setDuration(55)
+                    v.animate().scaleX(0.985f).scaleY(0.985f).setDuration(50)
                             .withEndAction(() -> {
-                                v.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
+                                v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
                                 openCategoryPage(item.categoryLinkTarget);
                             }).start();
                 });
                 LinearLayout.LayoutParams slot = new LinearLayout.LayoutParams(
                         0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-                if (cardIndex % 2 == 0) slot.setMargins(0, 0, gap / 2, gap);
-                else slot.setMargins(gap / 2, 0, 0, gap);
+                int col = cardIndex % 3;
+                slot.setMargins(col == 0 ? 0 : gap / 2, 0, col == 2 ? 0 : gap / 2, gap);
                 currentRow.addView(card, slot);
-
                 card.setAlpha(0f);
-                card.setTranslationY(dp(5));
+                card.setTranslationY(dp(4));
                 card.animate().alpha(1f).translationY(0f)
-                        .setStartDelay(14L * cardIndex).setDuration(145)
+                        .setStartDelay(12L * cardIndex).setDuration(135)
                         .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
                         .withLayer().start();
                 cardIndex++;
@@ -1630,7 +1637,7 @@ public class LauncherPreferenceFragment extends Fragment {
             if (params != null) {
                 params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
                 params.topMargin = dp(4);
-                params.bottomMargin = dp(8);
+                params.bottomMargin = dp(7);
                 holder.itemView.setLayoutParams(params);
             }
         }

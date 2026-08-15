@@ -42,6 +42,12 @@ public class LoggerView extends ConstraintLayout {
     private LinearLayoutManager mLayoutManager;
     private TextView mCountText;
     private View mLiveDot;
+    private View mCliOverlay;
+    private TextView mCliCommand;
+    private TextView mCliBrand;
+    private TextView mCliStatus;
+    private TextView mCliProgressText;
+    private android.widget.ProgressBar mCliProgress;
     private boolean mKeepAutoscroll = true;
     private boolean mPaused = false;
     private boolean mSmartMode = true;
@@ -94,6 +100,12 @@ public class LoggerView extends ConstraintLayout {
 
         mCountText = findViewById(R.id.log_count_text);
         mLiveDot = findViewById(R.id.log_live_dot);
+        mCliOverlay = findViewById(R.id.log_cli_overlay);
+        mCliCommand = findViewById(R.id.log_cli_command);
+        mCliBrand = findViewById(R.id.log_cli_brand);
+        mCliStatus = findViewById(R.id.log_cli_status);
+        mCliProgress = findViewById(R.id.log_cli_progress);
+        mCliProgressText = findViewById(R.id.log_cli_progress_text);
 
         // Toggle log visibility
         mLogToggle = findViewById(R.id.content_log_toggle_log);
@@ -125,6 +137,9 @@ public class LoggerView extends ConstraintLayout {
                         Logger.addLogListener(mLogListener);
                     }else{
                         mAdapter.clear();
+                        if (mCliAnimationRunnable != null) removeCallbacks(mCliAnimationRunnable);
+                        if (mCliOverlay != null) mCliOverlay.setVisibility(GONE);
+                        if (mCliIntroStarted) mCliIntroFinished = true;
                         Logger.removeLogListener(mLogListener);
                         mLogRecycler.animate().cancel();
                         mLogRecycler.setVisibility(GONE);
@@ -295,104 +310,111 @@ public class LoggerView extends ConstraintLayout {
         mSessionStartedAt = android.os.SystemClock.elapsedRealtime();
 
         final String command = "> cs-launcher boot --logs=smart";
-        final String[] logo = {
-                "    ######    ######",
-                "   ##        ##",
-                "   ##         #####",
-                "   ##             ##",
-                "   ##        ##    ##",
-                "    ######    ######"
-        };
-        final String[] spinner = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴"};
+        final String[] spinner = {"-", "\\", "|", "/"};
+        if (mCliOverlay == null) {
+            mCliIntroFinished = true;
+            return;
+        }
+        mCliOverlay.animate().cancel();
+        mCliOverlay.setVisibility(VISIBLE);
+        mCliOverlay.setAlpha(0f);
+        mCliOverlay.setScaleX(0.97f);
+        mCliOverlay.setScaleY(0.97f);
+        mCliOverlay.animate().alpha(1f).scaleX(1f).scaleY(1f)
+                .setDuration(180).withLayer().start();
+        mCliCommand.setText("▋");
+        mCliBrand.setAlpha(0f);
+        mCliBrand.setScaleX(0.92f);
+        mCliBrand.setScaleY(0.92f);
+        mCliStatus.setText("");
+        mCliProgress.setProgress(0);
+        mCliProgressText.setText("[----------] 0%");
 
-        // One mutable terminal row gives a real CLI typing cursor and spinner.
-        // All callbacks run on the UI queue; Minecraft/JVM launch never waits.
-        appendCli("▋", 0xFFE4E4EA);
         mCliAnimationRunnable = new Runnable() {
             int stage = 0;
             int charIndex = 0;
-            int logoIndex = 0;
-            int spinnerIndex = 0;
+            int progress = 0;
+            int spin = 0;
 
             @Override public void run() {
                 if (mCliIntroFinished) return;
                 if (stage == 0) {
                     if (charIndex < command.length()) {
                         charIndex++;
-                        replaceCliLast(command.substring(0, charIndex) + "▋", 0xFFE4E4EA);
+                        mCliCommand.setText(command.substring(0, charIndex) + "▋");
                         postDelayed(this, 18L);
                         return;
                     }
-                    replaceCliLast(command, 0xFFE4E4EA);
-                    appendCli("  Craft Studio mobile launch terminal", 0xFF7C7F89);
-                    appendCli("", 0xFF7C7F89);
+                    mCliCommand.setText(command);
+                    mCliBrand.animate().alpha(1f).scaleX(1f).scaleY(1f)
+                            .setDuration(240)
+                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
+                            .withLayer().start();
                     stage = 1;
-                    postDelayed(this, 70L);
+                    postDelayed(this, 210L);
                     return;
                 }
-                if (stage == 1) {
-                    if (logoIndex < logo.length) {
-                        appendCli(logo[logoIndex++], 0xFFEDEDF2);
-                        if (mKeepAutoscroll) scrollToEnd(false);
-                        postDelayed(this, 58L);
-                        return;
-                    }
-                    appendCli("", 0xFFEDEDF2);
-                    appendCli("  C S   L A U N C H E R   V 3", 0xFFFFFFFF);
-                    appendCli("  Powered by Craft Studio", 0xFF9C9EA8);
-                    appendCli("", 0xFF7C7F89);
-                    appendCli("> Runtime ........ READY", 0xFF8FD3A5);
-                    appendCli("> Renderer ....... READY", 0xFF8FD3A5);
-                    appendCli("> Mod loader ..... " + spinner[0] + " SCANNING", 0xFFC9CBD6);
-                    spinnerIndex = 1;
-                    stage = 2;
-                    postDelayed(this, 72L);
-                    return;
+
+                progress = Math.min(100, progress + 8);
+                String status;
+                if (progress < 32) {
+                    status = "[OK] Runtime ready\n[" + spinner[spin++ % spinner.length] + "] Checking renderer";
+                } else if (progress < 65) {
+                    status = "[OK] Runtime ready\n[OK] Renderer ready";
+                } else if (progress < 92) {
+                    status = "[OK] Renderer ready\n[" + spinner[spin++ % spinner.length] + "] Scanning mod loader";
+                } else {
+                    status = "[OK] Mod loader ready\n[>] Starting Minecraft process";
                 }
-                if (stage == 2) {
-                    if (spinnerIndex < spinner.length) {
-                        replaceCliLast("> Mod loader ..... " + spinner[spinnerIndex++] + " SCANNING",
-                                0xFFC9CBD6);
-                        postDelayed(this, 72L);
-                        return;
-                    }
-                    replaceCliLast("> Mod loader ..... READY", 0xFF8FD3A5);
-                    appendCli("> Starting Minecraft process…", 0xFFC9CBD6);
-                    if (mKeepAutoscroll) scrollToEnd(false);
-                    stage = 3;
-                    postDelayed(this, 90L);
-                    return;
+                mCliStatus.setText(status);
+                mCliProgress.setProgress(progress);
+                int filled = Math.min(10, progress / 10);
+                StringBuilder bar = new StringBuilder("[");
+                for (int i = 0; i < 10; i++) bar.append(i < filled ? '#' : '-');
+                bar.append("] ").append(progress).append('%');
+                mCliProgressText.setText(bar.toString());
+                if (progress < 100) {
+                    postDelayed(this, 48L);
+                } else {
+                    postDelayed(() -> hideCliOverlayAndFinish(false), 90L);
                 }
-                finishCliIntro();
             }
         };
         post(mCliAnimationRunnable);
     }
 
-    private void replaceCliLast(String line, int color) {
-        mAdapter.replaceLastLine(new LogLineAdapter.LogLine(tinted(line, color), line));
-        if (mKeepAutoscroll) scrollToEnd(false);
+    private void hideCliOverlayAndFinish(boolean immediate) {
+        if (mCliOverlay == null) {
+            finishCliIntro();
+            return;
+        }
+        mCliOverlay.animate().cancel();
+        if (immediate) {
+            mCliOverlay.setVisibility(GONE);
+            finishCliIntro();
+            return;
+        }
+        mCliOverlay.animate().alpha(0f).scaleX(0.985f).scaleY(0.985f)
+                .setDuration(170).withLayer()
+                .withEndAction(() -> {
+                    mCliOverlay.setVisibility(GONE);
+                    mCliOverlay.setAlpha(1f);
+                    mCliOverlay.setScaleX(1f);
+                    mCliOverlay.setScaleY(1f);
+                    finishCliIntro();
+                }).start();
     }
 
     private void finishCliIntro() {
         if (mCliIntroFinished) return;
         mCliIntroFinished = true;
         if (mCliAnimationRunnable != null) removeCallbacks(mCliAnimationRunnable);
-        if (mStartupRawLineCount > 0) {
-            appendCli("> " + mStartupRawLineCount + " low-level startup lines condensed", 0xFF70727D);
-        }
-        appendCli("> Launch bootstrap complete. Showing important live events…", 0xFF8FD3A5);
-        appendCli("────────────────────────────────────────────────────────", 0xFF454751);
+        appendSmartImportant("[SYSTEM] CS Launcher bootstrap complete");
         while (!mSmartImportantBuffer.isEmpty()) {
-            String important = mSmartImportantBuffer.poll();
-            appendSmartImportant(important);
+            appendSmartImportant(mSmartImportantBuffer.poll());
         }
         if (mKeepAutoscroll) scrollToEnd(true);
         updateStatus();
-    }
-
-    private void appendCli(String line, int color) {
-        mAdapter.appendLine(new LogLineAdapter.LogLine(tinted(line, color), line));
     }
 
     /** Deduplicate repetitive mod-loader messages before they reach the user. */
@@ -572,7 +594,7 @@ public class LoggerView extends ConstraintLayout {
                 // the non-blocking visual intro we retain only readable events.
                 mStartupRawLineCount++;
                 if (isCriticalLine(line)) {
-                    finishCliIntro();
+                    hideCliOverlayAndFinish(true);
                     appendSmartImportant(important);
                     inserted = true;
                 } else if (important != null && mSmartImportantBuffer.size() < 80) {

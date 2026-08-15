@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CS Settings Deck — landscape navigation + focused content canvas. -->
+<!-- Full-width CS Settings V2. Same resource is mirrored in layout-land. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -9,315 +9,207 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <!-- Persistent category dock -->
         <LinearLayout
-            android:layout_width="218dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/bg_settings_deck_dock"
-            android:orientation="vertical"
-            android:paddingStart="12dp"
-            android:paddingTop="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="12dp">
+            android:id="@+id/settings_header_bar"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <FrameLayout
+                android:id="@+id/settings_back_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_settings_deck_control"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/global_back"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="#E8E8EB" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="11dp"
+                android:background="@drawable/bg_settings_deck_icon">
+                <ImageView
+                    android:id="@+id/settings_header_icon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_menu_settings"
+                    app:tint="#EDEDF1" />
+            </FrameLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <FrameLayout
-                    android:id="@+id/settings_back_button"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:background="@drawable/bg_settings_deck_control"
-                    android:clickable="true"
-                    android:focusable="true">
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/global_back"
-                        android:src="@drawable/ic_arrow_back"
-                        app:tint="#E5E5E9" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:letterSpacing="0.12"
-                        android:text="CS LAUNCHER"
-                        android:textColor="#ECECF0"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="1dp"
-                        android:text="SETTINGS DECK"
-                        android:textColor="#6F717C"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="13dp"
-                android:background="#292A31" />
-
-            <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="7dp"
-                android:letterSpacing="0.12"
-                android:text="SECTIONS"
-                android:textColor="#656772"
-                android:textSize="8sp"
-                android:textStyle="bold" />
-
-            <ScrollView
-                android:id="@+id/settings_category_rail_scroll"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_marginStart="12dp"
                 android:layout_weight="1"
-                android:fillViewport="false"
-                android:overScrollMode="never"
-                android:scrollbars="none"
-                android:visibility="gone">
-                <LinearLayout
-                    android:id="@+id/settings_category_rail"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/settings_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-            </ScrollView>
-
-            <Space
-                android:id="@+id/settings_dock_spacer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_settings_deck_note"
-                android:orientation="vertical"
-                android:padding="10dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="SAFE APPLY"
-                    android:textColor="#BFC1C9"
-                    android:textSize="8sp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Settings"
+                    android:textColor="#F5F5F7"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
                 <TextView
+                    android:id="@+id/settings_subtitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:lineSpacingExtra="1dp"
-                    android:text="Review changes, then apply once."
-                    android:textColor="#6E707A"
-                    android:textSize="8.5sp" />
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#7F818B"
+                    android:textSize="9sp" />
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="330dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_settings_deck_search"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="11dp"
+                android:paddingEnd="8dp">
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_cs_search"
+                    app:tint="#72747F" />
+                <EditText
+                    android:id="@+id/settings_search_input"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Search every setting"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="#F0F0F3"
+                    android:textColorHint="#656772"
+                    android:textSize="10.5sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/settings_live_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_settings_deck_badge"
+                android:gravity="center"
+                android:letterSpacing="0.07"
+                android:minWidth="56dp"
+                android:paddingStart="9dp"
+                android:paddingEnd="9dp"
+                android:textColor="#BFC1C9"
+                android:textSize="7.5sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Main settings canvas -->
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#26272E" />
 
+        <HorizontalScrollView
+            android:id="@+id/settings_category_rail_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:fillViewport="false"
+            android:overScrollMode="never"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:scrollbars="none">
             <LinearLayout
-                android:layout_width="match_parent"
+                android:id="@+id/settings_category_rail"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
 
-                <LinearLayout
-                    android:id="@+id/settings_header_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="72dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="18dp">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#202127" />
 
-                    <FrameLayout
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@drawable/bg_settings_deck_icon">
-                        <ImageView
-                            android:id="@+id/settings_header_icon"
-                            android:layout_width="21dp"
-                            android:layout_height="21dp"
-                            android:layout_gravity="center"
-                            android:contentDescription="@null"
-                            android:src="@drawable/ic_menu_settings"
-                            app:tint="#EDEDF1" />
-                    </FrameLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/settings_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingStart="14dp"
+            android:paddingTop="7dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="84dp"
+            android:scrollbars="none" />
+    </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="13dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/settings_title"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="Settings"
-                            android:textColor="#F5F5F7"
-                            android:textSize="19sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:id="@+id/settings_subtitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:textColor="#858792"
-                            android:textSize="9.5sp" />
-                    </LinearLayout>
+    <Space
+        android:id="@+id/settings_dock_spacer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
-                    <TextView
-                        android:id="@+id/settings_live_badge"
-                        android:layout_width="wrap_content"
-                        android:layout_height="25dp"
-                        android:background="@drawable/bg_settings_deck_badge"
-                        android:gravity="center"
-                        android:letterSpacing="0.08"
-                        android:minWidth="58dp"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:textColor="#C9CBD3"
-                        android:textSize="8sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="18dp"
-                    android:layout_marginEnd="18dp"
-                    android:background="@drawable/bg_settings_deck_search"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="6dp">
-                    <ImageView
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_cs_search"
-                        app:tint="#777984" />
-                    <EditText
-                        android:id="@+id/settings_search_input"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="9dp"
-                        android:layout_weight="1"
-                        android:background="@null"
-                        android:hint="Search every setting"
-                        android:imeOptions="actionSearch"
-                        android:inputType="text"
-                        android:maxLines="1"
-                        android:textColor="#F0F0F3"
-                        android:textColorHint="#666873"
-                        android:textSize="11sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="28dp"
-                        android:background="@drawable/bg_settings_deck_key"
-                        android:gravity="center"
-                        android:paddingStart="9dp"
-                        android:paddingEnd="9dp"
-                        android:text="GLOBAL"
-                        android:textColor="#777984"
-                        android:textSize="7.5sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="10dp"
-                    android:background="#222329" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/settings_recycler_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:clipToPadding="false"
-                    android:overScrollMode="never"
-                    android:paddingStart="14dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="14dp"
-                    android:paddingBottom="88dp"
-                    android:scrollbars="none" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/unsaved_changes_bar"
-                android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/unsaved_changes_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="11dp"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_settings_deck_save"
+            android:elevation="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="15dp"
+            android:paddingEnd="7dp">
+            <TextView
+                android:id="@+id/save_status_text"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:paddingBottom="12dp"
-                android:visibility="gone">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:background="@drawable/bg_settings_deck_save"
-                    android:elevation="10dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="15dp"
-                    android:paddingEnd="7dp">
-                    <View
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:background="@drawable/bg_log_dot" />
-                    <TextView
-                        android:id="@+id/save_status_text"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="9dp"
-                        android:layout_weight="1"
-                        android:text="Unsaved changes"
-                        android:textColor="#D6B36B"
-                        android:textSize="10.5sp"
-                        android:textStyle="bold" />
-                    <Button
-                        android:id="@+id/btn_save_settings"
-                        android:layout_width="106dp"
-                        android:layout_height="38dp"
-                        android:background="@drawable/bg_settings_deck_apply"
-                        android:minWidth="0dp"
-                        android:stateListAnimator="@null"
-                        android:text="APPLY"
-                        android:textAllCaps="true"
-                        android:textColor="#F2F2F5"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-        </FrameLayout>
+                android:layout_weight="1"
+                android:text="Unsaved changes"
+                android:textColor="#D6B36B"
+                android:textSize="10.5sp"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/btn_save_settings"
+                android:layout_width="112dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_settings_deck_apply"
+                android:minWidth="0dp"
+                android:stateListAnimator="@null"
+                android:text="APPLY CHANGES"
+                android:textAllCaps="true"
+                android:textColor="#F2F2F5"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>
