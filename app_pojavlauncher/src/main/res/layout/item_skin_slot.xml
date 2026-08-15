@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/skin_slot_root"
+    android:layout_width="0dp"
+    android:layout_height="214dp"
+    android:layout_weight="1"
+    android:background="@drawable/bg_skin_slot_idle"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:padding="9dp">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="24dp" android:gravity="center_vertical" android:orientation="horizontal">
+        <TextView android:id="@+id/skin_slot_number" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:letterSpacing="0.08" android:text="SLOT 1" android:textColor="#82A991" android:textSize="8sp" android:textStyle="bold" />
+        <TextView android:id="@+id/skin_slot_status" android:layout_width="wrap_content" android:layout_height="18dp" android:background="@drawable/bg_skin_slot_status" android:gravity="center" android:paddingHorizontal="6dp" android:text="EMPTY" android:textColor="#83A48E" android:textSize="7sp" android:textStyle="bold" />
+    </LinearLayout>
+
+    <FrameLayout android:layout_width="match_parent" android:layout_height="112dp" android:layout_marginTop="4dp" android:background="@drawable/bg_skin_slot_preview">
+        <net.kdt.pojavlaunch.skins.SkinSlotPreviewView
+            android:id="@+id/skin_slot_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dp" />
+        <TextView android:id="@+id/skin_slot_empty" android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:text="+\nADD SKIN" android:textColor="#668070" android:textSize="9sp" android:textStyle="bold" />
+    </FrameLayout>
+
+    <TextView android:id="@+id/skin_slot_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:ellipsize="end" android:maxLines="1" android:text="Skin Slot 1" android:textColor="#E9F1EC" android:textSize="10sp" android:textStyle="bold" />
+    <TextView android:id="@+id/skin_slot_model" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="CLASSIC" android:textColor="#6F8A78" android:textSize="7.5sp" android:textStyle="bold" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="30dp" android:layout_marginTop="6dp" android:orientation="horizontal">
+        <TextView android:id="@+id/skin_slot_action" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_skin_slot_action" android:gravity="center" android:text="ADD" android:textColor="#D8E6DD" android:textSize="8sp" android:textStyle="bold" />
+        <ImageButton android:id="@+id/skin_slot_delete" android:layout_width="30dp" android:layout_height="30dp" android:layout_marginStart="5dp" android:background="@drawable/bg_skin_slot_action" android:contentDescription="Delete skin slot" android:padding="7dp" android:src="@drawable/ic_menu_delete_forever" app:tint="#9A777A" />
+    </LinearLayout>
+</LinearLayout>

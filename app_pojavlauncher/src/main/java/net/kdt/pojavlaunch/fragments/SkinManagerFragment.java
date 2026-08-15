@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,9 @@ import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.LauncherActivity;
 import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.utils.SkinFetchUtils;
+import net.kdt.pojavlaunch.skins.MinecraftSkinUploader;
+import net.kdt.pojavlaunch.skins.SkinSlotPreviewView;
+import net.kdt.pojavlaunch.skins.SkinSlotStore;
 import net.kdt.pojavlaunch.value.MinecraftAccount;
 import net.kdt.pojavlaunch.yggdrasil.SkinAnalyzer;
 import net.kdt.pojavlaunch.yggdrasil.SkinModelType;
@@ -72,6 +76,11 @@ public class SkinManagerFragment extends Fragment {
     private TextView mTvPreviewHint;
     private EditText mEtUsername;
     private Button mBtnFetch;
+    private LinearLayout mSlotContainer;
+    private SkinSlotStore mSlotStore;
+    private MinecraftAccount mActiveAccount;
+    private int mSelectedSlot;
+    private int mImportTargetSlot;
 
     private String mPendingSkinUri;
     private String mPendingCapeUri;
@@ -101,6 +110,7 @@ public class SkinManagerFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         MinecraftAccount activeAccount = net.kdt.pojavlaunch.PojavProfile.getCurrentProfileContent(requireContext(), null);
+        mActiveAccount = activeAccount;
         if (activeAccount == null) {
             Tools.dialog(requireContext(), "Authentication Required", "Please log in or create an account first.");
             getParentFragmentManager().popBackStack();
@@ -116,6 +126,7 @@ public class SkinManagerFragment extends Fragment {
         mTvPreviewHint = view.findViewById(R.id.tv_preview_hint);
         mEtUsername = view.findViewById(R.id.et_skin_username);
         mBtnFetch = view.findViewById(R.id.btn_fetch_skin);
+        mSlotContainer = view.findViewById(R.id.skin_slot_container);
 
         View backButton = view.findViewById(R.id.skin_back_button);
         if (backButton != null) {
@@ -138,30 +149,33 @@ public class SkinManagerFragment extends Fragment {
         if (!skinsDir.exists()) skinsDir.mkdirs();
         if (!capesDir.exists()) capesDir.mkdirs();
 
-        File localSkinFile = new File(skinsDir, activeAccount.username + "_skin.png");
         File localCapeFile = new File(capesDir, activeAccount.username + "_cape.png");
-
-        mPendingSkinUri = localSkinFile.exists() ? Uri.fromFile(localSkinFile).toString() : null;
+        mSlotStore = new SkinSlotStore(requireContext(), activeAccount);
+        mSelectedSlot = mSlotStore.getActiveSlot() >= 0 ? mSlotStore.getActiveSlot() : firstFilledSlot();
+        if (mSelectedSlot < 0) mSelectedSlot = 0;
+        mImportTargetSlot = mSelectedSlot;
+        syncPendingSkinFromSelectedSlot();
         mPendingCapeUri = localCapeFile.exists() ? Uri.fromFile(localCapeFile).toString() : null;
 
-        updatePathText(mTvSkinPath, mPendingSkinUri, "No custom skin selected");
+        updatePathText(mTvSkinPath, mPendingSkinUri, "No skin in selected slot");
         updatePathText(mTvCapePath, mPendingCapeUri, "No custom cape selected");
         updateAccountInfo();
+        bindSkinSlots();
 
-        view.findViewById(R.id.btn_change_skin).setOnClickListener(v -> openFilePicker(REQUEST_CODE_SKIN));
-        view.findViewById(R.id.btn_remove_skin).setOnClickListener(v -> {
-            mPendingSkinUri = null;
-            updatePathText(mTvSkinPath, null, "No custom skin selected");
-            updateAccountInfo();
-            updatePreview();
+        view.findViewById(R.id.btn_change_skin).setOnClickListener(v -> {
+            mImportTargetSlot = mSelectedSlot;
+            openFilePicker(REQUEST_CODE_SKIN);
         });
+        view.findViewById(R.id.btn_remove_skin).setOnClickListener(v -> deleteSelectedSlot());
         view.findViewById(R.id.btn_reset_default).setOnClickListener(v -> {
-            mPendingSkinUri = null;
+            if (mSlotStore != null) mSlotStore.clearAll();
+            mSelectedSlot = 0;
+            syncPendingSkinFromSelectedSlot();
             mPendingCapeUri = null;
-            updatePathText(mTvSkinPath, null, "No custom skin selected");
+            new File(Tools.DIR_DATA + "/capes/" + activeAccount.username + "_cape.png").delete();
+            updatePathText(mTvSkinPath, null, "No skin in selected slot");
             updatePathText(mTvCapePath, null, "No custom cape selected");
-            updateAccountInfo();
-            updatePreview();
+            bindSkinSlots(); updateAccountInfo(); updatePreview();
         });
         view.findViewById(R.id.btn_change_cape).setOnClickListener(v -> openFilePicker(REQUEST_CODE_CAPE));
         view.findViewById(R.id.btn_remove_cape).setOnClickListener(v -> {
@@ -187,6 +201,91 @@ public class SkinManagerFragment extends Fragment {
         applyInteractiveAnimations(view);
     }
 
+    private int firstFilledSlot() {
+        if (mSlotStore == null) return -1;
+        for (int i = 0; i < SkinSlotStore.SLOT_COUNT; i++) if (mSlotStore.isFilled(i)) return i;
+        return -1;
+    }
+
+    private void syncPendingSkinFromSelectedSlot() {
+        if (mSlotStore != null && mSlotStore.isFilled(mSelectedSlot)) {
+            mPendingSkinUri = Uri.fromFile(mSlotStore.fileFor(mSelectedSlot)).toString();
+            updatePathText(mTvSkinPath, mPendingSkinUri, "No skin in selected slot");
+        } else {
+            mPendingSkinUri = null;
+            updatePathText(mTvSkinPath, null, "No skin in selected slot");
+        }
+    }
+
+    private void bindSkinSlots() {
+        if (mSlotContainer == null || mSlotStore == null) return;
+        mSlotContainer.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        for (int i = 0; i < SkinSlotStore.SLOT_COUNT; i++) {
+            final int slotIndex = i;
+            View card = inflater.inflate(R.layout.item_skin_slot, mSlotContainer, false);
+            boolean filled = mSlotStore.isFilled(i);
+            boolean active = mSlotStore.getActiveSlot() == i;
+            boolean selected = mSelectedSlot == i;
+            card.setBackgroundResource(active ? R.drawable.bg_skin_slot_active
+                    : selected ? R.drawable.bg_skin_slot_selected : R.drawable.bg_skin_slot_idle);
+            ((TextView) card.findViewById(R.id.skin_slot_number)).setText("SLOT " + (i + 1));
+            TextView status = card.findViewById(R.id.skin_slot_status);
+            status.setText(active ? "ACTIVE" : filled ? "SAVED" : "EMPTY");
+            status.setTextColor(active ? 0xFFC5F0D0 : 0xFF83A48E);
+            ((TextView) card.findViewById(R.id.skin_slot_name)).setText(mSlotStore.get(i).name);
+            ((TextView) card.findViewById(R.id.skin_slot_model)).setText(
+                    filled ? mSlotStore.get(i).model.toUpperCase() : "NO SKIN");
+            SkinSlotPreviewView preview = card.findViewById(R.id.skin_slot_preview);
+            preview.setSkin(filled ? mSlotStore.fileFor(i) : null);
+            card.findViewById(R.id.skin_slot_empty).setVisibility(filled ? View.GONE : View.VISIBLE);
+            View delete = card.findViewById(R.id.skin_slot_delete);
+            delete.setVisibility(filled ? View.VISIBLE : View.GONE);
+            TextView action = card.findViewById(R.id.skin_slot_action);
+            action.setText(!filled ? "ADD" : active ? "REPLACE" : "USE");
+            card.setOnClickListener(v -> selectSkinSlot(slotIndex));
+            action.setOnClickListener(v -> {
+                mSelectedSlot = slotIndex;
+                if (!filled || active) {
+                    mImportTargetSlot = slotIndex;
+                    openFilePicker(REQUEST_CODE_SKIN);
+                } else saveSkinChanges();
+            });
+            delete.setOnClickListener(v -> {
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Delete " + mSlotStore.get(slotIndex).name + "?")
+                        .setMessage(active ? "The active skin will return to the default look." : "This saved skin slot will be cleared.")
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            mSlotStore.deleteSlot(slotIndex);
+                            if (mSelectedSlot == slotIndex) {
+                                int next = firstFilledSlot(); mSelectedSlot = next >= 0 ? next : 0;
+                            }
+                            syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updatePreview(); updateAccountInfo(); refreshAccountFaces();
+                        }).show();
+            });
+            card.setAlpha(0f); card.setTranslationY(10f);
+            card.animate().alpha(1f).translationY(0f).setStartDelay(i * 35L).setDuration(210).start();
+            mSlotContainer.addView(card);
+            if (i < SkinSlotStore.SLOT_COUNT - 1) {
+                android.view.ViewGroup.MarginLayoutParams lp = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
+                lp.setMarginEnd((int)(6 * getResources().getDisplayMetrics().density)); card.setLayoutParams(lp);
+            }
+        }
+    }
+
+    private void selectSkinSlot(int index) {
+        mSelectedSlot = index; mImportTargetSlot = index;
+        syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updatePreview(); updateAccountInfo();
+    }
+
+    private void deleteSelectedSlot() {
+        if (mSlotStore == null || !mSlotStore.isFilled(mSelectedSlot)) return;
+        mSlotStore.deleteSlot(mSelectedSlot);
+        int next = firstFilledSlot(); mSelectedSlot = next >= 0 ? next : 0;
+        syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updatePreview(); updateAccountInfo(); refreshAccountFaces();
+    }
+
     private void fetchSkinFromUsername(String username) {
         PojavApplication.sExecutorService.execute(() -> {
             try {
@@ -196,12 +295,14 @@ public class SkinManagerFragment extends Fragment {
                 SkinFetchUtils.fetchAndSaveSkin(username, tempSkin);
                 
                 if (tempSkin.exists()) {
+                    boolean slim = detectSlimModel(tempSkin.getAbsolutePath());
+                    mSlotStore.saveSlot(mImportTargetSlot, tempSkin, username, slim);
+                    tempSkin.delete();
                     mAutoRotateHandler.post(() -> {
-                        mPendingSkinUri = Uri.fromFile(tempSkin).toString();
-                        updatePathText(mTvSkinPath, "Fetched: " + username, "No custom skin selected");
-                        updatePreview();
-                        updateAccountInfo();
-                        Toast.makeText(requireContext(), "Skin fetched for " + username, Toast.LENGTH_SHORT).show();
+                        mSelectedSlot = mImportTargetSlot;
+                        syncPendingSkinFromSelectedSlot();
+                        bindSkinSlots(); updatePreview(); updateAccountInfo();
+                        Toast.makeText(requireContext(), "Skin saved to slot " + (mSelectedSlot + 1), Toast.LENGTH_SHORT).show();
                     });
                 }
             } catch (Exception e) {
@@ -211,18 +312,17 @@ public class SkinManagerFragment extends Fragment {
     }
 
     private void saveSkinChanges() {
-        MinecraftAccount acc = net.kdt.pojavlaunch.PojavProfile.getCurrentProfileContent(requireContext(), null);
-        if (acc == null) return;
+        MinecraftAccount acc = mActiveAccount;
+        if (acc == null || mSlotStore == null || !mSlotStore.isFilled(mSelectedSlot)) {
+            Toast.makeText(requireContext(), "Choose or add a skin first", Toast.LENGTH_SHORT).show();
+            return;
+        }
         try {
-            if (mPendingSkinUri != null) {
-                File destSkin = new File(Tools.DIR_DATA + "/skins/" + acc.username + "_skin.png");
-                if (!mPendingSkinUri.equals(Uri.fromFile(destSkin).toString())) {
-                    copyUriToFile(Uri.parse(mPendingSkinUri), destSkin);
-                }
-            } else {
-                new File(Tools.DIR_DATA + "/skins/" + acc.username + "_skin.png").delete();
-                new File(Tools.DIR_DATA + "/skins/" + acc.username + "_metadata.json").delete();
-            }
+            mSlotStore.activate(mSelectedSlot);
+            syncPendingSkinFromSelectedSlot();
+            File activeSkin = new File(Tools.DIR_DATA + "/skins/" + acc.username + "_skin.png");
+            boolean slim = "slim".equalsIgnoreCase(mSlotStore.get(mSelectedSlot).model);
+
             if (mPendingCapeUri != null) {
                 File destCape = new File(Tools.DIR_DATA + "/capes/" + acc.username + "_cape.png");
                 if (!mPendingCapeUri.equals(Uri.fromFile(destCape).toString())) {
@@ -231,34 +331,53 @@ public class SkinManagerFragment extends Fragment {
             } else {
                 new File(Tools.DIR_DATA + "/capes/" + acc.username + "_cape.png").delete();
             }
-            String finalSkin = mPendingSkinUri != null ? new File(Tools.DIR_DATA + "/skins/" + acc.username + "_skin.png").getAbsolutePath() : null;
-            String finalCape = mPendingCapeUri != null ? new File(Tools.DIR_DATA + "/capes/" + acc.username + "_cape.png").getAbsolutePath() : null;
-            boolean isSlimModel = finalSkin != null && detectSlimModel(finalSkin);
-            if (finalSkin != null) {
-                File destSkinMeta = new File(Tools.DIR_DATA + "/skins/" + acc.username + "_metadata.json");
-                Tools.write(destSkinMeta.getAbsolutePath(),
-                        "{\n  \"model\": \"" + (isSlimModel ? "slim" : "default") + "\"\n}");
+
+            boolean isEly = !acc.isMicrosoft && acc.accessToken != null
+                    && !"0".equals(acc.accessToken) && !acc.accessToken.isEmpty();
+            if (acc.isMicrosoft) {
+                updateStatusChip(mTvServerStatusChip, "SYNCING MINECRAFT", true, null);
+                PojavApplication.sExecutorService.execute(() -> {
+                    try {
+                        MinecraftSkinUploader.upload(acc, activeSkin, slim);
+                        mAutoRotateHandler.post(() -> {
+                            updateStatusChip(mTvServerStatusChip, "MINECRAFT SYNCED", true, null);
+                            Toast.makeText(requireContext(), "Skin active and synced to Minecraft", Toast.LENGTH_SHORT).show();
+                        });
+                    } catch (Exception e) {
+                        mAutoRotateHandler.post(() -> {
+                            updateStatusChip(mTvServerStatusChip, "LOCAL SAVED • SYNC FAILED", false, null);
+                            Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                        });
+                    }
+                });
+            } else if (isEly) {
+                updateStatusChip(mTvServerStatusChip, "LOCAL SLOT ACTIVE", true, null);
+                Toast.makeText(requireContext(), "Slot saved locally. Ely.by server skin remains account-managed.", Toast.LENGTH_LONG).show();
+            } else {
+                String cape = mPendingCapeUri != null
+                        ? new File(Tools.DIR_DATA + "/capes/" + acc.username + "_cape.png").getAbsolutePath() : null;
+                if (LocalYggdrasilServer.getPort() > 0) {
+                    String uuid = LocalUuidUtils.generateProfileId(acc.username,
+                            slim ? SkinModelType.ALEX : SkinModelType.STEVE);
+                    LocalYggdrasilServer.registerProfile(acc.username, uuid,
+                            activeSkin.getAbsolutePath(), cape, slim);
+                }
+                updateStatusChip(mTvServerStatusChip, "LOCAL SKIN ACTIVE", true, null);
+                Toast.makeText(requireContext(), "Skin slot activated", Toast.LENGTH_SHORT).show();
             }
-            boolean hasCustomTextures = finalSkin != null || finalCape != null;
-            String accUuid = LocalUuidUtils.generateProfileId(acc.username,
-                    isSlimModel ? SkinModelType.ALEX : SkinModelType.STEVE);
-            if (hasCustomTextures && LocalYggdrasilServer.getPort() > 0) {
-                LocalYggdrasilServer.registerProfile(acc.username, accUuid, finalSkin, finalCape, isSlimModel);
-                if (mSkinRenderer != null) mSkinRenderer.mIsSlim = isSlimModel;
-            } else if (!hasCustomTextures && LocalYggdrasilServer.getPort() > 0) {
-                LocalYggdrasilServer.stop();
-            }
-            acc.clearFaceCache();
-            Toast.makeText(requireContext(), "Skin setup saved successfully!", Toast.LENGTH_SHORT).show();
-            updateAccountInfo();
-            if (getActivity() != null) {
-                com.kdt.mcgui.mcAccountSpinner spinner = getActivity().findViewById(R.id.account_spinner);
-                if (spinner != null) spinner.reloadAccounts(true, spinner.getSelectedItemPosition());
-                if (getActivity() instanceof LauncherActivity) ((LauncherActivity) getActivity()).updateNavSkinIcon();
-            }
+            if (mSkinRenderer != null) mSkinRenderer.mIsSlim = slim;
+            bindSkinSlots(); updateAccountInfo(); updatePreview(); refreshAccountFaces();
         } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(requireContext(), "Failed to save: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), "Failed to activate skin: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void refreshAccountFaces() {
+        if (mActiveAccount != null) mActiveAccount.clearFaceCache();
+        if (getActivity() != null) {
+            com.kdt.mcgui.mcAccountSpinner spinner = getActivity().findViewById(R.id.account_spinner);
+            if (spinner != null) spinner.reloadAccounts(true, spinner.getSelectedItemPosition());
+            if (getActivity() instanceof LauncherActivity) ((LauncherActivity) getActivity()).updateNavSkinIcon();
         }
     }
 
@@ -356,11 +475,21 @@ public class SkinManagerFragment extends Fragment {
     }
 
     private void updateAccountInfo() {
-        boolean hasSkin = mPendingSkinUri != null, hasCape = mPendingCapeUri != null, serverWillRun = hasSkin || hasCape;
-        updateStatusChip(mTvSkinStatusChip, hasSkin ? "CUSTOM SKIN" : "DEFAULT SKIN", hasSkin, null);
-        updateStatusChip(mTvCapeStatusChip, hasCape ? "CUSTOM CAPE" : "NO CAPE", hasCape, null);
-        updateStatusChip(mTvServerStatusChip, serverWillRun ? "SERVER AUTO ON" : "SERVER OFF", serverWillRun, null);
-        if (mTvPreviewHint != null) mTvPreviewHint.setText(serverWillRun ? "Drag to rotate • Custom textures active" : "Drag to rotate • Default Minecraft look");
+        boolean selectedFilled = mSlotStore != null && mSlotStore.isFilled(mSelectedSlot);
+        boolean active = mSlotStore != null && mSlotStore.getActiveSlot() == mSelectedSlot;
+        updateStatusChip(mTvSkinStatusChip,
+                active ? "ACTIVE SLOT " + (mSelectedSlot + 1)
+                        : selectedFilled ? "PREVIEW SLOT " + (mSelectedSlot + 1) : "EMPTY SLOT",
+                selectedFilled, null);
+        updateStatusChip(mTvCapeStatusChip, "3 SKIN SLOTS", true, null);
+        boolean isEly = mActiveAccount != null && !mActiveAccount.isMicrosoft
+                && mActiveAccount.accessToken != null && !"0".equals(mActiveAccount.accessToken);
+        String sync = mActiveAccount != null && mActiveAccount.isMicrosoft ? "MINECRAFT CLOUD"
+                : isEly ? "ELY.BY ACCOUNT" : "LOCAL SKIN SERVER";
+        updateStatusChip(mTvServerStatusChip, sync, active, null);
+        if (mTvPreviewHint != null) mTvPreviewHint.setText(
+                selectedFilled ? "Drag to rotate • Pinch to zoom • Slot " + (mSelectedSlot + 1)
+                        : "Choose ADD to import a Minecraft skin PNG");
     }
 
     private void updateStatusChip(TextView view, String text, boolean active, String cd) {
@@ -440,11 +569,34 @@ public class SkinManagerFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
-            requireContext().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            if (requestCode == REQUEST_CODE_SKIN) mPendingSkinUri = uri.toString();
-            else if (requestCode == REQUEST_CODE_CAPE) mPendingCapeUri = uri.toString();
-            updatePathText(requestCode == REQUEST_CODE_SKIN ? mTvSkinPath : mTvCapePath, uri.toString(), "");
-            updateAccountInfo(); updatePreview();
+            try { requireContext().getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION); }
+            catch (Throwable ignored) {}
+            if (requestCode == REQUEST_CODE_SKIN) {
+                try {
+                    File temp = new File(requireContext().getCacheDir(), "skin_slot_import.png");
+                    copyUriToFile(uri, temp);
+                    Bitmap check = BitmapFactory.decodeFile(temp.getAbsolutePath());
+                    if (check == null || check.getWidth() < 64 || check.getHeight() < 32) {
+                        if (check != null) check.recycle(); temp.delete();
+                        throw new Exception("Invalid Minecraft skin PNG");
+                    }
+                    check.recycle();
+                    boolean slim = detectSlimModel(temp.getAbsolutePath());
+                    String fileName = uri.getLastPathSegment();
+                    mSlotStore.saveSlot(mImportTargetSlot, temp,
+                            fileName == null ? "Skin Slot " + (mImportTargetSlot + 1)
+                                    : fileName.replaceAll("(?i)\\.png$", ""), slim);
+                    temp.delete();
+                    mSelectedSlot = mImportTargetSlot;
+                    syncPendingSkinFromSelectedSlot(); bindSkinSlots(); updateAccountInfo(); updatePreview();
+                } catch (Exception e) {
+                    Toast.makeText(requireContext(), "Skin import failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            } else if (requestCode == REQUEST_CODE_CAPE) {
+                mPendingCapeUri = uri.toString();
+                updatePathText(mTvCapePath, uri.toString(), "");
+                updateAccountInfo(); updatePreview();
+            }
         }
     }
 
