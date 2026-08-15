@@ -98,7 +98,7 @@ public class LauncherActivity extends BaseActivity {
             registerForActivityResult(new OpenDocumentWithExtension(new String[]{"zip", "mrpack"}), (data)->{
                 if(data != null) {
                     PojavApplication.sExecutorService.execute(() -> {
-                        // O3 (Copper port): stream the DocumentsUI content into a
+                        // O3 (CS integration): stream the DocumentsUI content into a
                         // cache file ONCE (with copy progress), then run the whole
                         // import against the local file. The old path re-opened the
                         // content:// URI 3+ times, which is very slow on SAF providers.

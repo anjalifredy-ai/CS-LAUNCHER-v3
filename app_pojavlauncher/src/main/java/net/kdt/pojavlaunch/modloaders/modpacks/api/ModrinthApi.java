@@ -92,6 +92,16 @@ public class ModrinthApi implements ModpackApi{
                     hit.get("description").getAsString(),
                     hit.get("icon_url").getAsString()
             );
+            if (hit.has("follows") && !hit.get("follows").isJsonNull()) {
+                items[i].followers = hit.get("follows").getAsString();
+            }
+            if (hit.has("categories") && hit.get("categories").isJsonArray()) {
+                JsonArray categories = hit.getAsJsonArray("categories");
+                items[i].categories = new String[Math.min(categories.size(), 5)];
+                for (int j = 0; j < items[i].categories.length; j++) {
+                    items[i].categories[j] = categories.get(j).getAsString();
+                }
+            }
             if (hit.has("gallery") && !hit.get("gallery").isJsonNull() && hit.get("gallery").isJsonArray()) {
                 JsonArray gallery = hit.getAsJsonArray("gallery");
                 if (gallery.size() > 0) {

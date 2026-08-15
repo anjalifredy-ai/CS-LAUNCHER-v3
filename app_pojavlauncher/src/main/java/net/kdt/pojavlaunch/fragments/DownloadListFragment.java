@@ -102,9 +102,12 @@ public class DownloadListFragment extends Fragment implements ModItemAdapter.Sea
         mLoadingCard = view.findViewById(R.id.download_loading_card);
         mStatusText = view.findViewById(R.id.download_list_status);
 
-        // A single compact result column remains readable inside the profile's
-        // right pane and avoids the uneven card heights of the old 2-column grid.
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Modrinth-inspired visual discovery grid. Cards use a fixed height, so
+        // two columns remain perfectly aligned while artwork loads.
+        GridLayoutManager grid = new GridLayoutManager(getContext(), 2);
+        mRecyclerView.setLayoutManager(grid);
+        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(
+                2, (int) (6 * getResources().getDisplayMetrics().density), true));
         mRecyclerView.setHasFixedSize(true);
         // Keep result updates fluid without the default cross-fade blinking every
         // installed-state refresh. Entrance motion is handled once by the adapter.
@@ -125,6 +128,14 @@ public class DownloadListFragment extends Fragment implements ModItemAdapter.Sea
 
         mAdapter = new ModItemAdapter(getResources(), mApi, this);
         mRecyclerView.setAdapter(mAdapter);
+        GridLayoutManager gridLayout = (GridLayoutManager) mRecyclerView.getLayoutManager();
+        if (gridLayout != null) {
+            gridLayout.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override public int getSpanSize(int position) {
+                    return mAdapter != null && mAdapter.getItemViewType(position) == 1 ? 2 : 1;
+                }
+            });
+        }
         applyInstallContext();
 
         mAdapter.setOnItemClickListener(item -> {

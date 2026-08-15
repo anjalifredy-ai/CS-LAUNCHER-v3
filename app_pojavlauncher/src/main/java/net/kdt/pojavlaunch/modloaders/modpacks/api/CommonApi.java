@@ -142,7 +142,7 @@ public class CommonApi implements ModpackApi {
     }
 
     private @NonNull ModpackApi getModpackApi(@NonNull File modpackFile) throws IOException {
-        // O3 (Copper port): sniff the modpack format straight from the local
+        // O3 (CS integration): sniff the modpack format straight from the local
         // cache file with ZipFile random access — no repeated content-provider
         // opens (each DocumentsUI openInputStream was a full re-read).
         try (ZipFile zip = new ZipFile(modpackFile)) {

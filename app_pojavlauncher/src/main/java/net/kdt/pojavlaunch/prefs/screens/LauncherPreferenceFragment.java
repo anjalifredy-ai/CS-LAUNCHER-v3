@@ -507,6 +507,13 @@ public class LauncherPreferenceFragment extends Fragment {
                     launcherItems.add(new SettingItem("microphone_permission_request", SettingItem.TYPE_SWITCH, getString(R.string.preference_ask_for_microphone_title), getString(R.string.preference_ask_for_microphone_description), false));
                     launcherItems.add(new SettingItem("downloadSource", SettingItem.TYPE_DROPDOWN, getString(R.string.preference_download_source_title), getString(R.string.preference_download_source_description), "default").setDropdownOptions(new String[]{"Default", "Mirror (China)"}, new String[]{"default", "china"}));
                     launcherItems.add(new SettingItem("verifyManifest", SettingItem.TYPE_SWITCH, getString(R.string.preference_verify_manifest_title), getString(R.string.preference_verify_manifest_description), true));
+                    launcherItems.add(new SettingItem("game_log_display_mode", SettingItem.TYPE_DROPDOWN,
+                            "Game Launch Logs",
+                            "Animated Smart replaces startup spam with the CS CLI intro and keeps important logs; Full Raw shows every line.",
+                            "animated_smart")
+                            .setDropdownOptions(
+                                    new String[]{"Animated Smart Logs (Default)", "Full Raw Logs"},
+                                    new String[]{"animated_smart", "full_raw"}));
                     // A9: global animation speed (concept port from Zalith). One
                     // slider retimes every UiMotion animation via MotionSpeed.
                     launcherItems.add(new SettingItem("launcher_animate_speed", SettingItem.TYPE_SLIDER,
@@ -1394,7 +1401,7 @@ public class LauncherPreferenceFragment extends Fragment {
                         }
                     });
 
-                    // O9 (Copper concept port): tapping the value chip (e.g.
+                    // O9 (CS Launcher interaction): tapping the value chip (e.g.
                     // "4096 MB") opens a dialog to type an exact number, clamped
                     // to the slider's min/max — no more dragging through steps.
                     tvVal.setClickable(true);

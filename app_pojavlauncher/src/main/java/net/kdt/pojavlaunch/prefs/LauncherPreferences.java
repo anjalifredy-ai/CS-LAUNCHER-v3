@@ -70,6 +70,7 @@ public class LauncherPreferences {
     
     public static boolean PREF_VERIFY_MANIFEST = true;
     public static String PREF_DOWNLOAD_SOURCE = "default";
+    public static String PREF_GAME_LOG_DISPLAY_MODE = "animated_smart";
     public static boolean PREF_SKIP_NOTIFICATION_PERMISSION_CHECK = false;
     public static boolean PREF_VSYNC_IN_ZINK = true;
     public static boolean PREF_FORCE_ENABLE_TOUCHCONTROLLER = false;
@@ -129,6 +130,7 @@ public class LauncherPreferences {
         PREF_BIG_CORE_AFFINITY = DEFAULT_PREF.getBoolean("bigCoreAffinity", false);
         PREF_ZINK_PREFER_SYSTEM_DRIVER = DEFAULT_PREF.getBoolean("zinkPreferSystemDriver", false);
         PREF_DOWNLOAD_SOURCE = DEFAULT_PREF.getString("downloadSource", "default");
+        PREF_GAME_LOG_DISPLAY_MODE = DEFAULT_PREF.getString("game_log_display_mode", "animated_smart");
         PREF_VERIFY_MANIFEST = DEFAULT_PREF.getBoolean("verifyManifest", true);
         PREF_SKIP_NOTIFICATION_PERMISSION_CHECK = DEFAULT_PREF.getBoolean(PREF_KEY_SKIP_NOTIFICATION_CHECK, false);
         PREF_VSYNC_IN_ZINK = DEFAULT_PREF.getBoolean("vsync_in_zink", true); // TRUE (env present) = zink obeys the game's swapInterval → uncapped when MC vsync is off; absent env = driver-forced vsync lock

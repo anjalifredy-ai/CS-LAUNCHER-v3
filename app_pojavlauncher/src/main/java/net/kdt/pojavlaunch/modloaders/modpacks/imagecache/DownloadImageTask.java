@@ -20,7 +20,7 @@ class DownloadImageTask implements Runnable {
     @Override
     public void run() {
         boolean wasSuccessful = false;
-        while(mRetryCount < 5 && !(wasSuccessful = runCatching())) {
+        while(mRetryCount < 2 && !(wasSuccessful = runCatching())) {
             mRetryCount++;
         }
         // restart the parent task to read the image and send it to the receiver
@@ -32,27 +32,39 @@ class DownloadImageTask implements Runnable {
     public boolean runCatching() {
         try {
             DownloadUtils.downloadFile(mParentTask.imageUrl, mParentTask.cacheFile);
-            Bitmap bitmap = BitmapFactory.decodeFile(mParentTask.cacheFile.getAbsolutePath());
-            if(bitmap == null) return false;
-            int bitmapWidth = bitmap.getWidth(), bitmapHeight = bitmap.getHeight();
-            if(bitmapWidth <= BITMAP_FINAL_DIMENSION && bitmapHeight <= BITMAP_FINAL_DIMENSION) {
+            boolean banner = mParentTask.cacheFile.getName().contains("_bg");
+            float target = banner ? 640f : BITMAP_FINAL_DIMENSION;
+
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(mParentTask.cacheFile.getAbsolutePath(), bounds);
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return false;
+            int sample = 1;
+            int maxSide = Math.max(bounds.outWidth, bounds.outHeight);
+            while (maxSide / (sample * 2) >= target) sample *= 2;
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sample;
+            if (banner) options.inPreferredConfig = Bitmap.Config.RGB_565;
+            Bitmap bitmap = BitmapFactory.decodeFile(mParentTask.cacheFile.getAbsolutePath(), options);
+            if (bitmap == null) return false;
+            int width = bitmap.getWidth(), height = bitmap.getHeight();
+            if (width <= target && height <= target && sample == 1) {
                 bitmap.recycle();
                 return true;
             }
-            float imageRescaleRatio = Math.min(BITMAP_FINAL_DIMENSION/bitmapWidth, BITMAP_FINAL_DIMENSION/bitmapHeight);
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap,
-                    (int)(bitmapWidth * imageRescaleRatio),
-                    (int)(bitmapHeight * imageRescaleRatio),
-                    true);
-            bitmap.recycle();
-            if(resizedBitmap == bitmap) return true;
-            try (FileOutputStream fileOutputStream = new FileOutputStream(mParentTask.cacheFile)) {
-                resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream);
+            float ratio = Math.min(1f, Math.min(target / width, target / height));
+            Bitmap resized = Bitmap.createScaledBitmap(bitmap,
+                    Math.max(1, (int) (width * ratio)),
+                    Math.max(1, (int) (height * ratio)), true);
+            if (resized != bitmap) bitmap.recycle();
+            try (FileOutputStream output = new FileOutputStream(mParentTask.cacheFile)) {
+                resized.compress(Bitmap.CompressFormat.JPEG, banner ? 76 : 82, output);
             } finally {
-                if(resizedBitmap != null) resizedBitmap.recycle();
+                resized.recycle();
             }
             return true;
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }

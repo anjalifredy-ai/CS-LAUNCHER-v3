@@ -84,7 +84,7 @@ public class ModpackInstaller {
     }
 
     public static ModLoader importModpack(File modpackFile, int apiSource, InstallFunction installFunction) throws IOException, NoSuchAlgorithmException {
-        // O3 (Copper port): the caller (LauncherActivity) already streamed the
+        // O3 (CS integration): the caller (LauncherActivity) already streamed the
         // DocumentsUI content into a local cache file, so everything below is
         // plain fast file I/O — no repeated content-provider opens, and the
         // hash pass now reports real progress.

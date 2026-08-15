@@ -126,6 +126,14 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     @Override
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        if (holder instanceof ModItemViewHolder) {
+            ((ModItemViewHolder) holder).recycle();
+        }
+        super.onViewRecycled(holder);
+    }
+
+    @Override
     public int getItemCount() {
         if (mModItems.length == 0) return 0;
         return mLastPage ? mModItems.length : mModItems.length + 1;
@@ -157,6 +165,34 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    private String buildTagLine(String[] categories) {
+        if (categories == null || categories.length == 0) return "";
+        StringBuilder result = new StringBuilder();
+        int shown = 0;
+        for (String raw : categories) {
+            if (raw == null || raw.trim().isEmpty()) continue;
+            String tag = raw.trim().replace('-', ' ');
+            if (result.length() > 0) result.append("  •  ");
+            result.append(Character.toUpperCase(tag.charAt(0))).append(tag.substring(1));
+            if (++shown >= 4) break;
+        }
+        return result.toString();
+    }
+
+    private String installedLabel(InstalledContentTracker.InstallInfo info, boolean newer) {
+        if (info.installedAt > 0L) {
+            String date = android.text.format.DateFormat.format("dd MMM", info.installedAt)
+                    .toString().toUpperCase(java.util.Locale.getDefault());
+            return (newer ? "NEWER" : "INSTALLED") + "  •  " + date;
+        }
+        if (info.version != null && !info.version.isEmpty()) {
+            String version = info.version.length() > 14
+                    ? info.version.substring(0, 14) + "…" : info.version;
+            return (newer ? "NEWER" : "INSTALLED") + "  •  " + version;
+        }
+        return newer ? "INSTALLED NEWER" : "INSTALLED";
+    }
+
     private int getSourceDrawable(int apiSource) {
         switch (apiSource) {
             case net.kdt.pojavlaunch.modloaders.modpacks.models.Constants.SOURCE_CURSEFORGE:
@@ -176,6 +212,8 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         private final TextView mTitleView;
         private final TextView mInfoView;
         private final TextView mDownloadsView;
+        private final TextView mFollowersView;
+        private final TextView mTagsView;
         private final TextView mDescriptionView;
         private final ImageButton mLikeButton;
         private final ImageButton mShareButton;
@@ -201,6 +239,8 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mTitleView = itemView.findViewById(R.id.mod_title_textview);
             mInfoView = itemView.findViewById(R.id.mod_info_textview);
             mDownloadsView = itemView.findViewById(R.id.mod_downloads_text);
+            mFollowersView = itemView.findViewById(R.id.mod_followers_text);
+            mTagsView = itemView.findViewById(R.id.mod_tags_textview);
             mDescriptionView = itemView.findViewById(R.id.mod_body_textview);
             mLikeButton = itemView.findViewById(R.id.btn_like);
             mShareButton = itemView.findViewById(R.id.btn_share);
@@ -258,6 +298,25 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 }
             }
 
+            if (mFollowersView != null) {
+                if (item.followers != null && !item.followers.isEmpty()) {
+                    mFollowersView.setText(formatDownloads(item.followers) + " followers");
+                    mFollowersView.setVisibility(View.VISIBLE);
+                } else {
+                    mFollowersView.setVisibility(View.GONE);
+                }
+            }
+
+            if (mTagsView != null) {
+                String tags = buildTagLine(item.categories);
+                if (!tags.isEmpty()) {
+                    mTagsView.setText(tags);
+                    mTagsView.setVisibility(View.VISIBLE);
+                } else {
+                    mTagsView.setVisibility(View.GONE);
+                }
+            }
+
             if (item.description != null && !item.description.isEmpty()) {
                 mDescriptionView.setText(item.description);
                 mDescriptionView.setVisibility(View.VISIBLE);
@@ -267,14 +326,31 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             mSourceIconView.setImageResource(getSourceDrawable(item.apiSource));
 
-            // Result rows intentionally use a stable graphite surface instead of
-            // per-card gallery slideshows. This keeps text contrast consistent,
-            // prevents recycler image churn and makes every row align identically.
+            // One static Modrinth gallery banner per card. No slideshow/timer:
+            // visual cards stay fast and deterministic while scrolling.
             stopSlideshow();
             mBackgroundView1.animate().cancel();
             mBackgroundView2.animate().cancel();
+            mBackgroundView1.setAlpha(0f);
             mBackgroundView1.setImageDrawable(null);
             mBackgroundView2.setImageDrawable(null);
+            String bannerUrl = null;
+            if (item.galleryUrls != null && item.galleryUrls.length > 0) {
+                bannerUrl = item.galleryUrls[0];
+            } else if (item.galleryUrl != null && !item.galleryUrl.isEmpty()) {
+                bannerUrl = item.galleryUrl;
+            } else if (item.imageUrl != null && !item.imageUrl.isEmpty()) {
+                bannerUrl = item.imageUrl;
+            }
+            if (bannerUrl != null) {
+                final String requestedBanner = bannerUrl;
+                mIconCache.getImage(bitmap -> {
+                    if (mCurrentItem == item && bitmap != null) {
+                        mBackgroundView1.setImageBitmap(bitmap);
+                        mBackgroundView1.animate().alpha(0.72f).setDuration(180).start();
+                    }
+                }, item.getIconCacheTag() + "_bg", requestedBanner);
+            }
 
             mIconView.setImageDrawable(null);
             mIconCache.getImage(
@@ -331,16 +407,16 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 showInstallAction(false);
                 return;
             }
-            int state = InstalledContentTracker.queryState(
+            InstalledContentTracker.InstallInfo info = InstalledContentTracker.queryInfo(
                     itemView.getContext().getApplicationContext(),
                     mInstallProfileKey, mInstallContentType, item.id, mInstallContentDir);
-            switch (state) {
+            switch (info.state) {
                 case InstalledContentTracker.STATE_INSTALLED:
                     mInstallButton.setVisibility(View.GONE);
                     mInstallStatePill.setVisibility(View.VISIBLE);
                     mInstallStatePill.setBackgroundResource(R.drawable.bg_cs_installed_pill);
                     mInstallStateIcon.setColorFilter(Color.parseColor("#2BD97B"));
-                    mInstallStateText.setText(R.string.cs_installed_profile);
+                    mInstallStateText.setText(installedLabel(info, false));
                     mInstallStateText.setTextColor(Color.parseColor("#8FEBBC"));
                     break;
                 case InstalledContentTracker.STATE_INSTALLED_NEWER:
@@ -348,7 +424,7 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     mInstallStatePill.setVisibility(View.VISIBLE);
                     mInstallStatePill.setBackgroundResource(R.drawable.bg_cs_installed_pill);
                     mInstallStateIcon.setColorFilter(Color.parseColor("#2BD97B"));
-                    mInstallStateText.setText(R.string.cs_installed_newer);
+                    mInstallStateText.setText(installedLabel(info, true));
                     mInstallStateText.setTextColor(Color.parseColor("#8FEBBC"));
                     break;
                 case InstalledContentTracker.STATE_UPDATE_AVAILABLE:
@@ -368,11 +444,11 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             mInstallButton.setVisibility(View.VISIBLE);
             mInstallButton.setBackgroundResource(update
                     ? R.drawable.bg_browse_update_button
-                    : R.drawable.bg_browse_install_button);
+                    : R.drawable.bg_modrinth_install_dark);
             if (mInstallButton instanceof TextView) {
                 TextView label = (TextView) mInstallButton;
                 label.setText(update ? "UPDATE" : "INSTALL");
-                label.setTextColor(Color.parseColor(update ? "#FFD07A" : "#101114"));
+                label.setTextColor(Color.parseColor(update ? "#FFD07A" : "#F1F1F4"));
             }
         }
 
@@ -421,6 +497,17 @@ public class ModItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 mSlideshowHandler.removeCallbacks(mSlideshowRunnable);
                 mSlideshowRunnable = null;
             }
+        }
+
+        private void recycle() {
+            stopSlideshow();
+            mCurrentItem = null;
+            itemView.animate().cancel();
+            mBackgroundView1.animate().cancel();
+            mBackgroundView1.setImageDrawable(null);
+            mBackgroundView1.setAlpha(0f);
+            mBackgroundView2.setImageDrawable(null);
+            mIconView.setImageDrawable(null);
         }
 
         @Override

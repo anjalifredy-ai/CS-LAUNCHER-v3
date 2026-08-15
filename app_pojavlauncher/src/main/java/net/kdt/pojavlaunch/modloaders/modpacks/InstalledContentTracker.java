@@ -51,7 +51,9 @@ public final class InstalledContentTracker {
         if (modId == null) return;
         prefs(ctx).edit()
                 .putString(key(profileKey, contentType, modId),
-                        (versionName == null ? "" : versionName) + "|" + (fileName == null ? "" : fileName))
+                        (versionName == null ? "" : versionName) + "|"
+                                + (fileName == null ? "" : fileName) + "|"
+                                + System.currentTimeMillis())
                 .apply();
     }
 
@@ -69,42 +71,67 @@ public final class InstalledContentTracker {
      *                   (mods / resourcepacks / shaderpacks / saves); used to
      *                   verify the installed file still exists. May be null.
      */
+    public static final class InstallInfo {
+        public final int state;
+        @Nullable public final String version;
+        public final long installedAt;
+
+        InstallInfo(int state, @Nullable String version, long installedAt) {
+            this.state = state;
+            this.version = version;
+            this.installedAt = installedAt;
+        }
+    }
+
     public static int queryState(Context ctx, @Nullable String profileKey,
                                  String contentType, String modId,
                                  @Nullable File contentDir) {
-        if (modId == null || contentType == null) return STATE_NONE;
+        return queryInfo(ctx, profileKey, contentType, modId, contentDir).state;
+    }
+
+    /** State plus the version/date metadata rendered by the Modrinth-style card. */
+    public static InstallInfo queryInfo(Context ctx, @Nullable String profileKey,
+                                        String contentType, String modId,
+                                        @Nullable File contentDir) {
+        if (modId == null || contentType == null) return new InstallInfo(STATE_NONE, null, 0L);
         try {
             SharedPreferences p = prefs(ctx);
             String record = p.getString(key(profileKey, contentType, modId), null);
-            if (record == null) return STATE_NONE;
+            if (record == null) return new InstallInfo(STATE_NONE, null, 0L);
 
-            String installedVersion = record;
-            String fileName = null;
-            int sep = record.indexOf('|');
-            if (sep != -1) {
-                installedVersion = record.substring(0, sep);
-                fileName = record.substring(sep + 1);
+            String[] parts = record.split("\\|", -1);
+            String installedVersion = parts.length > 0 ? parts[0] : "";
+            String fileName = parts.length > 1 ? parts[1] : "";
+            long installedAt = 0L;
+            if (parts.length > 2 && !parts[2].isEmpty()) {
+                try { installedAt = Long.parseLong(parts[2]); } catch (NumberFormatException ignored) {}
             }
 
             // Auto-heal: file vanished (deleted from Manage Mods) → drop index.
-            if (fileName != null && !fileName.isEmpty() && contentDir != null) {
+            if (!fileName.isEmpty() && contentDir != null) {
                 File f = new File(contentDir, fileName);
                 if (!f.exists()) {
                     p.edit().remove(key(profileKey, contentType, modId)).apply();
-                    return STATE_NONE;
+                    return new InstallInfo(STATE_NONE, null, 0L);
                 }
+                // Legacy records did not store a timestamp. File mtime is the
+                // closest truthful install date and avoids showing fake data.
+                if (installedAt <= 0L) installedAt = f.lastModified();
             }
 
             String latest = p.getString(latestKey(contentType, modId), null);
-            if (latest == null || latest.isEmpty()
-                    || installedVersion == null || installedVersion.isEmpty()
+            int state;
+            if (latest == null || latest.isEmpty() || installedVersion.isEmpty()
                     || latest.equals(installedVersion)) {
-                return STATE_INSTALLED;
+                state = STATE_INSTALLED;
+            } else {
+                int cmp = compareVersionStrings(installedVersion, latest);
+                state = cmp >= 0 ? STATE_INSTALLED_NEWER : STATE_UPDATE_AVAILABLE;
             }
-            int cmp = compareVersionStrings(installedVersion, latest);
-            return cmp >= 0 ? STATE_INSTALLED_NEWER : STATE_UPDATE_AVAILABLE;
+            return new InstallInfo(state,
+                    installedVersion.isEmpty() ? null : installedVersion, installedAt);
         } catch (Exception e) {
-            return STATE_NONE;
+            return new InstallInfo(STATE_NONE, null, 0L);
         }
     }
 

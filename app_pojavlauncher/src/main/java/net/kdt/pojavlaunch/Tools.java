@@ -846,7 +846,7 @@ public final class Tools {
     public static String generateLaunchClasspath(JMinecraftVersionList.Version info, String actualname) {
         StringBuilder launchClasspath = new StringBuilder(); //versnDir + "/" + version + "/" + version + ".jar:";
         String libClasspath = getLibClasspath(info); // Sets lwjglVersion, janky, but we can't get it any simpler
-        // Match Copper's packaged bridge selection: 3.4.1 is the newest
+        // Match the CS Launcher packaged bridge selection: 3.4.1 is the newest
         // bundled component and serves current modern snapshots.
         String internalLwjglVersion = iLwjglVersion >= 341 ? "3.4.1" : "3.3.3";
         File lwjgl3Folder = new File(Tools.DIR_GAME_HOME, "lwjgl3/"+internalLwjglVersion);

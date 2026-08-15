@@ -116,6 +116,17 @@ public class CurseforgeApi implements ModpackApi{
                     dataElement.get("summary").getAsString(),
                     thumbnailUrl);
             modItem.isRestricted = restricted;
+            if (dataElement.has("categories") && dataElement.get("categories").isJsonArray()) {
+                JsonArray categories = dataElement.getAsJsonArray("categories");
+                ArrayList<String> names = new ArrayList<>();
+                for (int c = 0; c < categories.size() && names.size() < 5; c++) {
+                    JsonObject category = categories.get(c).getAsJsonObject();
+                    if (category.has("name") && !category.get("name").isJsonNull()) {
+                        names.add(category.get("name").getAsString());
+                    }
+                }
+                modItem.categories = names.toArray(new String[0]);
+            }
             // Capture the mod page URL from CF API for use in restriction dialog
             JsonObject links = dataElement.getAsJsonObject("links");
             if (links != null && links.has("websiteUrl") && !links.get("websiteUrl").isJsonNull()) {

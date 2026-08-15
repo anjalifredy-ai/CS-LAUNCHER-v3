@@ -10,8 +10,10 @@ public class ModItem extends ModSource implements Serializable {
     public String title;
     public String author;
     public String downloads;
+    public String followers;
     public String description;
     public String imageUrl;
+    public String[] categories;
     public String[] galleryUrls;
     public String galleryUrl; // kept for compatibility
     /** True if the mod author blocked third-party distribution (CF allowModDistribution=false) */
