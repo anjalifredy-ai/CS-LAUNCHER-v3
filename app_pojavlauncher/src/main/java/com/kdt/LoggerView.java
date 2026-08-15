@@ -48,8 +48,13 @@ public class LoggerView extends ConstraintLayout {
     private boolean mCliIntroStarted = false;
     private boolean mCliIntroFinished = false;
     private int mStartupRawLineCount = 0;
-    private int mCliStep = 0;
-    private static final int SMART_INTRO_RAW_LINES = 24;
+    private final java.util.ArrayDeque<String> mSmartImportantBuffer = new java.util.ArrayDeque<>();
+    private final java.util.LinkedHashSet<String> mSmartDedup = new java.util.LinkedHashSet<>();
+    private Runnable mCliAnimationRunnable;
+    private long mSessionStartedAt;
+    private int mSmartWarnings;
+    private int mSmartErrors;
+    private boolean mReadySummaryShown;
     /** Batches rapid emissions so the animator keeps up with burst logger traffic. */
     private final java.util.ArrayDeque<String> mPendingLines = new java.util.ArrayDeque<>();
     private boolean mFlushScheduled = false;
@@ -80,7 +85,7 @@ public class LoggerView extends ConstraintLayout {
         mLogRecycler.setLayoutManager(mLayoutManager);
         mLogRecycler.setAdapter(mAdapter);
         DefaultItemAnimator animator = new DefaultItemAnimator();
-        animator.setAddDuration(240);
+        animator.setAddDuration(120);
         animator.setChangeDuration(100);
         animator.setMoveDuration(160);
         animator.setRemoveDuration(120);
@@ -269,9 +274,11 @@ public class LoggerView extends ConstraintLayout {
         int raw = mAdapter.rawCount();
         int vis = mAdapter.visibleCount();
         String mode = mSmartMode ? "SMART" : "RAW";
+        String health = mSmartMode
+                ? " • " + mSmartWarnings + " warn • " + mSmartErrors + " err" : "";
         mCountText.setText((vis == raw
                 ? raw + " lines"
-                : vis + "/" + raw + " lines") + " • " + mode + " • " + state);
+                : vis + "/" + raw + " lines") + " • " + mode + health + " • " + state);
     }
 
     // ═══════════════════════ SMART CLI INTRO ═══════════════════════
@@ -280,46 +287,168 @@ public class LoggerView extends ConstraintLayout {
         mCliIntroStarted = true;
         mCliIntroFinished = false;
         mStartupRawLineCount = 0;
-        mCliStep = 0;
-        appendCli("> cs-launcher boot --logs=smart", 0xFFE4E4EA);
-        appendCli("  Craft Studio mobile launch terminal", 0xFF7C7F89);
-        appendCli("", 0xFF7C7F89);
+        mSmartImportantBuffer.clear();
+        mSmartDedup.clear();
+        mSmartWarnings = 0;
+        mSmartErrors = 0;
+        mReadySummaryShown = false;
+        mSessionStartedAt = android.os.SystemClock.elapsedRealtime();
+
+        final String command = "> cs-launcher boot --logs=smart";
+        final String[] logo = {
+                "   ██████╗ ███████╗",
+                "  ██╔════╝ ██╔════╝",
+                "  ██║      ███████╗",
+                "  ██║      ╚════██║",
+                "  ╚██████╗ ███████║",
+                "   ╚═════╝ ╚══════╝"
+        };
+        final String[] spinner = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴"};
+
+        // One mutable terminal row gives a real CLI typing cursor and spinner.
+        // All callbacks run on the UI queue; Minecraft/JVM launch never waits.
+        appendCli("▋", 0xFFE4E4EA);
+        mCliAnimationRunnable = new Runnable() {
+            int stage = 0;
+            int charIndex = 0;
+            int logoIndex = 0;
+            int spinnerIndex = 0;
+
+            @Override public void run() {
+                if (mCliIntroFinished) return;
+                if (stage == 0) {
+                    if (charIndex < command.length()) {
+                        charIndex++;
+                        replaceCliLast(command.substring(0, charIndex) + "▋", 0xFFE4E4EA);
+                        postDelayed(this, 18L);
+                        return;
+                    }
+                    replaceCliLast(command, 0xFFE4E4EA);
+                    appendCli("  Craft Studio mobile launch terminal", 0xFF7C7F89);
+                    appendCli("", 0xFF7C7F89);
+                    stage = 1;
+                    postDelayed(this, 70L);
+                    return;
+                }
+                if (stage == 1) {
+                    if (logoIndex < logo.length) {
+                        appendCli(logo[logoIndex++], 0xFFEDEDF2);
+                        if (mKeepAutoscroll) scrollToEnd(false);
+                        postDelayed(this, 58L);
+                        return;
+                    }
+                    appendCli("", 0xFFEDEDF2);
+                    appendCli("  C S   L A U N C H E R   V 3", 0xFFFFFFFF);
+                    appendCli("  Powered by Craft Studio", 0xFF9C9EA8);
+                    appendCli("", 0xFF7C7F89);
+                    appendCli("> Runtime ........ READY", 0xFF8FD3A5);
+                    appendCli("> Renderer ....... READY", 0xFF8FD3A5);
+                    appendCli("> Mod loader ..... " + spinner[0] + " SCANNING", 0xFFC9CBD6);
+                    spinnerIndex = 1;
+                    stage = 2;
+                    postDelayed(this, 72L);
+                    return;
+                }
+                if (stage == 2) {
+                    if (spinnerIndex < spinner.length) {
+                        replaceCliLast("> Mod loader ..... " + spinner[spinnerIndex++] + " SCANNING",
+                                0xFFC9CBD6);
+                        postDelayed(this, 72L);
+                        return;
+                    }
+                    replaceCliLast("> Mod loader ..... READY", 0xFF8FD3A5);
+                    appendCli("> Starting Minecraft process…", 0xFFC9CBD6);
+                    if (mKeepAutoscroll) scrollToEnd(false);
+                    stage = 3;
+                    postDelayed(this, 90L);
+                    return;
+                }
+                finishCliIntro();
+            }
+        };
+        post(mCliAnimationRunnable);
     }
 
-    private void advanceCliIntro(int rawCount) {
-        final String[][] steps = {
-                {"1", "   ██████╗ ███████╗"},
-                {"3", "  ██╔════╝ ██╔════╝"},
-                {"5", "  ██║      ███████╗"},
-                {"7", "  ██║      ╚════██║"},
-                {"9", "  ╚██████╗ ███████║"},
-                {"11", "   ╚═════╝ ╚══════╝"},
-                {"13", ""},
-                {"14", "  CS LAUNCHER V3  •  CRAFT STUDIO"},
-                {"16", "> Runtime ........ READY"},
-                {"18", "> Renderer ....... READY"},
-                {"20", "> Mod loader ..... READY"},
-                {"22", "> Starting Minecraft process…"}
-        };
-        while (mCliStep < steps.length
-                && rawCount >= Integer.parseInt(steps[mCliStep][0])) {
-            String line = steps[mCliStep][1];
-            int color = line.contains("READY") ? 0xFF8FD3A5
-                    : line.startsWith(">") ? 0xFFC9CBD6 : 0xFFEDEDF2;
-            appendCli(line, color);
-            mCliStep++;
-        }
+    private void replaceCliLast(String line, int color) {
+        mAdapter.replaceLastLine(new LogLineAdapter.LogLine(tinted(line, color), line));
+        if (mKeepAutoscroll) scrollToEnd(false);
     }
 
     private void finishCliIntro() {
         if (mCliIntroFinished) return;
         mCliIntroFinished = true;
-        appendCli("> Launch bootstrap complete. Attaching important live output…", 0xFF8FD3A5);
+        if (mCliAnimationRunnable != null) removeCallbacks(mCliAnimationRunnable);
+        if (mStartupRawLineCount > 0) {
+            appendCli("> " + mStartupRawLineCount + " low-level startup lines condensed", 0xFF70727D);
+        }
+        appendCli("> Launch bootstrap complete. Showing important live events…", 0xFF8FD3A5);
         appendCli("────────────────────────────────────────────────────────", 0xFF454751);
+        while (!mSmartImportantBuffer.isEmpty()) {
+            String important = mSmartImportantBuffer.poll();
+            appendSmartImportant(important);
+        }
+        if (mKeepAutoscroll) scrollToEnd(true);
+        updateStatus();
     }
 
     private void appendCli(String line, int color) {
         mAdapter.appendLine(new LogLineAdapter.LogLine(tinted(line, color), line));
+    }
+
+    /** Deduplicate repetitive mod-loader messages before they reach the user. */
+    private boolean appendSmartImportant(@Nullable String important) {
+        if (important == null || important.trim().isEmpty()) return false;
+        String key = important.replaceAll("\\s+", " ").trim();
+        if (!mSmartDedup.add(key)) return false;
+        if (mSmartDedup.size() > 240) {
+            java.util.Iterator<String> it = mSmartDedup.iterator();
+            if (it.hasNext()) { it.next(); it.remove(); }
+        }
+        String up = important.toUpperCase(java.util.Locale.US);
+        if (up.startsWith("[ERROR]")) mSmartErrors++;
+        else if (up.startsWith("[WARNING]")) mSmartWarnings++;
+        mAdapter.appendLine(new LogLineAdapter.LogLine(
+                styledSmartLine(important), important));
+        if (up.startsWith("[READY]") && !mReadySummaryShown) {
+            mReadySummaryShown = true;
+            String summary = mSmartErrors == 0
+                    ? "[SESSION] Launch healthy • " + mSmartWarnings + " actionable warning(s)"
+                    : "[SESSION] Launch completed with " + mSmartErrors + " error(s)";
+            mAdapter.appendLine(new LogLineAdapter.LogLine(styledSmartLine(summary), summary));
+        }
+        return true;
+    }
+
+    /** Timestamp + colored level + readable message, similar to modern log viewers. */
+    private CharSequence styledSmartLine(String important) {
+        long elapsed = Math.max(0L, android.os.SystemClock.elapsedRealtime() - mSessionStartedAt);
+        String stamp = String.format(java.util.Locale.US, "%02d:%02d.%d  ",
+                elapsed / 60000L, (elapsed / 1000L) % 60L, (elapsed / 100L) % 10L);
+        String full = stamp + important;
+        android.text.SpannableString styled = new android.text.SpannableString(full);
+        styled.setSpan(new android.text.style.ForegroundColorSpan(0xFF5F626D),
+                0, stamp.length(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        int tagStart = stamp.length();
+        int tagEnd = important.indexOf(']') + 1;
+        if (tagEnd > 0) {
+            tagEnd += stamp.length();
+            String tag = important.substring(0, important.indexOf(']') + 1).toUpperCase(java.util.Locale.US);
+            int color = tag.contains("ERROR") ? 0xFFFF6B74
+                    : tag.contains("WARN") ? 0xFFFFB020
+                    : tag.contains("READY") ? 0xFF8FD3A5
+                    : tag.contains("MOD") ? 0xFFB8A7E8
+                    : tag.contains("GRAPHICS") ? 0xFF91B7D9
+                    : 0xFFB9BBC4;
+            styled.setSpan(new android.text.style.ForegroundColorSpan(color),
+                    tagStart, tagEnd, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styled.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                    tagStart, tagEnd, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (tagEnd < full.length()) {
+                styled.setSpan(new android.text.style.ForegroundColorSpan(0xFFD1D2D8),
+                        tagEnd, full.length(), android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+        return styled;
     }
 
     private boolean isCriticalLine(String line) {
@@ -337,42 +466,76 @@ public class LoggerView extends ConstraintLayout {
         String clean = line.trim();
         String up = clean.toUpperCase(java.util.Locale.US);
         if (clean.isEmpty()) return null;
+
+        // Errors remain complete: diagnostics must never be simplified away.
         if (isCriticalLine(clean)) return "[ERROR] " + clean;
-        if (up.contains("WARN")) return "[WARN] " + clean;
-        if (up.contains("FABRIC LOADER") || up.contains("FORGE MOD LOADER")
-                || up.contains("NEOFORGE") || up.contains("QUILT LOADER")) {
-            return "[MOD LOADER] " + clean;
+
+        // Hide harmless warning spam; surface warnings a player can act on.
+        if (up.contains("WARN")) {
+            boolean actionable = up.contains("MOD") || up.contains("MIXIN")
+                    || up.contains("RENDER") || up.contains("OPENGL")
+                    || up.contains("VULKAN") || up.contains("MISSING")
+                    || up.contains("UNSUPPORTED") || up.contains("MEMORY")
+                    || up.contains("AUTH") || up.contains("FAILED")
+                    || up.contains("INCOMPATIB");
+            return actionable ? "[WARNING] " + clean : null;
         }
-        if (up.contains("MODS LOADED") || up.contains("LOADED MODS")
-                || up.matches(".*LOADING [0-9]+ MODS.*")
-                || up.matches(".*[0-9]+ MODS.*LOADED.*")) {
-            return "[MODS] " + clean;
-        }
-        if (up.contains("SODIUM") || up.contains("IRIS") || up.contains("OPTIFINE")) {
-            return "[MOD] " + clean;
-        }
-        if (up.contains("RENDERER") || up.contains("OPENGL VENDOR")
-                || up.contains("BACKEND LIBRARY") || up.contains("MOBILEGLUES")
-                || up.contains("ZINK") || up.contains("GL4ES")) {
-            return "[RENDERER] " + clean;
-        }
-        if (up.contains("JAVA VERSION") || up.contains("JAVA RUNTIME")
-                || up.contains("JVM INITIALIZED")) {
-            return "[RUNTIME] " + clean;
-        }
-        if (up.contains("SOUND ENGINE STARTED") || up.contains("OPENAL INITIALIZED")) {
-            return "[AUDIO] " + clean;
-        }
-        if (up.contains("RELOADING RESOURCEMANAGER") || up.contains("RESOURCE RELOAD")) {
-            return "[RESOURCES] " + clean;
-        }
-        if (up.contains("AUTHENTICAT") || up.contains("LOGGED IN AS")) {
-            return "[ACCOUNT] " + clean;
-        }
-        if (up.contains("STARTING MINECRAFT") || up.contains("SETTING USER")
-                || up.contains("DONE (") || up.contains("JAVA EXIT CODE")) {
-            return "[GAME] " + clean;
-        }
+
+        if (up.contains("FABRIC LOADER"))
+            return "[MOD LOADER] Fabric Loader initialized";
+        if (up.contains("NEOFORGE"))
+            return "[MOD LOADER] NeoForge initialized";
+        if (up.contains("FORGE MOD LOADER") || up.contains("MINECRAFTFORGE")
+                || up.contains("MODLAUNCHER RUNNING"))
+            return "[MOD LOADER] Forge initialized";
+        if (up.contains("QUILT LOADER"))
+            return "[MOD LOADER] Quilt Loader initialized";
+
+        java.util.regex.Matcher count = java.util.regex.Pattern
+                .compile("(?i)(?:loading|loaded|discover(?:ed)?|found)\\s+(\\d+)\\s+mods?")
+                .matcher(clean);
+        if (count.find()) return "[MODS] " + count.group(1) + " mods discovered";
+
+        if (up.contains("SODIUM")) return "[MOD] Sodium performance engine active";
+        if (up.contains("IRIS")) return "[MOD] Iris shader support active";
+        if (up.contains("OPTIFINE")) return "[MOD] OptiFine detected";
+        if (up.contains("IMMEDIATELYFAST")) return "[MOD] ImmediatelyFast active";
+        if (up.contains("LITHIUM")) return "[MOD] Lithium optimization active";
+
+        if (up.contains("MOBILEGLUES")) return "[GRAPHICS] MobileGlues renderer ready";
+        if (up.contains(" ZINK") || up.contains("GALLIUM_DRIVER=ZINK"))
+            return "[GRAPHICS] Zink Vulkan renderer ready";
+        if (up.contains("GL4ES")) return "[GRAPHICS] GL4ES renderer ready";
+        if (up.contains("OPENGL VENDOR")) return "[GRAPHICS] GPU driver connected";
+        if (up.contains("BACKEND LIBRARY") || up.contains("LWJGL VERSION"))
+            return "[GRAPHICS] LWJGL graphics bridge ready";
+
+        if (up.contains("JAVA VERSION") || up.contains("JAVA RUNTIME"))
+            return "[JAVA] Compatible Java runtime loaded";
+        if (up.contains("JVM INITIALIZED")) return "[JAVA] Java virtual machine ready";
+
+        if (up.contains("SOUND ENGINE STARTED") || up.contains("OPENAL INITIALIZED"))
+            return "[AUDIO] Game audio engine ready";
+        if (up.contains("RELOADING RESOURCEMANAGER") || up.contains("RESOURCE RELOAD"))
+            return "[RESOURCES] Resource packs loaded";
+        if (up.contains("AUTHENTICATED") || up.contains("LOGGED IN AS"))
+            return "[ACCOUNT] Premium session authenticated";
+        if (up.contains("DATAFIXER") && up.contains("OPTIM"))
+            return "[GAME] Optimizing Minecraft world data";
+        if (up.contains("SETTING USER")) return "[GAME] Player profile attached";
+        if (up.contains("STARTING MINECRAFT")) return "[GAME] Minecraft process started";
+        if (up.contains("PREPARING SPAWN AREA")) return "[WORLD] Preparing spawn area";
+        if (up.contains("JOINING WORLD") || up.contains("JOINED THE GAME"))
+            return "[WORLD] Entering the Minecraft world";
+        if (up.contains("CONNECTING TO") && (up.contains("SERVER") || up.contains(":")))
+            return "[NETWORK] Connecting to multiplayer server";
+        if (up.contains("SAVING CHUNKS")) return "[WORLD] Saving world data";
+        if (up.contains("DONE (") && (up.contains("MAIN") || up.contains("SERVER")))
+            return "[READY] Minecraft finished loading";
+        if (up.contains("JAVA EXIT CODE")) return "[GAME] " + clean;
+
+        // Intentionally hidden: JVM argument dumps, env variables, classpath,
+        // individual mixin registrations and repetitive debug/info chatter.
         return null;
     }
 
@@ -403,29 +566,22 @@ public class LoggerView extends ConstraintLayout {
                 continue;
             }
 
+            String important = toSmartLine(line);
             if (!mCliIntroFinished) {
-                // The game/logger never waits for this UI. We simply consume the
-                // first noisy startup lines as animation ticks instead of drawing
-                // JVM args, env variables and classpath spam.
+                // Raw logging continues normally in Logger/latestlog.txt. During
+                // the non-blocking visual intro we retain only readable events.
                 mStartupRawLineCount++;
                 if (isCriticalLine(line)) {
                     finishCliIntro();
-                    String important = toSmartLine(line);
-                    mAdapter.appendLine(new LogLineAdapter.LogLine(
-                            colorizeLine(important), important));
+                    appendSmartImportant(important);
                     inserted = true;
-                } else {
-                    advanceCliIntro(mStartupRawLineCount);
-                    if (mStartupRawLineCount >= SMART_INTRO_RAW_LINES) finishCliIntro();
-                    inserted = true;
+                } else if (important != null && mSmartImportantBuffer.size() < 80) {
+                    mSmartImportantBuffer.add(important);
                 }
                 continue;
             }
 
-            String important = toSmartLine(line);
-            if (important != null) {
-                mAdapter.appendLine(new LogLineAdapter.LogLine(
-                        colorizeLine(important), important));
+            if (important != null && appendSmartImportant(important)) {
                 inserted = true;
             }
         }
@@ -466,7 +622,8 @@ public class LoggerView extends ConstraintLayout {
             color = 0xFFFF6B74; // error red
         } else if (up.contains("WARN")) {
             color = 0xFFFFB020; // warning amber
-        } else if (up.contains("SUCCESS") || up.contains("DONE!") || up.contains("DONE ")
+        } else if (up.startsWith("[READY]") || up.contains("SUCCESS")
+                || up.contains("DONE!") || up.contains("DONE ")
                 || up.contains("FINISHED") || up.contains("STARTED SERVER")
                 || up.contains("SUCCESSFULLY")) {
             color = 0xFF22C55E; // success green

@@ -8,6 +8,9 @@
     android:textColor="#C9CBD6"
     android:textSize="10.5sp"
     android:lineSpacingMultiplier="1.14"
+    android:minHeight="24dp"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_log_line"
     android:paddingHorizontal="14dp"
-    android:paddingVertical="1dp"
+    android:paddingVertical="3dp"
     android:fontFamily="monospace" />

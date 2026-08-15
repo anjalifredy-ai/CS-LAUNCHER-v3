@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_settings_row">
+            android:background="@drawable/bg_settings_deck_row">
 
             <!-- Main Row -->
             <LinearLayout

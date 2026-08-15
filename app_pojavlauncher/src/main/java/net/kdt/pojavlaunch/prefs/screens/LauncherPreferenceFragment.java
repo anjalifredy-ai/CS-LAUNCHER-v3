@@ -75,6 +75,7 @@ public class LauncherPreferenceFragment extends Fragment {
     private ImageView mHeaderIcon;
     private LinearLayout mCategoryRail;
     private View mCategoryRailScroll;
+    private View mDockSpacer;
     // ══ Phase 3: search / favorites / recent / focus-jump ══
     private String mSearchQuery = "";
     private EditText mSearchInput;
@@ -140,6 +141,7 @@ public class LauncherPreferenceFragment extends Fragment {
         mHeaderIcon = view.findViewById(R.id.settings_header_icon);
         mCategoryRail = view.findViewById(R.id.settings_category_rail);
         mCategoryRailScroll = view.findViewById(R.id.settings_category_rail_scroll);
+        mDockSpacer = view.findViewById(R.id.settings_dock_spacer);
 
         setupHeaderUi();
         setupCategoryRail();
@@ -168,41 +170,29 @@ public class LauncherPreferenceFragment extends Fragment {
         }
 
         setupSettingsList();
-        mRecyclerView.setLayoutAnimation(AnimationUtils.loadLayoutAnimation(
-                requireContext(), R.anim.settings_rows_layout_v4));
-        mRecyclerView.scheduleLayoutAnimation();
         playSettingsStudioEntrance(view);
         updateSaveBar();
     }
 
     /** GPU-friendly page choreography: transform/alpha only, no animated sizes. */
     private void playSettingsStudioEntrance(@NonNull View root) {
-        View sidebar = root.findViewById(R.id.settings_header_bar);
-        if (sidebar != null) {
+        // Short, single-direction motion: clear spatial continuity without the
+        // old simultaneous zoom/pulse choreography.
+        View header = root.findViewById(R.id.settings_header_bar);
+        if (header != null) {
             float d = getResources().getDisplayMetrics().density;
-            sidebar.animate().cancel();
-            sidebar.setAlpha(0f);
-            sidebar.setTranslationX(-18f * d);
-            sidebar.animate().alpha(1f).translationX(0f)
-                    .setDuration(280)
+            header.animate().cancel();
+            header.setAlpha(0f);
+            header.setTranslationY(-6f * d);
+            header.animate().alpha(1f).translationY(0f)
+                    .setDuration(190)
                     .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
-                    .withLayer().start();
-        }
-        if (mRecyclerView != null) {
-            float d = getResources().getDisplayMetrics().density;
-            mRecyclerView.animate().cancel();
-            mRecyclerView.setAlpha(0f);
-            mRecyclerView.setTranslationX(16f * d);
-            mRecyclerView.animate().alpha(1f).translationX(0f)
-                    .setStartDelay(55).setDuration(300)
-                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.7f))
                     .withLayer().start();
         }
         if (mCategoryRailScroll != null && mCategoryRailScroll.getVisibility() == View.VISIBLE) {
             mCategoryRailScroll.setAlpha(0f);
-            mCategoryRailScroll.setTranslationY(-8f * getResources().getDisplayMetrics().density);
-            mCategoryRailScroll.animate().alpha(1f).translationY(0f)
-                    .setStartDelay(80).setDuration(240).withLayer().start();
+            mCategoryRailScroll.animate().alpha(1f).setStartDelay(35)
+                    .setDuration(170).withLayer().start();
         }
     }
 
@@ -245,12 +235,7 @@ public class LauncherPreferenceFragment extends Fragment {
         if (mHeaderIcon != null) {
             mHeaderIcon.setImageResource(mCategoryName != null ? resolveCategoryIconByName(mCategoryName) : R.drawable.ic_menu_settings);
             mHeaderIcon.setAlpha(0f);
-            mHeaderIcon.setScaleX(0.78f);
-            mHeaderIcon.setScaleY(0.78f);
-            mHeaderIcon.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                    .setDuration(240)
-                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
-                    .start();
+            mHeaderIcon.animate().alpha(1f).setDuration(160).start();
         }
     }
 
@@ -260,8 +245,10 @@ public class LauncherPreferenceFragment extends Fragment {
 
         if (mCategoryName == null) {
             mCategoryRailScroll.setVisibility(View.GONE);
+            if (mDockSpacer != null) mDockSpacer.setVisibility(View.VISIBLE);
             return;
         }
+        if (mDockSpacer != null) mDockSpacer.setVisibility(View.GONE);
 
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         for (SettingItem item : buildRootCategoryItems()) {
@@ -270,8 +257,10 @@ public class LauncherPreferenceFragment extends Fragment {
             TextView chipText = chipView.findViewById(R.id.settings_nav_chip_text);
             boolean selected = Objects.equals(item.categoryLinkTarget, mCategoryName);
             chipText.setText(shortenCategoryLabel(item.title));
-            chipText.setBackgroundResource(selected ? R.drawable.bg_cs_pill_active : R.drawable.bg_cs_pill_idle);
-            chipText.setTextColor(Color.parseColor(selected ? "#0D0D0D" : "#9CA3AF"));
+            chipText.setBackgroundResource(selected
+                    ? R.drawable.bg_settings_nav_active : R.drawable.bg_settings_nav_idle);
+            chipText.setTextColor(Color.parseColor(selected ? "#F2F2F5" : "#858792"));
+            if (selected) chipText.setText("•  " + shortenCategoryLabel(item.title));
             chipText.setOnClickListener(v -> {
                 if (!selected) openCategoryPage(item.categoryLinkTarget);
             });
@@ -1301,9 +1290,9 @@ public class LauncherPreferenceFragment extends Fragment {
                     tvSummary.setText(item.summary);
 
                     itemView.setOnClickListener(v -> {
-                        v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80)
+                        v.animate().scaleX(0.985f).scaleY(0.985f).setDuration(55)
                                 .withEndAction(() -> {
-                                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                                    v.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                                     Bundle bundle = new Bundle();
                                     bundle.putString("category", item.categoryLinkTarget);
                                     Tools.swapFragment(
@@ -1514,9 +1503,9 @@ public class LauncherPreferenceFragment extends Fragment {
                     tvSummary.setText(item.summary);
 
                     itemView.setOnClickListener(v -> {
-                        v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80)
+                        v.animate().scaleX(0.985f).scaleY(0.985f).setDuration(55)
                                 .withEndAction(() -> {
-                                    v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                                    v.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                                     if (item.action != null) {
                                         item.action.run();
                                     }
@@ -1571,74 +1560,29 @@ public class LauncherPreferenceFragment extends Fragment {
         }
 
 
-        private void bindDashboardHolder(@NonNull CategoryViewHolder holder, @NonNull SettingCategory cat, @NonNull LayoutInflater inflater) {
-            holder.categoryTitle.setText("SETTINGS DECK");
+        private void bindDashboardHolder(@NonNull CategoryViewHolder holder,
+                                         @NonNull SettingCategory cat,
+                                         @NonNull LayoutInflater inflater) {
+            holder.categoryTitle.setText("BROWSE SETTINGS");
             holder.categoryCount.setVisibility(View.VISIBLE);
             holder.categoryCount.setText(String.valueOf(cat.items.size()));
             holder.container.removeAllViews();
 
             holder.container.addView(createDashboardSectionHeader(
                     holder.itemView.getContext(),
-                    "QUICK OVERVIEW",
-                    "Launcher tuning at a glance",
-                    "A horizontal control hub built for landscape mobile play."
+                    "CONTROL CENTER",
+                    "Choose a settings category",
+                    "Focused groups, consistent controls, and one safe Apply action."
             ));
 
-            LinearLayout statRow = new LinearLayout(holder.itemView.getContext());
-            statRow.setOrientation(LinearLayout.HORIZONTAL);
-            statRow.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
-            statRow.setPadding(0, 0, 0, dp(8));
-
-            String activeProfile = PojavProfile.getCurrentProfileContent(requireContext(), null) != null
-                    ? PojavProfile.getCurrentProfileContent(requireContext(), null).username
-                    : "Guest";
-            statRow.addView(createDashboardStat(inflater, statRow, String.valueOf(cat.items.size()), "Settings pages"));
-            statRow.addView(createDashboardStat(inflater, statRow, "Dark", "Launcher theme"));
-            statRow.addView(createDashboardStat(inflater, statRow, activeProfile, "Live profile"));
-            holder.container.addView(statRow);
-
-            // ══ Phase 3: Favorites + Recently Changed quick-pins ══
-            Context dashCtx = holder.itemView.getContext();
-            java.util.List<String> favKeys = net.kdt.pojavlaunch.prefs.SettingsMetaStore.getFavorites(dashCtx);
-            java.util.List<String> recentKeys = net.kdt.pojavlaunch.prefs.SettingsMetaStore.getRecent(dashCtx);
-            if (!favKeys.isEmpty()) {
-                holder.container.addView(createDashboardSectionHeader(dashCtx,
-                        "YOUR FAVORITES",
-                        dashCtx.getString(R.string.cs_settings_favorites),
-                        "Starred settings — one tap jumps straight to the option."));
-                holder.container.addView(buildPinnedRail(inflater, favKeys, true));
-            }
-            if (!recentKeys.isEmpty()) {
-                holder.container.addView(createDashboardSectionHeader(dashCtx,
-                        "PICK UP WHERE YOU LEFT",
-                        dashCtx.getString(R.string.cs_settings_recent),
-                        "The last options you touched, newest first."));
-                holder.container.addView(buildPinnedRail(inflater, recentKeys, false));
-            }
-
-            holder.container.addView(createDashboardSectionHeader(
-                    holder.itemView.getContext(),
-                    "SETTINGS HUB",
-                    "Browse categories",
-                    "Every tuning deck of CS Launcher V3 — tap a card to dive in."
-            ));
-
-            // ══ Phase 5 (Req-6): 2-column hub grid — every category visible at
-            // once instead of a hidden horizontal swipe row. Cards keep their
-            // press-bounce and gain a staggered fade/slide entrance.
             Context gridCtx = holder.itemView.getContext();
             LinearLayout categoryGrid = new LinearLayout(gridCtx);
             categoryGrid.setOrientation(LinearLayout.VERTICAL);
             categoryGrid.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
 
-            final int colGap = dp(8);
-            final int rowGap = dp(8);
+            final int gap = dp(7);
             LinearLayout currentRow = null;
             int cardIndex = 0;
             for (SettingItem item : cat.items) {
@@ -1652,87 +1596,41 @@ public class LauncherPreferenceFragment extends Fragment {
                 TextView title = card.findViewById(R.id.category_card_title);
                 TextView summary = card.findViewById(R.id.category_card_summary);
                 TextView badge = card.findViewById(R.id.category_card_badge);
-
                 if (icon != null) icon.setImageResource(resolveCategoryIconByName(item.categoryLinkTarget));
                 if (title != null) title.setText(item.title);
                 if (summary != null) summary.setText(item.summary);
                 if (badge != null) {
                     badge.setText(resolveCategoryBadgeByName(item.categoryLinkTarget));
                     badge.setVisibility(View.VISIBLE);
-                    try {
-                        android.animation.Animator pop = android.animation.AnimatorInflater.loadAnimator(gridCtx, R.animator.s4h_badge_pop);
-                        pop.setTarget(badge);
-                        pop.start();
-                    } catch (Throwable ignored) {}
                 }
-                View iconWell = card.findViewById(R.id.category_card_icon_well);
-                if (iconWell != null) {
-                    try {
-                        android.animation.Animator pulse = android.animation.AnimatorInflater.loadAnimator(gridCtx, R.animator.s4h_icon_pulse);
-                        pulse.setTarget(iconWell);
-                        pulse.start();
-                    } catch (Throwable ignored) {}
-                }
-
                 card.setOnClickListener(v -> {
-                    v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80)
+                    v.animate().scaleX(0.985f).scaleY(0.985f).setDuration(55)
                             .withEndAction(() -> {
-                                v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                                v.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                                 openCategoryPage(item.categoryLinkTarget);
                             }).start();
                 });
-
                 LinearLayout.LayoutParams slot = new LinearLayout.LayoutParams(
                         0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-                if (cardIndex % 2 == 0) slot.setMargins(0, 0, colGap / 2, rowGap);
-                else                      slot.setMargins(colGap / 2, 0, 0, rowGap);
+                if (cardIndex % 2 == 0) slot.setMargins(0, 0, gap / 2, gap);
+                else slot.setMargins(gap / 2, 0, 0, gap);
                 currentRow.addView(card, slot);
 
-                // Lightweight staggered reveal (alpha/translate only — no layout work)
                 card.setAlpha(0f);
-                card.setTranslationY(dp(12));
-                card.animate()
-                        .alpha(1f).translationY(0f)
-                        .setStartDelay(26L * cardIndex)
-                        .setDuration(260)
-                        .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                        .start();
-
+                card.setTranslationY(dp(5));
+                card.animate().alpha(1f).translationY(0f)
+                        .setStartDelay(14L * cardIndex).setDuration(145)
+                        .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
+                        .withLayer().start();
                 cardIndex++;
             }
             holder.container.addView(categoryGrid);
-
-            holder.container.addView(createDashboardSectionHeader(
-                    holder.itemView.getContext(),
-                    "QUICK ACTIONS",
-                    "One-tap launcher tools",
-                    "Use premium shortcuts for runtime, controls, and cleanup."
-            ));
-
-            android.widget.HorizontalScrollView actionScroller = new android.widget.HorizontalScrollView(holder.itemView.getContext());
-            actionScroller.setHorizontalScrollBarEnabled(false);
-            actionScroller.setOverScrollMode(View.OVER_SCROLL_NEVER);
-            actionScroller.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
-            LinearLayout actionRow = new LinearLayout(holder.itemView.getContext());
-            actionRow.setOrientation(LinearLayout.HORIZONTAL);
-            actionScroller.addView(actionRow);
-            actionRow.addView(createQuickActionChip(inflater, actionRow, "Runtime Manager", () -> LauncherPreferenceFragment.this.openMultiRTDialog()));
-            actionRow.addView(createQuickActionChip(inflater, actionRow, "Controls", () -> openCategoryPage("Controls")));
-            actionRow.addView(createQuickActionChip(inflater, actionRow, "Clear Cache", () -> {
-                clearCacheLocal(requireContext());
-                Toast.makeText(requireContext(), "Caches cleared successfully", Toast.LENGTH_SHORT).show();
-            }));
-            holder.container.addView(actionScroller);
-
             holder.itemView.setVisibility(View.VISIBLE);
             RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
             if (params != null) {
                 params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                params.topMargin = (int) (6 * holder.itemView.getResources().getDisplayMetrics().density);
-                params.bottomMargin = (int) (10 * holder.itemView.getResources().getDisplayMetrics().density);
+                params.topMargin = dp(4);
+                params.bottomMargin = dp(8);
                 holder.itemView.setLayoutParams(params);
             }
         }
@@ -2008,7 +1906,7 @@ public class LauncherPreferenceFragment extends Fragment {
                 swatchView.setOnClickListener(v -> {
                     v.animate().scaleX(0.92f).scaleY(0.92f).setDuration(80)
                             .withEndAction(() -> {
-                                v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                                v.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                                 ThemeManager.applyPreset(targetPreset);
                                 Toast.makeText(requireContext(), "Applied " + targetPreset.name, Toast.LENGTH_SHORT).show();
                                 requireActivity().recreate();
@@ -2067,7 +1965,7 @@ public class LauncherPreferenceFragment extends Fragment {
             chipText.setOnClickListener(v -> {
                 v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80)
                         .withEndAction(() -> {
-                            v.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                            v.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                             action.run();
                         }).start();
             });
@@ -2168,18 +2066,9 @@ public class LauncherPreferenceFragment extends Fragment {
         if (item.key != null && mAnimatedSettingIcons.add(item.key)) {
             icon.animate().cancel();
             icon.setAlpha(0f);
-            icon.setScaleX(0.62f);
-            icon.setScaleY(0.62f);
-            icon.setRotation(-9f);
-            icon.animate().alpha(1f).scaleX(1f).scaleY(1f).rotation(0f)
-                    .setDuration(220)
-                    .setInterpolator(new android.view.animation.OvershootInterpolator(0.8f))
-                    .withLayer().start();
+            icon.animate().alpha(1f).setDuration(120).withLayer().start();
         } else {
             icon.setAlpha(1f);
-            icon.setScaleX(1f);
-            icon.setScaleY(1f);
-            icon.setRotation(0f);
         }
     }
 

@@ -45,12 +45,28 @@ public class LogLineAdapter extends RecyclerView.Adapter<LogLineAdapter.LineVH> 
             int remove = Math.min(40, mRaw.size());
             mRaw.subList(0, remove).clear();
             refilter();
-            return;
+            // Continue and append the newest event. The previous implementation
+            // returned here and silently lost the line that triggered trimming.
         }
         mRaw.add(line);
         if (matches(line)) {
             mVisible.add(line);
             notifyItemInserted(mVisible.size() - 1);
+        }
+    }
+
+    /** Replace the newest terminal row (used by CLI typing/spinner animation). */
+    public void replaceLastLine(@NonNull LogLine line) {
+        if (mRaw.isEmpty()) {
+            appendLine(line);
+            return;
+        }
+        mRaw.set(mRaw.size() - 1, line);
+        if (mFilter == null && !mVisible.isEmpty()) {
+            mVisible.set(mVisible.size() - 1, line);
+            notifyItemChanged(mVisible.size() - 1, "terminal-frame");
+        } else {
+            refilter();
         }
     }
 
@@ -105,6 +121,16 @@ public class LogLineAdapter extends RecyclerView.Adapter<LogLineAdapter.LineVH> 
     @Override
     public void onBindViewHolder(@NonNull LineVH holder, int position) {
         holder.textView.setText(mVisible.get(position).text);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull LineVH holder, int position,
+                                 @NonNull java.util.List<Object> payloads) {
+        if (!payloads.isEmpty()) {
+            holder.textView.setText(mVisible.get(position).text);
+            return;
+        }
+        super.onBindViewHolder(holder, position, payloads);
     }
 
     @Override
