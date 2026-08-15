@@ -147,8 +147,10 @@ public class SkinManagerFragment extends Fragment {
                 else getParentFragmentManager().popBackStack();
             });
         }
-        view.findViewById(R.id.skin_preview_expand).setOnClickListener(v -> enterFullscreenPreview());
-        view.findViewById(R.id.skin_fullscreen_close).setOnClickListener(v -> exitFullscreenPreview());
+        View expandPreview = view.findViewById(R.id.skin_preview_expand);
+        View closePreview = view.findViewById(R.id.skin_fullscreen_close);
+        if (expandPreview != null) expandPreview.setOnClickListener(v -> enterFullscreenPreview());
+        if (closePreview != null) closePreview.setOnClickListener(v -> exitFullscreenPreview());
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(),
                 new OnBackPressedCallback(true) {
                     @Override public void handleOnBackPressed() {
