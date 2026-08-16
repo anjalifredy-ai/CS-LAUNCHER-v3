@@ -520,27 +520,10 @@ public class JREUtils {
             }
         }
         boolean isMicrosoftAccount = activeAccount != null && activeAccount.isMicrosoft;
-        if (isMicrosoftAccount) {
-            // Premium sessions must always use Mojang's signed profile service.
-            // Remove stale local/Ely overrides and user-supplied authlib agents.
-            purgeArg(userArgs, "-Dminecraft.api.auth.host");
-            purgeArg(userArgs, "-Dminecraft.api.account.host");
-            purgeArg(userArgs, "-Dminecraft.api.session.host");
-            purgeArg(userArgs, "-Dminecraft.api.services.host");
-            java.util.Iterator<String> authArgs = userArgs.iterator();
-            while (authArgs.hasNext()) {
-                String arg = authArgs.next();
-                if (arg.startsWith("-javaagent:") && arg.contains("authlib-injector")) authArgs.remove();
-            }
-            System.clearProperty("minecraft.api.auth.host");
-            System.clearProperty("minecraft.api.account.host");
-            System.clearProperty("minecraft.api.session.host");
-            System.clearProperty("minecraft.api.services.host");
-            // Do not hardcode endpoints for premium accounts. This mirrors
-            // upstream Pojav: each bundled Authlib version selects its own
-            // Mojang production environment and signature keys.
-            Logger.appendToLog("Premium skin pipeline: vanilla Authlib environment restored");
-        } else {
+        // Copper/Pojav premium path: do absolutely nothing to Authlib. The
+        // Minecraft version's own libraries, environment and Mojang keys stay
+        // untouched. Custom injection is isolated to non-Microsoft accounts.
+        if (!isMicrosoftAccount) {
             if (isElyBy) {
                 String authlibPath = authlibFile.getAbsolutePath();
                 if (authlibFile.exists()) {
