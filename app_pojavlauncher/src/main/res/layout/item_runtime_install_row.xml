@@ -94,7 +94,7 @@
                 android:layout_height="22dp"
                 android:layout_gravity="center"
                 android:indeterminate="true"
-                android:indeterminateTint="#6EDFE0"
+                android:indeterminateTint="#8BE3E4"
                 android:visibility="gone"
                 tools:visibility="visible" />
         </FrameLayout>

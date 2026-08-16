@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Featured account option — slightly elevated stroke + brighter stack -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#26E8E8E8">
+    android:color="#26FFFFFF">
     <item>
         <shape android:shape="rectangle">
             <gradient

@@ -34,7 +34,7 @@
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:indeterminate="true"
-            android:indeterminateTint="#E8E8E8" />
+            android:indeterminateTint="#FFFFFF" />
 
         <TextView
             android:layout_width="wrap_content"

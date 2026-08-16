@@ -42,6 +42,6 @@
 
     <FrameLayout android:layout_width="34dp" android:layout_height="34dp" android:layout_marginStart="10dp" android:background="@drawable/bg_runtime_state_well">
         <ImageView android:id="@+id/runtime_check" android:layout_width="26dp" android:layout_height="26dp" android:layout_gravity="center" android:background="@drawable/bg_check_circle" android:padding="5dp" android:src="@drawable/ic_check_small" android:visibility="gone" tools:visibility="visible" />
-        <ProgressBar android:id="@+id/runtime_spinner" style="?android:attr/progressBarStyleSmall" android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:indeterminateTint="#E8E8E8" android:visibility="gone" />
+        <ProgressBar android:id="@+id/runtime_spinner" style="?android:attr/progressBarStyleSmall" android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="center" android:indeterminateTint="#FFFFFF" android:visibility="gone" />
     </FrameLayout>
 </LinearLayout>

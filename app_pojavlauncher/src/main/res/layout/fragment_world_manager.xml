@@ -44,7 +44,7 @@
                 android:layout_height="16dp"
                 android:contentDescription="@string/cs_back"
                 android:src="@drawable/ic_arrow_back"
-                app:tint="#E8E8E8" />
+                app:tint="#FFFFFF" />
         </LinearLayout>
 
         <!-- Title block — center-left -->
@@ -100,7 +100,7 @@
                 android:gravity="center"
                 android:paddingHorizontal="10dp"
                 android:text="…"
-                android:textColor="#E8E8E8"
+                android:textColor="#FFFFFF"
                 android:textSize="9.5sp"
                 android:textStyle="bold"
                 tools:text="6 worlds" />
@@ -121,7 +121,7 @@
                     android:layout_height="16dp"
                     android:contentDescription="@string/cs_world_refresh"
                     android:src="@drawable/ic_cs_refresh"
-                    app:tint="#E8E8E8" />
+                    app:tint="#FFFFFF" />
             </LinearLayout>
         </LinearLayout>
 
@@ -153,7 +153,7 @@
                 android:layout_gravity="center"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_cs_storage"
-                app:tint="#22C9CB" />
+                app:tint="#D0D0D0" />
         </FrameLayout>
 
         <LinearLayout
@@ -214,7 +214,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:textColor="#E8E8E8"
+            android:textColor="#FFFFFF"
             android:textSize="12sp"
             android:textStyle="bold"
             tools:text="2.4 GB" />
@@ -333,7 +333,7 @@
             <ProgressBar
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:indeterminateTint="#22C9CB" />
+                android:indeterminateTint="#D0D0D0" />
 
             <TextView
                 android:layout_width="wrap_content"

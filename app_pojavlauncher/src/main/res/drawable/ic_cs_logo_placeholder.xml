@@ -20,7 +20,7 @@
     <!-- Inner rim light -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#40E8E8E8"
+        android:strokeColor="#40FFFFFF"
         android:strokeWidth="1"
         android:pathData="M12,5.5 L36,5.5 Q42.5,5.5 42.5,12 L42.5,36 Q42.5,42.5 36,42.5 L12,42.5 Q5.5,42.5 5.5,36 L5.5,12 Q5.5,5.5 12,5.5 Z" />
 
@@ -34,6 +34,6 @@
 
     <!-- Violet energy beam -->
     <path
-        android:fillColor="#22C9CB"
+        android:fillColor="#D0D0D0"
         android:pathData="M8,37 L40,37 Q40,40 37,40 L11,40 Q8,40 8,37 Z" />
 </vector>

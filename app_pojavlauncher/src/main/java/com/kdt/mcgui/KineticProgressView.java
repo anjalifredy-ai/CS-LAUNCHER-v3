@@ -20,8 +20,8 @@ import androidx.annotation.Nullable;
  */
 public class KineticProgressView extends View {
 
-    private static final int NEON_GREEN = 0xFFE8E8E8; // premium silver-white
-    private static final int NEON_GREEN_DIM = 0x33E8E8E8; // soft silver glow
+    private static final int NEON_GREEN = 0xFFFFFFFF; // premium silver-white
+    private static final int NEON_GREEN_DIM = 0x33FFFFFF; // soft silver glow
     private static final int DARK_BG = 0xFF1A1A1A;
 
     private float mProgress = 0f; // 0..1

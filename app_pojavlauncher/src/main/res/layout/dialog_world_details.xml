@@ -139,15 +139,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView android:id="@+id/wdd_play" style="@style/CsWorldActionRow" android:text="@string/cs_world_play" android:drawableStart="@drawable/ic_cs_play" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_datapacks_browse" style="@style/CsWorldActionRow" android:text="@string/cs_world_browse_datapacks" android:drawableStart="@drawable/ic_cs_datapack" android:drawablePadding="12dp" android:drawableTint="#22C9CB" />
-            <TextView android:id="@+id/wdd_rename" style="@style/CsWorldActionRow" android:text="@string/cs_world_rename" android:drawableStart="@drawable/ic_edit_profile" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_duplicate" style="@style/CsWorldActionRow" android:text="@string/cs_world_duplicate" android:drawableStart="@drawable/ic_browse_resources" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_backup" style="@style/CsWorldActionRow" android:text="@string/cs_world_backup" android:drawableStart="@drawable/ic_cs_backup" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_restore" style="@style/CsWorldActionRow" android:text="@string/cs_world_restore" android:drawableStart="@drawable/ic_cs_import" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_export" style="@style/CsWorldActionRow" android:text="@string/cs_world_export" android:drawableStart="@drawable/ic_menu_share" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_compress" style="@style/CsWorldActionRow" android:text="@string/cs_world_compress" android:drawableStart="@drawable/ic_cs_storage" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
-            <TextView android:id="@+id/wdd_open_folder" style="@style/CsWorldActionRow" android:text="@string/cs_world_open_folder" android:drawableStart="@drawable/ic_folder" android:drawablePadding="12dp" android:drawableTint="#E8E8E8" />
+            <TextView android:id="@+id/wdd_play" style="@style/CsWorldActionRow" android:text="@string/cs_world_play" android:drawableStart="@drawable/ic_cs_play" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_datapacks_browse" style="@style/CsWorldActionRow" android:text="@string/cs_world_browse_datapacks" android:drawableStart="@drawable/ic_cs_datapack" android:drawablePadding="12dp" android:drawableTint="#D0D0D0" />
+            <TextView android:id="@+id/wdd_rename" style="@style/CsWorldActionRow" android:text="@string/cs_world_rename" android:drawableStart="@drawable/ic_edit_profile" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_duplicate" style="@style/CsWorldActionRow" android:text="@string/cs_world_duplicate" android:drawableStart="@drawable/ic_browse_resources" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_backup" style="@style/CsWorldActionRow" android:text="@string/cs_world_backup" android:drawableStart="@drawable/ic_cs_backup" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_restore" style="@style/CsWorldActionRow" android:text="@string/cs_world_restore" android:drawableStart="@drawable/ic_cs_import" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_export" style="@style/CsWorldActionRow" android:text="@string/cs_world_export" android:drawableStart="@drawable/ic_menu_share" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_compress" style="@style/CsWorldActionRow" android:text="@string/cs_world_compress" android:drawableStart="@drawable/ic_cs_storage" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
+            <TextView android:id="@+id/wdd_open_folder" style="@style/CsWorldActionRow" android:text="@string/cs_world_open_folder" android:drawableStart="@drawable/ic_folder" android:drawablePadding="12dp" android:drawableTint="#FFFFFF" />
             <TextView android:id="@+id/wdd_delete" style="@style/CsWorldActionRow" android:text="@string/cs_world_delete" android:textColor="#FF4444" android:drawableStart="@drawable/ic_menu_delete_forever" android:drawablePadding="12dp" android:drawableTint="#FF4444" />
         </LinearLayout>
     </LinearLayout>

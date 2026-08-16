@@ -110,13 +110,13 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
         mRoundPath.addRoundRect(mRect, h / 2f, h / 2f, Path.Direction.CW);
 
         mBaseGradient = new LinearGradient(0, 0, w, h,
-                new int[]{0xFFFAFAFC, 0xFFE8E8E8, 0xFFBFC1CB},
+                new int[]{0xFFFAFAFC, 0xFFFFFFFF, 0xFFBFC1CB},
                 new float[]{0f, 0.48f, 1f}, Shader.TileMode.CLAMP);
         mSheenGradient = new LinearGradient(0, 0, w * 0.32f, h,
                 new int[]{0x00FFFFFF, 0x7FFFFFFF, 0x00FFFFFF},
                 new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP);
         mWaveGradient = new LinearGradient(0, 0, Math.max(1, w), 0,
-                new int[]{0x00E8E8E8, 0x66E8E8E8, 0xCC22C9CB, 0x66E8E8E8, 0x00E8E8E8},
+                new int[]{0x00FFFFFF, 0x66FFFFFF, 0xCCD0D0D0, 0x66FFFFFF, 0x00FFFFFF},
                 new float[]{0f, 0.28f, 0.5f, 0.72f, 1f}, Shader.TileMode.CLAMP);
         mBasePaint.setShader(mBaseGradient);
         mSheenPaint.setShader(mSheenGradient);
@@ -303,7 +303,7 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
         // Glow + edge highlight above content.
         if (mLaunching) {
             float pulse = 0.5f + 0.5f * (float) Math.sin(mLaunchFraction * Math.PI * 2.0);
-            mStrokePaint.setColor(0x5522C9CB);
+            mStrokePaint.setColor(0x55D0D0D0);
             mStrokePaint.setStrokeWidth(dp(4.5f + pulse * 1.3f));
             canvas.drawPath(mRoundPath, mStrokePaint);
         }
@@ -343,7 +343,7 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
             int life = mPLife[i];
             if (life <= 0) continue;
             int alpha = Math.min(220, life * 9);
-            mParticlePaint.setColor((alpha << 24) | (i % 3 == 0 ? 0x22C9CB : 0xE8E8E8));
+            mParticlePaint.setColor((alpha << 24) | (i % 3 == 0 ? 0xD0D0D0 : 0xFFFFFF));
             canvas.drawCircle(mPX[i], mPY[i], dp(i % 4 == 0 ? 1.7f : 1.1f), mParticlePaint);
         }
     }

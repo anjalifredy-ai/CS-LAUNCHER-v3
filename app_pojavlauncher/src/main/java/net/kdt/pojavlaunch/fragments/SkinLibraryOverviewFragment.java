@@ -58,7 +58,7 @@ public class SkinLibraryOverviewFragment extends Fragment {
         accountText.setText(account.username);
         int active = store.getActiveSlot();
         activeText.setText(active >= 0 ? "SLOT " + (active + 1) + " ACTIVE" : "NO ACTIVE SKIN");
-        activeText.setTextColor(active >= 0 ? 0xFF82F3F4 : 0xFF22C9CB);
+        activeText.setTextColor(active >= 0 ? 0xFF82F3F4 : 0xFFD0D0D0);
         slotContainer.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         for (int i = 0; i < SkinSlotStore.SLOT_COUNT; i++) {

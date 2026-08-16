@@ -15,7 +15,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:textColor">#E8E8E8</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.18</item>
@@ -78,7 +78,7 @@
         <item name="android:minHeight">0dp</item>
         <item name="android:paddingHorizontal">16dp</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:textColor">#E8E8E8</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">11.5sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.08</item>
@@ -104,7 +104,7 @@
         <item name="android:gravity">center_vertical</item>
         <item name="android:paddingHorizontal">14dp</item>
         <item name="android:textSize">12.5sp</item>
-        <item name="android:textColor">#E8E8E8</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:background">@drawable/bg_cs_glass_card_sm</item>
     </style>
 
@@ -123,7 +123,7 @@
         <item name="android:layout_height">46dp</item>
         <item name="android:layout_marginTop">14dp</item>
         <item name="android:textAllCaps">true</item>
-        <item name="android:textColor">#E8E8E8</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.1</item>
@@ -177,7 +177,7 @@
         <item name="android:paddingHorizontal">14dp</item>
         <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#E8E8E8</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:background">@drawable/bg_cs_settings_row</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>

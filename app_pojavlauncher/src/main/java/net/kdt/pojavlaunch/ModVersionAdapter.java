@@ -127,7 +127,7 @@ public class ModVersionAdapter extends RecyclerView.Adapter<ModVersionAdapter.Vi
         String type = version.version_type != null ? version.version_type : "release";
         if (type.equalsIgnoreCase("release")) {
             holder.tvBadgeStable.setText("Stable");
-            holder.tvBadgeStable.setTextColor(0xFFE8E8E8);
+            holder.tvBadgeStable.setTextColor(0xFFFFFFFF);
             holder.tvBadgeStable.setBackgroundResource(R.drawable.bg_mp_stable_pill);
         } else {
             holder.tvBadgeStable.setText(type.substring(0, 1).toUpperCase() + type.substring(1));

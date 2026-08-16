@@ -5,7 +5,7 @@
             <size
                 android:width="22dp"
                 android:height="22dp" />
-            <solid android:color="#3322C9CB" />
+            <solid android:color="#33D0D0D0" />
         </shape>
     </item>
     <item
@@ -17,7 +17,7 @@
             <solid android:color="#FFFFFF" />
             <stroke
                 android:width="2dp"
-                android:color="#22C9CB" />
+                android:color="#D0D0D0" />
         </shape>
     </item>
 </layer-list>

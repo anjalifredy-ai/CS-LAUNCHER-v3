@@ -2,7 +2,7 @@
 <!-- MP BROWSE HEADER — deep glass bar with platinum hairline -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
-        <shape android:shape="rectangle"><solid android:color="#2AE8E8E8" /></shape>
+        <shape android:shape="rectangle"><solid android:color="#2AFFFFFF" /></shape>
     </item>
     <item android:bottom="1dp">
         <shape android:shape="rectangle">

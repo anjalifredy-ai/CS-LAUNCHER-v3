@@ -108,7 +108,7 @@
             android:background="@drawable/bg_cs_chip_accent"
             android:gravity="center"
             android:paddingHorizontal="8dp"
-            android:textColor="#E8E8E8"
+            android:textColor="#FFFFFF"
             android:textSize="9sp"
             android:textStyle="bold"
             android:visibility="gone"

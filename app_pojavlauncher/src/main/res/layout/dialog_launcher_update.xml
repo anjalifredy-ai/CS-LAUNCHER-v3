@@ -45,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="New version available"
-            android:textColor="#22C9CB"
+            android:textColor="#D0D0D0"
             android:textSize="13.5sp"
             android:textStyle="bold"
             android:layout_marginBottom="12dp" />
@@ -89,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Downloading update... 0%"
-                android:textColor="#E8E8E8"
+                android:textColor="#FFFFFF"
                 android:textSize="12.5sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="6dp" />
@@ -119,7 +119,7 @@
                 android:layout_height="42dp"
                 android:layout_weight="1"
                 android:text="Later"
-                android:textColor="#22C9CB"
+                android:textColor="#D0D0D0"
                 android:textSize="13.5sp"
                 android:textStyle="bold"
                 android:gravity="center"

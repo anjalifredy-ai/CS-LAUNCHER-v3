@@ -3,7 +3,7 @@
     android:insetLeft="10dp"
     android:insetRight="10dp">
     <shape android:shape="rectangle">
-        <solid android:color="#1422C9CB" />
+        <solid android:color="#14D0D0D0" />
         <size android:height="1dp" />
     </shape>
 </inset>

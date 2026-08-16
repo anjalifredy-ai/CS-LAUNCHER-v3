@@ -41,9 +41,9 @@ import androidx.annotation.Nullable;
 public class PulseOrbitView extends View {
 
     // ── Palette (Phase-5 premium dark) ───────────────────────────────────────
-    private static final int ACCENT       = 0xFFE8E8E8; // silver-white
-    private static final int ACCENT_SOFT  = 0x59E8E8E8; // 35% glow layer
-    private static final int ACCENT_TRACE = 0x26E8E8E8; // 15% echo trail
+    private static final int ACCENT       = 0xFFFFFFFF; // silver-white
+    private static final int ACCENT_SOFT  = 0x59FFFFFF; // 35% glow layer
+    private static final int ACCENT_TRACE = 0x26FFFFFF; // 15% echo trail
     private static final int TRACK        = 0x3326262E; // 20% neutral track
     private static final int CORE         = 0xFF2D2D35; // idle core
     private static final int COMPLETE     = 0xFF9FD6AC; // muted premium success

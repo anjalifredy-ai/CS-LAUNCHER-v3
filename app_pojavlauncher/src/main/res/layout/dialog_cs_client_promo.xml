@@ -108,7 +108,7 @@
             android:focusable="true"
             android:gravity="center"
             android:text="CLOSE"
-            android:textColor="#22C9CB"
+            android:textColor="#D0D0D0"
             android:textSize="12.5sp"
             android:textStyle="bold" />
 

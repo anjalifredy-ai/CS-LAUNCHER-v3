@@ -808,7 +808,7 @@ public class LauncherPreferenceFragment extends Fragment {
     private void refreshFavoriteStar(@NonNull android.widget.ImageButton star, @NonNull String key) {
         boolean fav = net.kdt.pojavlaunch.prefs.SettingsMetaStore.isFavorite(star.getContext(), key);
         star.setImageResource(fav ? R.drawable.ic_csp_star_filled : R.drawable.ic_csp_star_outline);
-        star.setColorFilter(fav ? 0xFFE8E8E8 : 0xFF6B7280);
+        star.setColorFilter(fav ? 0xFFFFFFFF : 0xFF6B7280);
     }
 
     // ══ Focus-jump: open a page and softly flash the target row ══
@@ -1895,7 +1895,7 @@ public class LauncherPreferenceFragment extends Fragment {
             if (swatchesContainer == null) return;
             swatchesContainer.removeAllViews();
             ThemeManager.Preset[] presets = ThemeManager.PRESETS;
-            String[] colors = new String[]{"#22C9CB", "#7C8AA0", "#3E8E6E", "#B45454", "#8E6AB8", "#4E9AA8"};
+            String[] colors = new String[]{"#D0D0D0", "#7C8AA0", "#3E8E6E", "#B45454", "#8E6AB8", "#4E9AA8"};
 
             for (int i = 0; i < presets.length; i++) {
                 ThemeManager.Preset p = presets[i];
@@ -2000,7 +2000,7 @@ public class LauncherPreferenceFragment extends Fragment {
                 android.widget.ImageView glyph = card.findViewById(R.id.pin_card_glyph);
                 glyph.setImageResource(isFavorite
                         ? R.drawable.ic_csp_star_filled : R.drawable.ic_csp_recent);
-                glyph.setColorFilter(isFavorite ? 0xFFE8E8E8 : 0xFF9CA3AF);
+                glyph.setColorFilter(isFavorite ? 0xFFFFFFFF : 0xFF9CA3AF);
 
                 View remove = card.findViewById(R.id.pin_card_remove);
                 if (isFavorite) {

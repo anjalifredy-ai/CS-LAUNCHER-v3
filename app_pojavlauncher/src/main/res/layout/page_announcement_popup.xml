@@ -43,7 +43,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#26E8E8E8"
+            android:background="#26FFFFFF"
             android:layout_marginBottom="14dp" />
 
         <!-- Markdown Scrollable Content -->
@@ -57,7 +57,7 @@
                 android:id="@+id/tv_ann_page_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#E8E8E8"
+                android:textColor="#FFFFFF"
                 android:textSize="13.5sp"
                 android:lineSpacingExtra="3dp" />
 
