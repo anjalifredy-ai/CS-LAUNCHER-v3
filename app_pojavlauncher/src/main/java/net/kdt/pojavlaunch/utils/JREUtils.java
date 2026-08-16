@@ -19,6 +19,7 @@ import android.util.*;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
 
 import com.oracle.dalvik.*;
 import java.io.*;
@@ -329,9 +330,19 @@ public class JREUtils {
             reader.close();
         }
     }
-    public static void launchJavaVM(final AppCompatActivity activity, final Runtime runtime, File gameDirectory, final List<String> JVMArgs, final String userArgsString) throws Throwable {
-        // Local Yggdrasil Server integration for offline accounts
-        MinecraftAccount activeAccount = PojavProfile.getCurrentProfileContent(activity, null);
+    public static void launchJavaVM(final AppCompatActivity activity, final Runtime runtime,
+                                    File gameDirectory, final List<String> JVMArgs,
+                                    final String userArgsString) throws Throwable {
+        launchJavaVM(activity, runtime, gameDirectory, JVMArgs, userArgsString, null);
+    }
+
+    public static void launchJavaVM(final AppCompatActivity activity, final Runtime runtime,
+                                    File gameDirectory, final List<String> JVMArgs,
+                                    final String userArgsString,
+                                    @Nullable MinecraftAccount resolvedAccount) throws Throwable {
+        // Never re-guess an account when the game launcher already resolved one.
+        MinecraftAccount activeAccount = resolvedAccount != null ? resolvedAccount
+                : PojavProfile.getCurrentProfileContent(activity, null);
         boolean shouldStopLocalSkinServerAfterLaunch = false;
         boolean isElyBy = activeAccount != null && !activeAccount.isMicrosoft
                 && activeAccount.accessToken != null
@@ -378,21 +389,22 @@ public class JREUtils {
             Logger.appendToLog("Metadata file exists: " + skinMeta.exists());
             Logger.appendToLog("Has custom textures: " + hasCustomTextures);
 
+            // Start the bridge for every local/offline account, even when the
+            // local player has no custom PNG. Unknown online players and NPC
+            // skin names still need Mojang profile/texture proxying.
+            net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.start();
+            int serverPort = net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.getPort();
+            Logger.appendToLog("Yggdrasil skin bridge port: " + serverPort);
             if (hasCustomTextures) {
-                net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.start();
-                int serverPort = net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.getPort();
-                Logger.appendToLog("Yggdrasil server port: " + serverPort);
-
-                net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.registerProfile(username, uuid, finalSkinPath, finalCapePath, isSlim);
-                Logger.appendToLog("Profile registered for: " + username);
-
-                File authlibJar = new File(Tools.DIR_DATA, "authlib-injector/authlib-injector.jar");
-                Logger.appendToLog("authlib-injector.jar exists: " + authlibJar.exists());
-                if (authlibJar.exists()) Logger.appendToLog("authlib-injector.jar size: " + authlibJar.length() + " bytes");
-                shouldStopLocalSkinServerAfterLaunch = true;
+                net.kdt.pojavlaunch.yggdrasil.LocalYggdrasilServer.registerProfile(
+                        username, uuid, finalSkinPath, finalCapePath, isSlim);
+                Logger.appendToLog("Local texture profile registered for: " + username);
             } else {
-                Logger.appendToLog("No custom skin/cape active, skipping local Yggdrasil server startup.");
+                Logger.appendToLog("No local PNG; online/NPC proxy bridge remains active.");
             }
+            File authlibJar = new File(Tools.DIR_DATA, "authlib-injector/authlib-injector.jar");
+            Logger.appendToLog("authlib-injector.jar exists: " + authlibJar.exists());
+            shouldStopLocalSkinServerAfterLaunch = serverPort > 0;
             Logger.appendToLog("=== OFFLINE SKIN SYSTEM: PRE-LAUNCH COMPLETE ===");
         }
 
@@ -509,7 +521,24 @@ public class JREUtils {
             }
         }
         boolean isMicrosoftAccount = activeAccount != null && activeAccount.isMicrosoft;
-        if (!isMicrosoftAccount) {
+        if (isMicrosoftAccount) {
+            // Premium sessions must always use Mojang's signed profile service.
+            // Remove stale local/Ely overrides and user-supplied authlib agents.
+            purgeArg(userArgs, "-Dminecraft.api.auth.host");
+            purgeArg(userArgs, "-Dminecraft.api.account.host");
+            purgeArg(userArgs, "-Dminecraft.api.session.host");
+            purgeArg(userArgs, "-Dminecraft.api.services.host");
+            java.util.Iterator<String> authArgs = userArgs.iterator();
+            while (authArgs.hasNext()) {
+                String arg = authArgs.next();
+                if (arg.startsWith("-javaagent:") && arg.contains("authlib-injector")) authArgs.remove();
+            }
+            userArgs.add("-Dminecraft.api.auth.host=https://authserver.mojang.com");
+            userArgs.add("-Dminecraft.api.account.host=https://api.mojang.com");
+            userArgs.add("-Dminecraft.api.session.host=https://sessionserver.mojang.com");
+            userArgs.add("-Dminecraft.api.services.host=https://api.minecraftservices.com");
+            Logger.appendToLog("Premium skin pipeline: official Mojang session services enforced");
+        } else {
             if (isElyBy) {
                 String authlibPath = authlibFile.getAbsolutePath();
                 if (authlibFile.exists()) {

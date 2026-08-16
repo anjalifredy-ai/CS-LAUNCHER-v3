@@ -234,6 +234,9 @@ public class OfflineYggdrasilServer {
                                 profile.put("id", ch.uuid);
                                 profile.put("name", ch.name);
                                 result.put(profile);
+                            } else {
+                                JSONObject online = resolveOnlineName(name);
+                                if (online != null) result.put(online);
                             }
                         }
                         body = result.toString().getBytes(StandardCharsets.UTF_8);
@@ -342,9 +345,100 @@ public class OfflineYggdrasilServer {
      * caller can fall back to the default Steve/Alex skin.
      */
     private String proxyToMojang(String uuid) {
-        String res = fetchProfileUrl("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
-        if (res != null) return res;
-        return fetchProfileUrl("https://authserver.ely.by/session/minecraft/profile/" + uuid + "?unsigned=false");
+        String raw = fetchProfileUrl("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
+        if (raw == null) raw = fetchProfileUrl("https://authserver.ely.by/session/minecraft/profile/" + uuid + "?unsigned=false");
+        if (raw == null) return null;
+        String localized = localizeRemoteProfile(raw, uuid);
+        return localized != null ? localized : raw;
+    }
+
+    /** Download remote textures through Android's network stack, serve them on
+     * localhost and sign the rewritten property with this bridge's RSA key. */
+    private String localizeRemoteProfile(String raw, String fallbackUuid) {
+        try {
+            JSONObject profile = new JSONObject(raw);
+            String uuid = profile.optString("id", fallbackUuid).replace("-", "").toLowerCase();
+            String name = profile.optString("name", "Player");
+            JSONArray props = profile.optJSONArray("properties");
+            if (props == null) return null;
+            String encoded = null;
+            for (int i = 0; i < props.length(); i++) {
+                JSONObject p = props.optJSONObject(i);
+                if (p != null && "textures".equals(p.optString("name"))) { encoded = p.optString("value", null); break; }
+            }
+            if (encoded == null) return null;
+            JSONObject textureRoot = new JSONObject(new String(Base64.decode(encoded, Base64.DEFAULT), StandardCharsets.UTF_8));
+            JSONObject textures = textureRoot.optJSONObject("textures");
+            PlayerSkin skin = null; PlayerCape cape = null;
+            if (textures != null) {
+                JSONObject s = textures.optJSONObject("SKIN");
+                if (s != null) {
+                    byte[] bytes = downloadTexture(s.optString("url", ""));
+                    if (bytes != null) {
+                        String hash = textureHash(s.optString("url", ""), bytes);
+                        JSONObject meta = s.optJSONObject("metadata");
+                        boolean slim = meta != null && "slim".equalsIgnoreCase(meta.optString("model"));
+                        skin = new PlayerSkin(bytes, hash, slim ? SkinModelType.ALEX : SkinModelType.STEVE);
+                        textureStore.put(hash, bytes);
+                    }
+                }
+                JSONObject c = textures.optJSONObject("CAPE");
+                if (c != null) {
+                    byte[] bytes = downloadTexture(c.optString("url", ""));
+                    if (bytes != null) {
+                        String hash = textureHash(c.optString("url", ""), bytes);
+                        cape = new PlayerCape(bytes, hash); textureStore.put(hash, bytes);
+                    }
+                }
+            }
+            if (skin == null && cape == null) return null;
+            return new Character(uuid, name, skin, cape).toProfileResponse(localBase(), this::signRsa);
+        } catch (Throwable t) {
+            Log.w(TAG, "Unable to localize remote skin profile", t);
+            return null;
+        }
+    }
+
+    private byte[] downloadTexture(String url) {
+        if (url == null || !url.startsWith("http")) return null;
+        HttpURLConnection c = null;
+        try {
+            c = (HttpURLConnection)new URL(url.replace("http://textures.minecraft.net/", "https://textures.minecraft.net/")).openConnection();
+            c.setConnectTimeout(7000); c.setReadTimeout(10000); c.setRequestProperty("User-Agent", "CSLauncher-SkinBridge");
+            if (c.getResponseCode() != 200) return null;
+            try (InputStream in = c.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                byte[] buf = new byte[8192]; int n; int total = 0;
+                while ((n = in.read(buf)) != -1) { total += n; if (total > 4 * 1024 * 1024) return null; out.write(buf, 0, n); }
+                return out.toByteArray();
+            }
+        } catch (Throwable t) { return null; }
+        finally { if (c != null) c.disconnect(); }
+    }
+
+    private String textureHash(String url, byte[] bytes) {
+        try {
+            String path = new URL(url).getPath(); String last = path.substring(path.lastIndexOf('/') + 1);
+            if (!last.isEmpty()) return last;
+        } catch (Throwable ignored) {}
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] d = md.digest(bytes); StringBuilder s = new StringBuilder();
+            for (byte b : d) s.append(String.format(java.util.Locale.US, "%02x", b));
+            return s.toString();
+        } catch (Throwable t) { return Integer.toHexString(java.util.Arrays.hashCode(bytes)); }
+    }
+
+    private JSONObject resolveOnlineName(String name) {
+        try {
+            String safe = java.net.URLEncoder.encode(name, "UTF-8");
+            String raw = fetchProfileUrl("https://api.mojang.com/users/profiles/minecraft/" + safe);
+            if (raw == null) return null;
+            JSONObject source = new JSONObject(raw);
+            String id = source.optString("id", "");
+            if (id.isEmpty()) return null;
+            JSONObject out = new JSONObject(); out.put("id", id); out.put("name", source.optString("name", name));
+            return out;
+        } catch (Throwable t) { return null; }
     }
 
     private String fetchProfileUrl(String urlStr) {

@@ -26,7 +26,13 @@ public class LocalYggdrasilServer {
 
     public static synchronized void stop() {
         mSkinManager.stopServer();
-        Log.i(TAG, "Local Yggdrasil Server stopped");
+        // Never leak local endpoints into a later Microsoft/premium launch in
+        // the same process after a failed or cancelled offline session.
+        System.clearProperty("minecraft.api.auth.host");
+        System.clearProperty("minecraft.api.account.host");
+        System.clearProperty("minecraft.api.session.host");
+        System.clearProperty("minecraft.api.services.host");
+        Log.i(TAG, "Local Yggdrasil Server stopped and endpoint overrides cleared");
     }
 
     public static synchronized void registerProfile(String username, String uuid, String skinPath, String capePath, boolean isSlim) {

@@ -20,18 +20,21 @@ public class ContextAwareDoneListener implements AsyncMinecraftDownloader.DoneLi
     private final String mErrorString;
     private final String mNormalizedVersionid;
     private final String mProfileKey;
+    private final String mAccountName;
 
     public ContextAwareDoneListener(Context baseContext, String versionId) {
         this.mErrorString = baseContext.getString(R.string.mc_download_failed);
         this.mNormalizedVersionid = versionId;
         this.mProfileKey = LauncherPreferences.DEFAULT_PREF.getString(
                 LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "default");
+        this.mAccountName = net.kdt.pojavlaunch.PojavProfile.getCurrentProfileName(baseContext);
     }
 
     private Intent createGameStartIntent(Context context) {
         Intent mainIntent = new Intent(context, MainActivity.class);
         mainIntent.putExtra(INTENT_MINECRAFT_VERSION, mNormalizedVersionid);
         mainIntent.putExtra(MainActivity.EXTRA_PROFILE_KEY, mProfileKey);
+        mainIntent.putExtra(MainActivity.EXTRA_ACCOUNT_NAME, mAccountName);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         // Shortcut launches asked for the launch-log screen on arrival. The flag
         // is one-shot and consumed here so manual launches stay unaffected.

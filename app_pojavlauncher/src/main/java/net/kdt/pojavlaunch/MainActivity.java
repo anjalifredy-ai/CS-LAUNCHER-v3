@@ -85,6 +85,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     public static final String TAG = "MainActivity";
     public static final String INTENT_MINECRAFT_VERSION = "intent_version";
     public static final String EXTRA_PROFILE_KEY = "cs_launch_profile_key";
+    public static final String EXTRA_ACCOUNT_NAME = "cs_launch_account_name";
     /** Extra marking a shortcut-booted launch: open straight onto the launch logs. */
     public static final String EXTRA_AUTO_SHOW_LOGS = "cs_auto_show_logs";
     /** One-shot flag armed by the shortcut router for the next game start. */
@@ -104,6 +105,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     private HotbarView mHotbarView;
 
     MinecraftProfile minecraftProfile;
+    private String mLaunchAccountName;
 
     private ArrayAdapter<String> gameActionArrayAdapter;
     private AdapterView.OnItemClickListener gameActionClickListener;
@@ -142,6 +144,10 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         }
 
         minecraftProfile = LauncherProfiles.getCurrentProfile();
+        mLaunchAccountName = getIntent().getStringExtra(EXTRA_ACCOUNT_NAME);
+        if (mLaunchAccountName == null || mLaunchAccountName.isEmpty()) {
+            mLaunchAccountName = PojavProfile.getCurrentProfileName(this);
+        }
         String launchProfileKey = getIntent().getStringExtra(EXTRA_PROFILE_KEY);
         if (launchProfileKey == null || launchProfileKey.isEmpty()) {
             launchProfileKey = LauncherPreferences.DEFAULT_PREF.getString(
@@ -729,7 +735,10 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             Log.w("runCraft", "[ProfileInit] check failed (non-fatal)", t);
         }
 
-        MinecraftAccount minecraftAccount = PojavProfile.getCurrentProfileContent(this, null);
+        // Use the exact account carried across the launcher → game process
+        // boundary. Re-reading async SharedPreferences here could select a stale
+        // local account and wrongly enable the offline skin injector.
+        MinecraftAccount minecraftAccount = PojavProfile.getCurrentProfileContent(this, mLaunchAccountName);
         JREUtils.redirectAndPrintJRELog();
         LauncherProfiles.load();
         int requiredJavaVersion = 8;
