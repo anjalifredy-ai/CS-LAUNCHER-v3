@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0B0C10" android:orientation="vertical">
- <FrameLayout android:id="@+id/csc_versions_hero" android:layout_width="match_parent" android:layout_height="170dp" android:background="@drawable/bg_cs_client_hero"><View android:layout_width="match_parent" android:layout_height="match_parent" android:background="#74000000"/><ImageView android:layout_width="58dp" android:layout_height="58dp" android:layout_gravity="top|start" android:layout_margin="16dp" android:src="@drawable/cs_logo"/><TextView android:id="@+id/csc_versions_back" android:layout_width="40dp" android:layout_height="40dp" android:layout_gravity="top|end" android:layout_margin="14dp" android:background="@drawable/bg_skin_slot_action" android:gravity="center" android:text="‹" android:textColor="#FFFFFF" android:textSize="28sp"/><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:orientation="vertical" android:padding="16dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CS CLIENT VERSION LIBRARY" android:textColor="#22C9CB" android:textSize="9sp" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Choose Minecraft version" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="Latest compatible Blaze Client build is selected automatically" android:textColor="#D0D0D0" android:textSize="9sp"/></LinearLayout></FrameLayout>
- <ProgressBar android:id="@+id/csc_versions_loading" android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center" android:layout_marginTop="30dp" android:indeterminateTint="#FFFFFF"/>
- <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:overScrollMode="never" android:scrollbars="none"><LinearLayout android:id="@+id/csc_versions_container" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp"/></ScrollView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#0B0C10" android:orientation="vertical">
+
+    <LinearLayout android:id="@+id/csc_versions_header"
+        android:layout_width="match_parent" android:layout_height="78dp"
+        android:background="@drawable/bg_cs_client_header" android:gravity="center_vertical"
+        android:orientation="horizontal" android:paddingHorizontal="14dp">
+        <ImageView android:layout_width="44dp" android:layout_height="44dp"
+            android:background="@drawable/bg_cs_client_icon" android:padding="7dp" android:src="@drawable/cs_logo"/>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="CS CLIENT" android:textColor="#22C9CB" android:textSize="9sp" android:textStyle="bold"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="2dp" android:text="Choose Minecraft version"
+                android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Latest compatible Blaze build" android:textColor="#9698A0" android:textSize="8sp"/>
+        </LinearLayout>
+        <TextView android:id="@+id/csc_versions_back" android:layout_width="40dp" android:layout_height="40dp"
+            android:background="@drawable/bg_skin_slot_action" android:gravity="center"
+            android:text="‹" android:textColor="#FFFFFF" android:textSize="28sp"/>
+    </LinearLayout>
+
+    <ProgressBar android:id="@+id/csc_versions_loading" android:layout_width="32dp" android:layout_height="32dp"
+        android:layout_gravity="center" android:layout_marginTop="30dp" android:indeterminateTint="#22C9CB"/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:overScrollMode="never" android:scrollbars="none">
+        <LinearLayout android:id="@+id/csc_versions_container" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp"/>
+    </ScrollView>
 </LinearLayout>

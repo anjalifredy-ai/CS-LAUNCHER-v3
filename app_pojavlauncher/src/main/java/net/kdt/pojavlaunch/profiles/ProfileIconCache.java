@@ -85,6 +85,16 @@ public class ProfileIconCache {
 
         String cacheKey = (key != null ? key : "bg") + "_bg";
 
+        // Built-in CS Client artwork. Keeping a stable resource token avoids
+        // embedding a multi-megabyte Base64 banner in launcher_profiles.json.
+        if ("cs_client_artwork".equals(background)) {
+            Drawable cachedArtwork = sIconCache.get(cacheKey);
+            if (cachedArtwork != null) return cachedArtwork;
+            Drawable artwork = ResourcesCompat.getDrawable(resources, R.drawable.cs_client_hero, null);
+            if (artwork != null) sIconCache.put(cacheKey, artwork);
+            return artwork;
+        }
+
         // ── Remote URL backgrounds (e.g. the default animated GIF) ──
         if (ProfileGifSupport.isRemoteUrl(background)) {
             String remoteKey = cacheKey + "_remote";
