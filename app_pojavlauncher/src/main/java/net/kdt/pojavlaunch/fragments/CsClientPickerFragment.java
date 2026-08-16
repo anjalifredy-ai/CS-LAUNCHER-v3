@@ -49,7 +49,7 @@ public class CsClientPickerFragment extends Fragment {
         root.findViewById(R.id.csc_picker_search_go).setOnClickListener(v->load(search.getText().toString()));
         search.setOnEditorActionListener((v,a,e)->{load(search.getText().toString());return true;});
         UiMotion.pressFeedback(root.findViewById(R.id.csc_picker_back),root.findViewById(R.id.csc_picker_done),root.findViewById(R.id.csc_picker_search_go));
-        enter(root.getChildAt(0),0,-8);enter(root.getChildAt(1),55,-6);load("");
+        LinearLayout page=(LinearLayout)root;enter(page.getChildAt(0),0,-8);enter(page.getChildAt(1),55,-6);load("");
     }
 
     private void load(String query){
