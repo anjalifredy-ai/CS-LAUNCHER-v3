@@ -698,7 +698,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         loadProfileBackground();
 
         // TODO: Remove this jank when it's not relevant anymore
-        if ("vulkan_zink".equals(mTempProfile.pojavRendererName)) {
+        if ("vulkan_zink".equals(mTempProfile.pojavRendererName)
+                || "opengles3_desktopgl_zink".equals(mTempProfile.pojavRendererName)) {
             mTempProfile.pojavRendererName = "opengles3_desktopgl_zink_kopper";
         }
 

@@ -224,6 +224,7 @@ public class JREUtils {
         // "zink" override accidentally forced the wrong Gallium driver for
         // Freedreno/Panfrost selections.
         if ("opengles3_desktopgl_zink".equals(LOCAL_RENDERER)
+                || "opengles3_desktopgl_zink_kopper".equals(LOCAL_RENDERER)
                 || "vulkan_zink".equals(LOCAL_RENDERER)) {
             envMap.put("MESA_LOADER_DRIVER_OVERRIDE", "zink");
             envMap.put("GALLIUM_DRIVER", "zink");
@@ -258,6 +259,7 @@ public class JREUtils {
                 envMap.put("LIBGL_ES", "2"); // Krypton Wrapper crashes with anything other than 2
             }
             if (LOCAL_RENDERER.equals("opengles3_desktopgl_zink_kopper")){
+                envMap.put("LIBGL_ES", "3");
                 envMap.put("POJAVEXEC_EGL","libEGL_mesa.so"); // Use Mesa EGL
                 if (Tools.shouldUseUBWC()) envMap.put("FD_DEV_FEATURES", "enable_tp_ubwc_flag_hint=1"); // Turnip fix for OneUI rendering issues
             }
@@ -412,9 +414,11 @@ public class JREUtils {
 
         JREUtils.relocateLibPath(runtime, runtimeHome);
 
-        setJavaEnvironment(activity, runtimeHome);
-
+        // Resolve/fallback the renderer before exporting renderer-specific
+        // environment variables. Previously a failed Zink/Gallium dlopen left
+        // its Mesa variables active even after falling back to Krypton.
         final String graphicsLib = loadGraphicsLibrary();
+        setJavaEnvironment(activity, runtimeHome);
         List<String> userArgs = getJavaArgs(activity, runtimeHome, userArgsString);
 
         //Remove arguments that can interfere with the good working of the launcher
@@ -447,52 +451,38 @@ public class JREUtils {
         Log.i("ProfileLaunch", "Effective JVM RAM: -Xms" + initialRam
                 + "M -Xmx" + effectiveRam + "M (mobile adaptive heap)");
 
-        // CS Perf (user req — stable FPS, no cap): low-pause GC smoothing.
-        // G1GC + a pause target cuts long stop-the-world pauses during chunk
-        // loads / autosaves, which reads as stutter. The 260-FPS unlock stays
-        // untouched. User-provided GC flags are respected (purged first so we
-        // never double-add).
+        // Mobile client GC policy. Do not apply Aikar/server heap-shaping
+        // flags (fixed 8M regions, one-cycle tenuring, oversized young-gen)
+        // to Android heaps. Let HotSpot size regions and age objects from the
+        // actual Xmx while only bounding collector worker overhead.
         if (LauncherPreferences.DEFAULT_PREF.getBoolean("low_pause_gc", true)) {
-            purgeArg(userArgs, "-XX:+UseG1GC");
-            purgeArg(userArgs, "-XX:+UseSerialGC");
-            purgeArg(userArgs, "-XX:+UseParallelGC");
-            purgeArg(userArgs, "-XX:MaxGCPauseMillis");
-            purgeArg(userArgs, "-XX:ParallelGCThreads");
-            purgeArg(userArgs, "-XX:ConcGCThreads");
-            purgeArg(userArgs, "-XX:ReservedCodeCacheSize");
-            purgeArg(userArgs, "-XX:+UseStringDeduplication");
-            purgeArg(userArgs, "-XX:+UseCodeCacheFlushing");
+            String[] managedGcPrefixes = {
+                    "-XX:+UseG1GC", "-XX:+UseSerialGC", "-XX:+UseParallelGC",
+                    "-XX:MaxGCPauseMillis", "-XX:ParallelGCThreads", "-XX:ConcGCThreads",
+                    "-XX:G1NewSizePercent", "-XX:G1MaxNewSizePercent", "-XX:G1HeapRegionSize",
+                    "-XX:G1ReservePercent", "-XX:G1HeapWastePercent", "-XX:G1MixedGCCountTarget",
+                    "-XX:InitiatingHeapOccupancyPercent", "-XX:G1MixedGCLiveThresholdPercent",
+                    "-XX:G1RSetUpdatingPauseTimePercent", "-XX:SurvivorRatio",
+                    "-XX:MaxTenuringThreshold", "-XX:ReservedCodeCacheSize",
+                    "-XX:+ParallelRefProcEnabled", "-XX:+PerfDisableSharedMem",
+                    "-XX:+UseStringDeduplication"
+            };
+            for (String prefix : managedGcPrefixes) purgeArg(userArgs, prefix);
+            int cpuCount = Math.max(1, java.lang.Runtime.getRuntime().availableProcessors());
+            int parallelGcThreads = Math.max(1, Math.min(2, cpuCount / 2));
+            int concurrentGcThreads = 1;
             userArgs.add("-XX:+UseG1GC");
             userArgs.add("-XX:+ParallelRefProcEnabled");
-            userArgs.add("-XX:MaxGCPauseMillis=50");
-            userArgs.add("-XX:+UnlockExperimentalVMOptions");
-            userArgs.add("-XX:+DisableExplicitGC");
-            userArgs.add("-XX:G1NewSizePercent=30");
-            userArgs.add("-XX:G1MaxNewSizePercent=40");
-            userArgs.add("-XX:G1HeapRegionSize=8M");
-            userArgs.add("-XX:G1ReservePercent=20");
-            userArgs.add("-XX:G1HeapWastePercent=5");
-            userArgs.add("-XX:G1MixedGCCountTarget=4");
-            userArgs.add("-XX:InitiatingHeapOccupancyPercent=15");
-            userArgs.add("-XX:G1MixedGCLiveThresholdPercent=90");
-            userArgs.add("-XX:G1RSetUpdatingPauseTimePercent=5");
-            userArgs.add("-XX:SurvivorRatio=32");
-            userArgs.add("-XX:+PerfDisableSharedMem");
-            userArgs.add("-XX:MaxTenuringThreshold=1");
-            int cpuCount = Math.max(2, java.lang.Runtime.getRuntime().availableProcessors());
-            int parallelGcThreads = Math.max(2, Math.min(4, cpuCount / 2));
-            int concurrentGcThreads = Math.max(1, Math.min(2, parallelGcThreads / 2));
+            userArgs.add("-XX:MaxGCPauseMillis=100");
             userArgs.add("-XX:ParallelGCThreads=" + parallelGcThreads);
             userArgs.add("-XX:ConcGCThreads=" + concurrentGcThreads);
+            userArgs.add("-XX:+PerfDisableSharedMem");
+            // String dedup is useful for mod metadata and language strings but
+            // does not alter region sizing or object lifetime policy.
             userArgs.add("-XX:+UseStringDeduplication");
-            userArgs.add("-XX:ReservedCodeCacheSize=128M");
-            userArgs.add("-XX:+UseCodeCacheFlushing");
-            userArgs.add("-Djava.awt.headless=true");
             userArgs.add("-Dlog4j2.formatMsgNoLookups=true");
-            // Pojav/FCL-style LWJGL compatibility: harmless without Sodium,
-            // avoids an expensive compatibility abort on supported Sodium builds.
             userArgs.add("-Dsodium.checks.issue2561=false");
-            Log.i("ProfileLaunch", "CS Perf: mobile G1 enabled (50ms target, capped GC workers, adaptive heap, code cache)");
+            Log.i("ProfileLaunch", "CS Perf: mobile G1 policy enabled (JVM-sized regions, max 2 GC workers)");
         }
         if(LOCAL_RENDERER != null) userArgs.add("-Dorg.lwjgl.opengl.libname=" + graphicsLib);
 
@@ -723,7 +713,8 @@ public class JREUtils {
                 renderLibrary = "libgl4es_115.so"; break;
             case "vulkan_zink": renderLibrary = "libOSMesa.so"; break;
             case "opengles_mobileglues": renderLibrary = "libmobileglues.so"; break;
-            case "opengles3_desktopgl_zink": renderLibrary = "libglxshim.so"; break;
+            case "opengles3_desktopgl_zink":
+            case "opengles3_desktopgl_zink_kopper": renderLibrary = "libglxshim.so"; break;
             case "opengles3_ltw" : renderLibrary = "libltw.so"; break;
             case "opengles3_KW" : renderLibrary = "libng_gl4es.so"; break;
             // CS Task 5: OSMesa gallium renderers (Zalith port, arm64-only builds).

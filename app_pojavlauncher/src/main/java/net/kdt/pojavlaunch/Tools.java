@@ -1789,11 +1789,19 @@ public final class Tools {
         String[] defaultRenderers = resources.getStringArray(R.array.renderer_values);
         String[] defaultRendererNames = resources.getStringArray(R.array.renderer);
         boolean deviceHasVulkan = checkVulkanSupport(context.getPackageManager());
-        // Zink is now also optional because it sucks
-        boolean deviceHasOSMesaZinkBinary = new File(Tools.NATIVE_LIB_DIR, "libOSMesa.so").exists();
         boolean deviceHasOpenGLES3 = JREUtils.getDetectedVersion() >= 3;
-        // LTW is an optional proprietary dependency
-        boolean appHasLtw = new File(Tools.NATIVE_LIB_DIR, "libltw.so").exists();
+        File nativeDir = new File(Tools.NATIVE_LIB_DIR);
+        boolean appHasZink = new File(nativeDir, "libOSMesa.so").exists()
+                && new File(nativeDir, "libEGL_mesa.so").exists()
+                && new File(nativeDir, "libglxshim.so").exists();
+        boolean appHasMobileGlues = new File(nativeDir, "libmobileglues.so").exists();
+        boolean appHasLtw = new File(nativeDir, "libltw.so").exists();
+        boolean appHasKrypton = new File(nativeDir, "libng_gl4es.so").exists();
+        boolean appHasGl4es = new File(nativeDir, "libgl4es_115.so").exists();
+        GLInfoUtils.GLInfo gpuInfo = GLInfoUtils.getGlInfo();
+        boolean isAdreno = gpuInfo.isAdreno();
+        boolean isMali = gpuInfo.renderer != null
+                && gpuInfo.renderer.toLowerCase(Locale.ROOT).contains("mali");
         // CS Task 5: OSMesa gallium renderers (Freedreno / VirGL / Panfrost).
         // The binaries ship in arm64-v8a only, so the file check doubles as an
         // ABI gate — on 32-bit/x86 builds these entries never show up.
@@ -1803,11 +1811,19 @@ public final class Tools {
         List<String> rendererNames = new ArrayList<>(defaultRendererNames.length);
         for(int i = 0; i < defaultRenderers.length; i++) {
             String rendererId = defaultRenderers[i];
-            if(rendererId.contains("vulkan") && !deviceHasVulkan) continue;
-            if(rendererId.contains("vulkan_zink") && !deviceHasOSMesaZinkBinary) continue;
-            if(rendererId.contains("ltw") && (!deviceHasOpenGLES3 || !appHasLtw)) continue;
-            if(rendererId.equals("gallium_freedreno") && !appHasFreedreno) continue;
-            if(rendererId.equals("gallium_panfrost") && !appHasPanfrost) continue;
+            // Migrate every historical Zink alias to the one route that sets
+            // Mesa EGL + Kopper correctly.
+            if ("vulkan_zink".equals(rendererId)
+                    || "opengles3_desktopgl_zink".equals(rendererId)) {
+                rendererId = "opengles3_desktopgl_zink_kopper";
+            }
+            if (rendererId.contains("zink") && (!deviceHasVulkan || !appHasZink)) continue;
+            if (rendererId.equals("opengles_mobileglues") && !appHasMobileGlues) continue;
+            if (rendererId.contains("ltw") && (!deviceHasOpenGLES3 || !appHasLtw)) continue;
+            if (rendererId.equals("opengles3_KW") && !appHasKrypton) continue;
+            if (rendererId.equals("opengles2") && !appHasGl4es) continue;
+            if (rendererId.equals("gallium_freedreno") && (!appHasFreedreno || !isAdreno)) continue;
+            if (rendererId.equals("gallium_panfrost") && (!appHasPanfrost || !isMali)) continue;
             rendererIds.add(rendererId);
             rendererNames.add(defaultRendererNames[i]);
         }

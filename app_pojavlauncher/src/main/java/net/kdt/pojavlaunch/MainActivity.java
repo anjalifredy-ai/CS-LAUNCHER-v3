@@ -253,7 +253,10 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             if(minecraftProfile.pojavRendererName != null && !minecraftProfile.pojavRendererName.isEmpty()) {
                 Log.i("RdrDebug","__P_renderer="+minecraftProfile.pojavRendererName);
                 Tools.LOCAL_RENDERER = minecraftProfile.pojavRendererName;
-                if (minecraftProfile.pojavRendererName.equals("vulkan_zink")) Tools.LOCAL_RENDERER = "opengles3_desktopgl_zink_kopper";
+                if (minecraftProfile.pojavRendererName.equals("vulkan_zink")
+                        || minecraftProfile.pojavRendererName.equals("opengles3_desktopgl_zink")) {
+                    Tools.LOCAL_RENDERER = "opengles3_desktopgl_zink_kopper";
+                }
                 try {
                     getSharedPreferences("pojav_renderer_backup", MODE_PRIVATE).edit()
                         .putString("renderer_" + minecraftProfile.name, Tools.LOCAL_RENDERER).apply();
@@ -676,9 +679,25 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         }
         if(!Tools.checkRendererCompatible(this, Tools.LOCAL_RENDERER)) {
             Tools.RenderersList renderersList = Tools.getCompatibleRenderers(this);
-            String firstCompatibleRenderer = renderersList.rendererIds.get(0);
-            Log.w("runCraft","Incompatible renderer "+Tools.LOCAL_RENDERER+ " will be replaced with "+firstCompatibleRenderer);
-            Tools.LOCAL_RENDERER = firstCompatibleRenderer;
+            if (renderersList.rendererIds.isEmpty()) {
+                throw new IllegalStateException("No compatible renderer libraries are installed");
+            }
+            boolean modernVersion = assetVersion.matches("\\d+")
+                    || "1.17".equals(assetVersion) || "1.18".equals(assetVersion)
+                    || "1.19".equals(assetVersion) || "1.20".equals(assetVersion)
+                    || "1.21".equals(assetVersion);
+            String safeRenderer = null;
+            if (modernVersion && renderersList.rendererIds.contains("opengles_mobileglues"))
+                safeRenderer = "opengles_mobileglues";
+            else if (renderersList.rendererIds.contains("opengles3_ltw"))
+                safeRenderer = "opengles3_ltw";
+            else if (renderersList.rendererIds.contains("opengles3_KW"))
+                safeRenderer = "opengles3_KW";
+            else if (renderersList.rendererIds.contains("opengles2"))
+                safeRenderer = "opengles2";
+            else safeRenderer = renderersList.rendererIds.get(0);
+            Log.w("runCraft","Incompatible renderer "+Tools.LOCAL_RENDERER+ " will be replaced with "+safeRenderer);
+            Tools.LOCAL_RENDERER = safeRenderer;
             runOnUiThread(() -> Toast.makeText(this, R.string.autorendererselectfailed, Toast.LENGTH_LONG).show());
             Tools.releaseRenderersCache();
         }
