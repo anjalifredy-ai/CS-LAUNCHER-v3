@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -107,6 +108,12 @@ public class WorldManagerFragment extends Fragment implements WorldListAdapter.L
 
     // ── SAF: export target (world remembered between pick + operation) ──
     private WorldEntry mPendingExportWorld;
+    private WorldEntry mPendingIconWorld;
+    private final ActivityResultLauncher<String> mWorldIconLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null && mPendingIconWorld != null) saveWorldIcon(uri, mPendingIconWorld);
+                mPendingIconWorld = null;
+            });
     private final ActivityResultLauncher<String> mExportLauncher =
             registerForActivityResult(new ActivityResultContracts.CreateDocument("application/zip"), uri -> {
                 if (uri != null && mPendingExportWorld != null && getContext() != null) {
@@ -420,22 +427,12 @@ public class WorldManagerFragment extends Fragment implements WorldListAdapter.L
 
     @Override
     public void onWorldClick(@NonNull WorldEntry world) {
-        openWorldDetailPage(world);
+        showWorldDetails(world);
     }
 
     @Override
     public void onWorldMenu(@NonNull WorldEntry world, @NonNull View anchor) {
-        openWorldDetailPage(world);
-    }
-
-    private void openWorldDetailPage(@NonNull WorldEntry world) {
-        Bundle args = new Bundle();
-        args.putString(WorldDetailFragment.ARG_WORLD, world.folder.getAbsolutePath());
-        args.putString(WorldDetailFragment.ARG_GAME_DIR, mGameDir.getAbsolutePath());
-        // Use the activity container intentionally: details must be a genuine
-        // full-screen page, never the old popup/right-pane card.
-        Tools.swapFragment(requireActivity(), WorldDetailFragment.class,
-                WorldDetailFragment.TAG, args);
+        showWorldDetails(world);
     }
 
     // ══════════════════════ DETAILS ══════════════════════
@@ -477,7 +474,11 @@ public class WorldManagerFragment extends Fragment implements WorldListAdapter.L
 
         View.OnClickListener al = v -> {
             int id = v.getId();
-            if (id == R.id.wdd_play) { dialog.dismiss(); playWorld(w); }
+            if (id == R.id.wdd_change_image) {
+                mPendingIconWorld = w;
+                try { mWorldIconLauncher.launch("image/*"); } catch (Throwable t) { Tools.showError(getContext(), t); }
+            }
+            else if (id == R.id.wdd_play) { dialog.dismiss(); playWorld(w); }
             else if (id == R.id.wdd_datapacks_browse) { dialog.dismiss(); openDatapackBrowser(w); }
             else if (id == R.id.wdd_rename) { dialog.dismiss(); showRenameDialog(w); }
             else if (id == R.id.wdd_duplicate) {
@@ -501,7 +502,7 @@ public class WorldManagerFragment extends Fragment implements WorldListAdapter.L
             else if (id == R.id.wdd_open_folder) { showFolderDialog(w); }
             else if (id == R.id.wdd_delete) { dialog.dismiss(); showDeleteDialog(w); }
         };
-        int[] ids = {R.id.wdd_play, R.id.wdd_datapacks_browse, R.id.wdd_rename,
+        int[] ids = {R.id.wdd_change_image, R.id.wdd_play, R.id.wdd_datapacks_browse, R.id.wdd_rename,
                 R.id.wdd_duplicate, R.id.wdd_backup, R.id.wdd_restore, R.id.wdd_export,
                 R.id.wdd_compress, R.id.wdd_open_folder, R.id.wdd_delete};
         for (int id : ids) {
@@ -512,6 +513,45 @@ public class WorldManagerFragment extends Fragment implements WorldListAdapter.L
             }
         }
         dialog.show();
+        android.view.Window window = dialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0xFF0B0B0E));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
+        content.setAlpha(0f);
+        content.setTranslationY(18f * getResources().getDisplayMetrics().density);
+        content.animate().alpha(1f).translationY(0f).setDuration(260).start();
+    }
+
+    private void saveWorldIcon(@NonNull Uri uri, @NonNull WorldEntry target) {
+        showProgress("Change World Image");
+        PojavApplication.sExecutorService.execute(() -> {
+            boolean ok = false;
+            try (java.io.InputStream in = requireContext().getContentResolver().openInputStream(uri)) {
+                Bitmap source = BitmapFactory.decodeStream(in);
+                if (source == null) throw new Exception("Unsupported image");
+                int side = Math.min(source.getWidth(), source.getHeight());
+                int sx = (source.getWidth() - side) / 2, sy = (source.getHeight() - side) / 2;
+                Bitmap output = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888);
+                android.graphics.Canvas canvas = new android.graphics.Canvas(output);
+                canvas.drawBitmap(source, new android.graphics.Rect(sx, sy, sx + side, sy + side),
+                        new android.graphics.Rect(0, 0, 128, 128), null);
+                try (java.io.FileOutputStream out = new java.io.FileOutputStream(new File(target.folder, "icon.png"))) {
+                    output.compress(Bitmap.CompressFormat.PNG, 100, out);
+                }
+                ok = true;
+            } catch (Throwable ignored) {}
+            final boolean saved = ok;
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                if (mProgressDialog != null) mProgressDialog.dismiss();
+                Toast.makeText(requireContext(), saved ? "World image changed" : "Could not use this image", Toast.LENGTH_LONG).show();
+                reloadWorlds(false);
+            });
+        });
     }
 
     // ══════════════════════ ACTION DIALOGS ══════════════════════

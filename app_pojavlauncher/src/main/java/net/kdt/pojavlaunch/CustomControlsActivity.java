@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.core.view.GravityCompat;
@@ -23,10 +24,13 @@ import net.kdt.pojavlaunch.customcontrols.ControlJoystickData;
 import net.kdt.pojavlaunch.customcontrols.ControlLayout;
 import net.kdt.pojavlaunch.customcontrols.EditorExitable;
 import net.kdt.pojavlaunch.customcontrols.LauncherControlImportHost;
+import net.kdt.pojavlaunch.customcontrols.handleview.DrawerPullButton;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.ByteArrayOutputStream;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,9 +41,14 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerNavigationView;
 	private ControlLayout mControlLayout;
+    private DrawerPullButton mEditorSettingsButton;
     private ControlInterface mPendingImageControl;
     private final ActivityResultLauncher<String> mMenuImagePicker = registerForActivityResult(
             new ActivityResultContracts.GetContent(), this::applyControlButtonImage);
+    private final ActivityResultLauncher<String> mDrawerImagePicker = registerForActivityResult(
+            new ActivityResultContracts.GetContent(), this::applyDrawerButtonImage);
+    private final ActivityResultLauncher<String[]> mControlJsonPicker = registerForActivityResult(
+            new ActivityResultContracts.OpenDocument(), this::importControlJson);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,19 +59,18 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 		mControlLayout = findViewById(R.id.customctrl_controllayout);
 		mDrawerLayout = findViewById(R.id.customctrl_drawerlayout);
 		mDrawerNavigationView = findViewById(R.id.customctrl_navigation_view);
-		View mPullDrawerButton = findViewById(R.id.drawer_button);
+		mEditorSettingsButton = findViewById(R.id.drawer_button);
         View editorCanvas = findViewById(R.id.control_editor_canvas);
         editorCanvas.setAlpha(0f);
         editorCanvas.setTranslationY(10f * getResources().getDisplayMetrics().density);
         editorCanvas.animate().alpha(1f).translationY(0f).setDuration(280)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
-        mPullDrawerButton.setAlpha(0f);
-        mPullDrawerButton.animate().alpha(1f).setStartDelay(100).setDuration(220).start();
+        mEditorSettingsButton.setAlpha(0f);
+        mEditorSettingsButton.animate().alpha(1f).setStartDelay(100).setDuration(220).start();
 
-		// The ListView is nested inside the redesigned drawer panel, so opening it
-        // as a drawer child causes a LayoutParams ClassCastException. Address
-        // the direct DrawerLayout child by edge gravity instead.
-		mPullDrawerButton.setOnClickListener(v -> mDrawerLayout.openDrawer(GravityCompat.END));
+		// The fixed in-game Settings/Drawer handle is edited directly here.
+        // Short tap opens tools; hold + drag moves it anywhere and persists.
+        setupSettingsButtonGestures();
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
 		String[] menuItems = getResources().getStringArray(R.array.menu_customcontrol_customactivity);
@@ -72,7 +80,9 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 				R.drawable.ic_ctrl_add_drawer,   // Add Drawer
 				R.drawable.ic_ctrl_add_joystick, // Add Joystick
 				R.drawable.ic_ctrl_add_command,  // Add Command Button
-				R.drawable.ic_ctrl_load,         // Load
+				R.drawable.ic_ctrl_load,         // Import controls JSON
+                R.drawable.ic_menu_settings,     // Settings handle image
+                R.drawable.ic_setting_buttonscale, // Settings handle size
 				R.drawable.ic_ctrl_save,         // Save
 				R.drawable.ic_ctrl_default,      // Default
 				R.drawable.ic_ctrl_export        // Export
@@ -139,10 +149,12 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 					});
 					break;
 				}
-				case 4: android.util.Log.i("CustomControlsActivity", "Action: Load"); mControlLayout.openLoadDialog(); break;
-				case 5: android.util.Log.i("CustomControlsActivity", "Action: Save"); mControlLayout.openSaveDialog(this); break;
-				case 6: android.util.Log.i("CustomControlsActivity", "Action: Select Default"); mControlLayout.openSetDefaultDialog(); break;
-				case 7: // Saving the currently shown control
+				case 4: mControlJsonPicker.launch(new String[]{"application/json", "text/json", "text/plain"}); break;
+                case 5: mDrawerImagePicker.launch("image/*"); break;
+                case 6: showSettingsButtonSizeDialog(); break;
+				case 7: android.util.Log.i("CustomControlsActivity", "Action: Save"); mControlLayout.openSaveDialog(this); break;
+				case 8: android.util.Log.i("CustomControlsActivity", "Action: Select Default"); mControlLayout.openSetDefaultDialog(); break;
+				case 9: // Saving the currently shown control
 					android.util.Log.i("CustomControlsActivity", "Action: Share layout");
 					try {
 						Uri contentUri = DocumentsContract.buildDocumentUri(getString(R.string.storageProviderAuthorities), mControlLayout.saveToDirectory(mControlLayout.mLayoutFileName));
@@ -170,6 +182,95 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 			Tools.showError(this, e);
 		}
 	}
+
+    private void setupSettingsButtonGestures() {
+        mEditorSettingsButton.applySavedLayout();
+        mEditorSettingsButton.setOnTouchListener(new View.OnTouchListener() {
+            float offsetX, offsetY; long downTime; boolean dragging;
+            @Override public boolean onTouch(View v, android.view.MotionEvent e) {
+                View parent = (View)v.getParent();
+                switch (e.getActionMasked()) {
+                    case android.view.MotionEvent.ACTION_DOWN:
+                        offsetX = e.getX(); offsetY = e.getY(); downTime = e.getEventTime(); dragging = false;
+                        return true;
+                    case android.view.MotionEvent.ACTION_MOVE:
+                        if (!dragging && e.getEventTime() - downTime >= 220) {
+                            dragging = true;
+                            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                        }
+                        if (dragging) {
+                            int[] loc = new int[2]; parent.getLocationOnScreen(loc);
+                            float x = e.getRawX() - loc[0] - offsetX;
+                            float y = e.getRawY() - loc[1] - offsetY;
+                            v.setX(Math.max(0, Math.min(parent.getWidth() - v.getWidth(), x)));
+                            v.setY(Math.max(0, Math.min(parent.getHeight() - v.getHeight(), y)));
+                        }
+                        return true;
+                    case android.view.MotionEvent.ACTION_UP:
+                        if (dragging) mEditorSettingsButton.savePosition();
+                        else mDrawerLayout.openDrawer(GravityCompat.END);
+                        return true;
+                    case android.view.MotionEvent.ACTION_CANCEL:
+                        if (dragging) mEditorSettingsButton.savePosition();
+                        return true;
+                }
+                return true;
+            }
+        });
+    }
+
+    private void showSettingsButtonSizeDialog() {
+        String[] sizes = {"Small  44 × 26", "Medium  60 × 30", "Large  92 × 48"};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Settings Button Size")
+                .setItems(sizes, (d, which) -> {
+                    if (which == 0) mEditorSettingsButton.setSizeDp(44, 26);
+                    else if (which == 1) mEditorSettingsButton.setSizeDp(60, 30);
+                    else mEditorSettingsButton.setSizeDp(92, 48);
+                }).setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private void applyDrawerButtonImage(Uri uri) {
+        if (uri == null) return;
+        String data = encodeImage(uri);
+        if (data == null) { Toast.makeText(this, "Unsupported image", Toast.LENGTH_SHORT).show(); return; }
+        mEditorSettingsButton.setCustomImageData(data);
+        Toast.makeText(this, "Settings button image changed", Toast.LENGTH_SHORT).show();
+    }
+
+    private String encodeImage(Uri uri) {
+        try (InputStream in = getContentResolver().openInputStream(uri)) {
+            Bitmap source = BitmapFactory.decodeStream(in);
+            if (source == null) return null;
+            int max = 192;
+            float scale = Math.min(1f, max / (float)Math.max(source.getWidth(), source.getHeight()));
+            Bitmap bitmap = scale < 1f ? Bitmap.createScaledBitmap(source,
+                    Math.max(1, Math.round(source.getWidth() * scale)),
+                    Math.max(1, Math.round(source.getHeight() * scale)), true) : source;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            return "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+        } catch (Exception e) { return null; }
+    }
+
+    private void importControlJson(Uri uri) {
+        if (uri == null) return;
+        try {
+            new File(Tools.CTRLMAP_PATH).mkdirs();
+            String raw = Tools.getFileName(this, uri);
+            String name = raw == null ? "imported_controls.json" : raw.replaceAll("[^A-Za-z0-9._-]", "_");
+            if (!name.toLowerCase().endsWith(".json")) name += ".json";
+            File dest = new File(Tools.CTRLMAP_PATH, name);
+            try (InputStream in = getContentResolver().openInputStream(uri);
+                 FileOutputStream out = new FileOutputStream(dest)) {
+                if (in == null) throw new IOException("Unable to read selected file");
+                byte[] buffer = new byte[8192]; int read;
+                while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+            }
+            mControlLayout.loadLayout(dest.getAbsolutePath());
+            Toast.makeText(this, "Controls imported: " + name, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) { Tools.showError(this, e); }
+    }
 
     @Override
     public void requestControlImage(ControlInterface control) {
