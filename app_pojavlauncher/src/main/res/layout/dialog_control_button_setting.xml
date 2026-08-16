@@ -678,7 +678,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/visibility_menu_checkbox">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LAUNCHER IMPORT TOOLS" android:textColor="#A0A0A4" android:textSize="9sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MENU CONTROL IMAGE" android:textColor="#A0A0A4" android:textSize="9sp" android:textStyle="bold" />
         <TextView
             android:id="@+id/control_import_image"
             android:layout_width="match_parent"
@@ -692,19 +692,7 @@
             android:textColor="#FFFFFF"
             android:textSize="9sp"
             android:textStyle="bold" />
-        <TextView
-            android:id="@+id/control_import_layout"
-            android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:layout_marginTop="7dp"
-            android:background="@drawable/bg_skin_button_primary"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="IMPORT CONTROLS JSON"
-            android:textColor="#101014"
-            android:textSize="9sp"
-            android:textStyle="bold" />
+
     </LinearLayout>
 
 

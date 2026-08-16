@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.activity.result.ActivityResultLauncher;
@@ -49,6 +50,13 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 		mDrawerLayout = findViewById(R.id.customctrl_drawerlayout);
 		mDrawerNavigationView = findViewById(R.id.customctrl_navigation_view);
 		View mPullDrawerButton = findViewById(R.id.drawer_button);
+        View editorCanvas = findViewById(R.id.control_editor_canvas);
+        editorCanvas.setAlpha(0f);
+        editorCanvas.setTranslationY(10f * getResources().getDisplayMetrics().density);
+        editorCanvas.animate().alpha(1f).translationY(0f).setDuration(280)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+        mPullDrawerButton.setAlpha(0f);
+        mPullDrawerButton.animate().alpha(1f).setStartDelay(100).setDuration(220).start();
 
 		mPullDrawerButton.setOnClickListener(v -> mDrawerLayout.openDrawer(mDrawerNavigationView));
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
@@ -65,15 +73,38 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 				R.drawable.ic_ctrl_default,      // Default
 				R.drawable.ic_ctrl_export        // Export
 		};
+        final boolean[] menuAnimated = new boolean[menuItems.length];
 		mDrawerNavigationView.setAdapter(new ArrayAdapter<String>(this, R.layout.item_custom_control_menu, R.id.menu_item_text, menuItems) {
 			@androidx.annotation.NonNull
 			@Override
 			public View getView(int position, @androidx.annotation.Nullable View convertView, @androidx.annotation.NonNull ViewGroup parent) {
 				View view = super.getView(position, convertView, parent);
 				ImageView icon = view.findViewById(R.id.menu_item_icon);
-				if (icon != null && position < menuIcons.length) {
-					icon.setImageResource(menuIcons[position]);
-				}
+                ImageView arrow = view.findViewById(R.id.menu_item_arrow);
+                TextView text = view.findViewById(R.id.menu_item_text);
+                TextView section = view.findViewById(R.id.menu_item_section);
+                View card = view.findViewById(R.id.menu_item_card);
+				if (icon != null && position < menuIcons.length) icon.setImageResource(menuIcons[position]);
+                if (section != null) {
+                    section.setVisibility(position == 0 || position == 4 ? View.VISIBLE : View.GONE);
+                    if (position == 0) section.setText("CREATE");
+                    else if (position == 4) section.setText("LIBRARY");
+                }
+                boolean importRow = position == 4;
+                if (card != null) card.setBackgroundResource(importRow
+                        ? R.drawable.bg_skin_button_primary : R.drawable.bg_fastclient_card);
+                if (text != null) text.setTextColor(importRow ? 0xFF101014 : 0xFFF2F2F2);
+                if (icon != null) icon.setColorFilter(importRow ? 0xFF101014 : 0xFFFFFFFF);
+                if (arrow != null) arrow.setColorFilter(importRow ? 0xFF3A3A3A : 0xFF7E8088);
+                if (!menuAnimated[position]) {
+                    menuAnimated[position] = true;
+                    view.setAlpha(0f);
+                    view.setTranslationX(14f * getResources().getDisplayMetrics().density);
+                    view.animate().alpha(1f).translationX(0f).setStartDelay(position * 30L)
+                            .setDuration(240).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                } else {
+                    view.setAlpha(1f); view.setTranslationX(0f);
+                }
 				return view;
 			}
 		});
@@ -140,11 +171,6 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
     public void requestControlImage(ControlInterface control) {
         mPendingImageControl = control;
         mMenuImagePicker.launch("image/*");
-    }
-
-    @Override
-    public void requestControlLayoutImport() {
-        mControlLayout.openLoadDialog();
     }
 
     private void applyControlButtonImage(Uri uri) {

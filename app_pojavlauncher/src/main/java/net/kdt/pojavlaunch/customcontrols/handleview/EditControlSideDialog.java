@@ -78,7 +78,7 @@ public class EditControlSideDialog extends SideDialogView {
     private ArrayAdapter<String> mAdapter;
     private List<String> mSpecialArray;
     private CheckBox mDisplayInGameCheckbox, mDisplayInMenuCheckbox;
-    private View mLauncherImportSection, mImportImageButton, mImportLayoutButton;
+    private View mLauncherImportSection, mImportImageButton;
     private ControlInterface mCurrentlyEditedButton;
     // Decorative textviews
     private TextView mOrientationTextView, mMappingTextView, mNameTextView,
@@ -385,7 +385,6 @@ public class EditControlSideDialog extends SideDialogView {
         mDisplayInMenuCheckbox = mDialogContent.findViewById(R.id.visibility_menu_checkbox);
         mLauncherImportSection = mDialogContent.findViewById(R.id.launcher_control_import_section);
         mImportImageButton = mDialogContent.findViewById(R.id.control_import_image);
-        mImportLayoutButton = mDialogContent.findViewById(R.id.control_import_layout);
 
         mCommandTextView = mDialogContent.findViewById(R.id.editCommand_textView);
         mCommandEditText = mDialogContent.findViewById(R.id.editCommand_editText);
@@ -419,12 +418,6 @@ public class EditControlSideDialog extends SideDialogView {
             Context context = mParent.getContext();
             if (context instanceof LauncherControlImportHost && mCurrentlyEditedButton != null) {
                 ((LauncherControlImportHost) context).requestControlImage(mCurrentlyEditedButton);
-            }
-        });
-        if (mImportLayoutButton != null) mImportLayoutButton.setOnClickListener(v -> {
-            Context context = mParent.getContext();
-            if (context instanceof LauncherControlImportHost) {
-                ((LauncherControlImportHost) context).requestControlLayoutImport();
             }
         });
         mNameEditText.addTextChangedListener((SimpleTextWatcher) s -> {
