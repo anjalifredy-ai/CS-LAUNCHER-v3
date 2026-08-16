@@ -533,11 +533,14 @@ public class JREUtils {
                 String arg = authArgs.next();
                 if (arg.startsWith("-javaagent:") && arg.contains("authlib-injector")) authArgs.remove();
             }
-            userArgs.add("-Dminecraft.api.auth.host=https://authserver.mojang.com");
-            userArgs.add("-Dminecraft.api.account.host=https://api.mojang.com");
-            userArgs.add("-Dminecraft.api.session.host=https://sessionserver.mojang.com");
-            userArgs.add("-Dminecraft.api.services.host=https://api.minecraftservices.com");
-            Logger.appendToLog("Premium skin pipeline: official Mojang session services enforced");
+            System.clearProperty("minecraft.api.auth.host");
+            System.clearProperty("minecraft.api.account.host");
+            System.clearProperty("minecraft.api.session.host");
+            System.clearProperty("minecraft.api.services.host");
+            // Do not hardcode endpoints for premium accounts. This mirrors
+            // upstream Pojav: each bundled Authlib version selects its own
+            // Mojang production environment and signature keys.
+            Logger.appendToLog("Premium skin pipeline: vanilla Authlib environment restored");
         } else {
             if (isElyBy) {
                 String authlibPath = authlibFile.getAbsolutePath();

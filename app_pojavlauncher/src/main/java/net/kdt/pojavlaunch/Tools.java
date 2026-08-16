@@ -754,14 +754,18 @@ public final class Tools {
             versionName = versionInfo.inheritsFrom;
         }
 
-        String userType = profile.isMicrosoft ? "msa" : "mojang";
+        // Match upstream PojavLauncher exactly. userType is a game-version
+        // compatibility switch, not an account-type switch. 22w43a+ requires
+        // MSA semantics for profile-key / signed texture handling, including
+        // NPC and online-player GameProfile properties.
+        String userType = "mojang";
         try {
             Date creationDate = DateUtils.getOriginalReleaseDate(versionInfo);
-            if(creationDate != null && !DateUtils.dateBefore(creationDate, 2022, 9, 26)) {
-                userType = profile.isMicrosoft ? "msa" : "mojang";
+            if (creationDate != null && !DateUtils.dateBefore(creationDate, 2022, 9, 26)) {
+                userType = "msa";
             }
-        }catch (ParseException e) {
-            Log.e("CheckForProfileKey", "Failed to determine profile creation date", e);
+        } catch (ParseException e) {
+            Log.e("CheckForProfileKey", "Failed to determine profile creation date, using mojang", e);
         }
 
 
