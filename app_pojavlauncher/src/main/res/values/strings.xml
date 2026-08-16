@@ -1113,4 +1113,5 @@ Third-party components (GL4ES, MobileGlues, ANGLE, Zink/Mesa, LWJGL, OpenJDK, SD
         <item quantity="one">%d installed</item>
         <item quantity="other">%d installed</item>
     </plurals>
+    <string name="minecraft_no_username_set">This Microsoft account owns Minecraft but does not have a Java profile name yet.</string>
 </resources>
