@@ -130,7 +130,7 @@ public class ProfileTypeSelectFragment extends Fragment {
 
         b = view.findViewById(R.id.modded_profile_bta);
         if (b != null) {
-            b.setOnClickListener(v -> CsClientPromoDialog.show(requireActivity()));
+            b.setOnClickListener(v -> navigateTo(CsClientVersionsFragment.class, CsClientVersionsFragment.TAG, null));
             setupTouchAnimation(b);
         }
     }

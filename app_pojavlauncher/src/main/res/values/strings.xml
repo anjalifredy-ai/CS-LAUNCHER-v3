@@ -390,8 +390,8 @@ Third-party components (GL4ES, MobileGlues, ANGLE, Zink/Mesa, LWJGL, OpenJDK, SD
     <string name="pt_neoforge_desc">Next-generation Forge</string>
     <string name="pt_modpack_name">Install Modpack</string>
     <string name="pt_modpack_desc">CurseForge, Modrinth or import a zip</string>
-    <string name="pt_bta_name">CS CLIENT (80% READY)</string>
-    <string name="pt_bta_desc">Official Mobile Optimized Client — Click here!</string>
+    <string name="pt_bta_name">CS CLIENT</string>
+    <string name="pt_bta_desc">Blaze Client • Fabric • Build your profile</string>
     <string name="notification_terminate">Terminate</string>
     <string name="notification_game_runs">The game is running!</string>
     <string name="folder_dialog_create">Create</string>
