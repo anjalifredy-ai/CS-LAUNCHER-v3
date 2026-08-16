@@ -488,7 +488,6 @@ public class JREUtils {
             userArgs.add("-XX:ReservedCodeCacheSize=128M");
             userArgs.add("-XX:+UseCodeCacheFlushing");
             userArgs.add("-Djava.awt.headless=true");
-            userArgs.add("-Djava.net.preferIPv4Stack=true");
             userArgs.add("-Dlog4j2.formatMsgNoLookups=true");
             // Pojav/FCL-style LWJGL compatibility: harmless without Sodium,
             // avoids an expensive compatibility abort on supported Sodium builds.
