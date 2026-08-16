@@ -100,13 +100,26 @@ public class DrawerPullButton extends View {
     }
 
     @Override protected void onDraw(Canvas canvas) {
+        if (mCustomBitmap != null) {
+            // Custom art owns the complete handle: no forced black capsule.
+            // Preserve aspect ratio and center it, so square/portrait artwork is
+            // never stretched. Resizing the handle scales the art naturally.
+            float scale = Math.min(getWidth() / (float)mCustomBitmap.getWidth(),
+                    getHeight() / (float)mCustomBitmap.getHeight());
+            int drawW = Math.max(1, Math.round(mCustomBitmap.getWidth() * scale));
+            int drawH = Math.max(1, Math.round(mCustomBitmap.getHeight() * scale));
+            int left = (getWidth() - drawW) / 2;
+            int top = (getHeight() - drawH) / 2;
+            canvas.drawBitmap(mCustomBitmap, null,
+                    new android.graphics.Rect(left, top, left + drawW, top + drawH), mBitmapPaint);
+            return;
+        }
+
+        // The graphite capsule belongs only to the default settings glyph.
         float radius = Math.min(getWidth(), getHeight()) * 0.34f;
         canvas.drawRoundRect(0, 0, getWidth(), getHeight(), radius, radius, mBackgroundPaint);
         int pad = Math.max(dp(4), Math.min(getWidth(), getHeight()) / 6);
-        if (mCustomBitmap != null) {
-            canvas.drawBitmap(mCustomBitmap, null,
-                    new android.graphics.Rect(pad, pad, getWidth() - pad, getHeight() - pad), mBitmapPaint);
-        } else if (mDrawable != null) {
+        if (mDrawable != null) {
             int side = Math.min(getWidth(), getHeight()) - pad * 2;
             int left = (getWidth() - side) / 2, top = (getHeight() - side) / 2;
             mDrawable.setBounds(left, top, left + side, top + side);

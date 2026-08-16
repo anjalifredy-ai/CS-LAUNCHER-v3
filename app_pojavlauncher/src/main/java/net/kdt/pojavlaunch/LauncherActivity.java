@@ -164,6 +164,7 @@ public class LauncherActivity extends BaseActivity {
     private View mBootProgressBlock;
     private boolean mBootActive = false;
     private boolean mBootSawTasks = false;
+    private boolean mWelcomeShown = false;
     private final Runnable mBootFailsafe = this::onBootFailsafe;
     private final Runnable mBootPostTaskHide = () -> hideBootOverlay(false);
     private final TaskCountListener mBootTaskListener = this::onBootTaskCount;
@@ -651,14 +652,20 @@ public class LauncherActivity extends BaseActivity {
         } else if (!maybeShowRuntimeWizard()) {
             // Official partner welcome — shown exactly once, after first launch settles
             maybeShowInfrawireWelcome();
-            showWelcomeBack();
         }
     }
 
     /** Lightweight greeting replacing the false startup-download flash. */
     private void showWelcomeBack() {
+        if (mWelcomeShown || isFinishing() || isDestroyed()) return;
+        if (!hasWindowFocus()) {
+            View pending = findViewById(R.id.welcome_back_overlay);
+            if (pending != null) pending.postDelayed(this::showWelcomeBack, 240);
+            return;
+        }
         View welcome = findViewById(R.id.welcome_back_overlay);
         if (welcome == null) return;
+        mWelcomeShown = true;
         welcome.animate().cancel();
         welcome.setVisibility(View.VISIBLE);
         welcome.setAlpha(0f);
@@ -669,8 +676,8 @@ public class LauncherActivity extends BaseActivity {
                 .setDuration(260)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .withEndAction(() -> welcome.postDelayed(() -> welcome.animate()
-                        .alpha(0f).translationY(-8f * getResources().getDisplayMetrics().density).setDuration(240)
-                        .withEndAction(() -> welcome.setVisibility(View.GONE)).start(), 520))
+                        .alpha(0f).translationY(-8f * getResources().getDisplayMetrics().density).setDuration(280)
+                        .withEndAction(() -> welcome.setVisibility(View.GONE)).start(), 950))
                 .start();
     }
 
@@ -850,6 +857,12 @@ public class LauncherActivity extends BaseActivity {
         if (net.kdt.pojavlaunch.launch.LaunchTracker.getPhase()
                 == net.kdt.pojavlaunch.launch.LaunchTracker.Phase.IDLE) {
             hideLaunchOverlay();
+        }
+        // Guaranteed normal-start greeting. The old onCreate-only branch was
+        // skipped whenever runtime/onboarding routing returned true.
+        if (!mWelcomeShown && !isShortcutLaunchRequested(getIntent())) {
+            View welcome = findViewById(R.id.welcome_back_overlay);
+            if (welcome != null) welcome.postDelayed(this::showWelcomeBack, 220);
         }
     }
 

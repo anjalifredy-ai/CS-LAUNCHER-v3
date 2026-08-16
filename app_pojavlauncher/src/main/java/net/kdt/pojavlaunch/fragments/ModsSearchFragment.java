@@ -121,6 +121,7 @@ public class ModsSearchFragment extends Fragment {
             public void onPageSelected(int position) {
                 mCurrentTab = position;
                 updateTabSelection(position);
+                animateTabContent(position);
                 String query = mSearchEditText.getText().toString().trim();
                 DownloadListFragment dlf = getListFragment(TAB_TYPES[position]);
                 if (dlf != null && !query.isEmpty()) {
@@ -155,6 +156,7 @@ public class ModsSearchFragment extends Fragment {
 
         View searchGoBtn = view.findViewById(R.id.search_button_go);
         if (searchGoBtn != null) {
+            UiMotion.pressFeedback(searchGoBtn);
             searchGoBtn.setOnClickListener(v -> {
                 mSearchHandler.removeCallbacksAndMessages(null);
                 DownloadListFragment dlf = getListFragment(TAB_TYPES[mCurrentTab]);
@@ -219,26 +221,45 @@ public class ModsSearchFragment extends Fragment {
         View header = root.findViewById(R.id.mod_store_header);
         View pager = root.findViewById(R.id.download_view_pager);
         View tabs = root.findViewById(R.id.tab_scroll);
+        View search = root.findViewById(R.id.search_capsule_container);
+        float d = getResources().getDisplayMetrics().density;
 
         if (header != null) {
             header.setAlpha(0f);
-            header.setTranslationY(-40f);
+            header.setTranslationY(-14f * d);
             header.animate().alpha(1f).translationY(0f)
                     .setDuration(320).setInterpolator(new DecelerateInterpolator()).start();
         }
+        if (search != null) {
+            search.setAlpha(0f);
+            search.setTranslationX(16f * d);
+            search.animate().alpha(1f).translationX(0f).setStartDelay(70)
+                    .setDuration(260).setInterpolator(new DecelerateInterpolator()).start();
+        }
         if (tabs != null) {
             tabs.setAlpha(0f);
-            tabs.animate().alpha(1f).setStartDelay(120).setDuration(300).start();
+            tabs.setTranslationY(6f * d);
+            tabs.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(280).start();
         }
         if (pager != null) {
             pager.setAlpha(0f);
-            pager.setScaleX(0.98f);
-            pager.setScaleY(0.98f);
-            pager.setTranslationY(48f);
+            pager.setScaleX(0.99f);
+            pager.setScaleY(0.99f);
+            pager.setTranslationY(14f * d);
             pager.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f)
                     .setStartDelay(90).setDuration(360)
                     .setInterpolator(new DecelerateInterpolator()).start();
         }
+    }
+
+    private void animateTabContent(int position) {
+        if (mViewPager == null) return;
+        float d = getResources().getDisplayMetrics().density;
+        mViewPager.animate().cancel();
+        mViewPager.setAlpha(0.82f);
+        mViewPager.setTranslationX((position % 2 == 0 ? 1f : -1f) * 10f * d);
+        mViewPager.animate().alpha(1f).translationX(0f).setDuration(190)
+                .setInterpolator(new DecelerateInterpolator()).start();
     }
 
     private void setupTabs() {
