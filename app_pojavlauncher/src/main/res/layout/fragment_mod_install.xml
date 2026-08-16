@@ -66,11 +66,14 @@
                     </FrameLayout>
 
                     <LinearLayout
+                        android:id="@+id/install_title_panel"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="@dimen/_12sdp"
-                        android:orientation="vertical">
+                        android:background="@drawable/bg_mod_install_title_panel"
+                        android:orientation="vertical"
+                        android:padding="9dp">
 
                         <TextView
                             android:id="@+id/install_mod_title"
@@ -554,20 +557,25 @@
         android:layout_gravity="bottom"
         android:background="#0B0B0E"
         android:elevation="10dp"
-        android:paddingHorizontal="@dimen/_16sdp"
-        android:paddingTop="@dimen/_10sdp"
-        android:paddingBottom="@dimen/_12sdp">
+        android:clipToPadding="true"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="8dp">
 
-        <Button
+        <TextView
             android:id="@+id/install_button"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_50sdp"
+            android:layout_height="46dp"
             android:background="@drawable/bg_cs_primary_button"
-            android:letterSpacing="0.1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:letterSpacing="0.08"
+            android:maxLines="1"
             android:text="@string/mod_install_now"
             android:textAllCaps="true"
-            android:textColor="#FFFFFF"
-            android:textSize="@dimen/_14ssp"
+            android:textColor="#101014"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </FrameLayout>
 

@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,7 +66,7 @@ public class ModInstallFragment extends Fragment {
     private TextView mModAuthor;
     private TextView mVersionBadge;
     private TextView mFullDescription;
-    private Button mInstallButton;
+    private TextView mInstallButton;
 
     // Stats row
     private View mStatsRow;
