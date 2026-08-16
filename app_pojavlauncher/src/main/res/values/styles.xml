@@ -19,6 +19,17 @@
         <item name="colorTextSecondary">@color/text_secondary_light</item>
         <item name="bgMainDrawable">@drawable/bg_premium_cosmic_gradient</item>
         <item name="android:windowBackground">@drawable/bg_premium_cosmic_gradient</item>
+        <!-- Explicit Material 3 palette: blocks its built-in #D0BCFF lavender fallback. -->
+        <item name="colorPrimary">#FFFFFF</item>
+        <item name="colorOnPrimary">#0D0D0D</item>
+        <item name="colorPrimaryContainer">#FFFFFF</item>
+        <item name="colorOnPrimaryContainer">#0D0D0D</item>
+        <item name="colorSecondary">#D0D0D0</item>
+        <item name="colorOnSecondary">#0D0D0D</item>
+        <item name="colorSecondaryContainer">#25262D</item>
+        <item name="colorOnSecondaryContainer">#FFFFFF</item>
+        <item name="colorTertiary">#B8B8B8</item>
+        <item name="colorOnTertiary">#0D0D0D</item>
         <item name="colorAccent">#D0D0D0</item>
         <item name="colorOnSurface">@color/text_primary_white</item>
         <item name="colorOnSurfaceVariant">@color/text_secondary_light</item>

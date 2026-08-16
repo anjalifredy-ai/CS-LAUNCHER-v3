@@ -21,7 +21,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -81,7 +80,7 @@ public class SkinManagerFragment extends Fragment {
     private TextView mTvServerStatusChip;
     private TextView mTvPreviewHint;
     private EditText mEtUsername;
-    private Button mBtnFetch;
+    private TextView mBtnFetch;
     private LinearLayout mSlotContainer;
     private FrameLayout mInlinePreviewHost;
     private FrameLayout mFullscreenPreviewHost;
