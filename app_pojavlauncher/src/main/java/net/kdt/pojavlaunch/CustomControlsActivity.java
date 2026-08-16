@@ -20,6 +20,7 @@ import net.kdt.pojavlaunch.customcontrols.ControlDrawerData;
 import net.kdt.pojavlaunch.customcontrols.ControlJoystickData;
 import net.kdt.pojavlaunch.customcontrols.ControlLayout;
 import net.kdt.pojavlaunch.customcontrols.EditorExitable;
+import net.kdt.pojavlaunch.customcontrols.LauncherControlImportHost;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 
 import java.io.IOException;
@@ -30,12 +31,13 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 
 
-public class CustomControlsActivity extends BaseActivity implements EditorExitable {
+public class CustomControlsActivity extends BaseActivity implements EditorExitable, LauncherControlImportHost {
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerNavigationView;
 	private ControlLayout mControlLayout;
+    private ControlInterface mPendingImageControl;
     private final ActivityResultLauncher<String> mMenuImagePicker = registerForActivityResult(
-            new ActivityResultContracts.GetContent(), this::applyMenuButtonImage);
+            new ActivityResultContracts.GetContent(), this::applyControlButtonImage);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,13 +49,6 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 		mDrawerLayout = findViewById(R.id.customctrl_drawerlayout);
 		mDrawerNavigationView = findViewById(R.id.customctrl_navigation_view);
 		View mPullDrawerButton = findViewById(R.id.drawer_button);
-        View menuImageButton = findViewById(R.id.menu_custom_image_button);
-        menuImageButton.setOnClickListener(v -> mMenuImagePicker.launch("image/*"));
-        menuImageButton.setOnLongClickListener(v -> {
-            applyMenuIconData(null);
-            android.widget.Toast.makeText(this, "MENU image cleared", android.widget.Toast.LENGTH_SHORT).show();
-            return true;
-        });
 
 		mPullDrawerButton.setOnClickListener(v -> mDrawerLayout.openDrawer(mDrawerNavigationView));
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
@@ -141,8 +136,19 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 		}
 	}
 
-    private void applyMenuButtonImage(Uri uri) {
-        if (uri == null) return;
+    @Override
+    public void requestControlImage(ControlInterface control) {
+        mPendingImageControl = control;
+        mMenuImagePicker.launch("image/*");
+    }
+
+    @Override
+    public void requestControlLayoutImport() {
+        mControlLayout.openLoadDialog();
+    }
+
+    private void applyControlButtonImage(Uri uri) {
+        if (uri == null || mPendingImageControl == null) return;
         try (InputStream in = getContentResolver().openInputStream(uri)) {
             Bitmap source = BitmapFactory.decodeStream(in);
             if (source == null) throw new IOException("Unsupported image");
@@ -153,25 +159,20 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
                     Math.max(1, Math.round(source.getHeight() * scale)), true) : source;
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            applyMenuIconData("data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP));
-            android.widget.Toast.makeText(this, "MENU image applied", android.widget.Toast.LENGTH_SHORT).show();
+            applyControlIconData("data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP));
+            android.widget.Toast.makeText(this, "Control image applied", android.widget.Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Tools.showError(this, e);
         }
     }
 
-    private void applyMenuIconData(String data) {
-        for (int i = 0; i < mControlLayout.getChildCount(); i++) {
-            View child = mControlLayout.getChildAt(i);
-            if (!(child instanceof ControlInterface)) continue;
-            ControlInterface control = (ControlInterface) child;
-            ControlData properties = control.getProperties();
-            boolean menu = false;
-            for (int key : properties.keycodes) if (key == ControlData.SPECIALBTN_MENU) menu = true;
-            if (!menu) continue;
-            properties.customIcon = data;
-            control.setProperties(properties);
-        }
+    private void applyControlIconData(String data) {
+        ControlInterface control = mPendingImageControl;
+        if (control == null) return;
+        ControlData properties = control.getProperties();
+        properties.customIcon = data;
+        control.setProperties(properties);
+        mPendingImageControl = null;
     }
 
 	@Override

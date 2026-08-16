@@ -30,6 +30,7 @@ import net.kdt.pojavlaunch.colorselector.ColorSelector;
 import net.kdt.pojavlaunch.customcontrols.ControlData;
 import net.kdt.pojavlaunch.customcontrols.ControlDrawerData;
 import net.kdt.pojavlaunch.customcontrols.ControlJoystickData;
+import net.kdt.pojavlaunch.customcontrols.LauncherControlImportHost;
 import net.kdt.pojavlaunch.customcontrols.commands.ChatCommandEngine;
 import net.kdt.pojavlaunch.customcontrols.commands.CommandScriptHighlighter;
 import net.kdt.pojavlaunch.customcontrols.buttons.ControlDrawer;
@@ -77,6 +78,7 @@ public class EditControlSideDialog extends SideDialogView {
     private ArrayAdapter<String> mAdapter;
     private List<String> mSpecialArray;
     private CheckBox mDisplayInGameCheckbox, mDisplayInMenuCheckbox;
+    private View mLauncherImportSection, mImportImageButton, mImportLayoutButton;
     private ControlInterface mCurrentlyEditedButton;
     // Decorative textviews
     private TextView mOrientationTextView, mMappingTextView, mNameTextView,
@@ -381,6 +383,9 @@ public class EditControlSideDialog extends SideDialogView {
         mCornerRadiusPercentTextView = mDialogContent.findViewById(R.id.editCornerRadius_textView_percent);
         mDisplayInGameCheckbox = mDialogContent.findViewById(R.id.visibility_game_checkbox);
         mDisplayInMenuCheckbox = mDialogContent.findViewById(R.id.visibility_menu_checkbox);
+        mLauncherImportSection = mDialogContent.findViewById(R.id.launcher_control_import_section);
+        mImportImageButton = mDialogContent.findViewById(R.id.control_import_image);
+        mImportLayoutButton = mDialogContent.findViewById(R.id.control_import_layout);
 
         mCommandTextView = mDialogContent.findViewById(R.id.editCommand_textView);
         mCommandEditText = mDialogContent.findViewById(R.id.editCommand_editText);
@@ -410,6 +415,18 @@ public class EditControlSideDialog extends SideDialogView {
      * @noinspection SuspiciousNameCombination
      */
     private void setupRealTimeListeners() {
+        if (mImportImageButton != null) mImportImageButton.setOnClickListener(v -> {
+            Context context = getContext();
+            if (context instanceof LauncherControlImportHost && mCurrentlyEditedButton != null) {
+                ((LauncherControlImportHost) context).requestControlImage(mCurrentlyEditedButton);
+            }
+        });
+        if (mImportLayoutButton != null) mImportLayoutButton.setOnClickListener(v -> {
+            Context context = getContext();
+            if (context instanceof LauncherControlImportHost) {
+                ((LauncherControlImportHost) context).requestControlLayoutImport();
+            }
+        });
         mNameEditText.addTextChangedListener((SimpleTextWatcher) s -> {
             if (internalChanges) return;
 
@@ -705,6 +722,17 @@ public class EditControlSideDialog extends SideDialogView {
             mCurrentlyEditedButton.getControlView().removeOnLayoutChangeListener(mLayoutChangedListener);
         mCurrentlyEditedButton = button;
         mCurrentlyEditedButton.getControlView().addOnLayoutChangeListener(mLayoutChangedListener);
+        boolean launcherEditor = getContext() instanceof LauncherControlImportHost;
+        boolean menuControl = false;
+        for (int key : button.getProperties().keycodes) {
+            if (key == ControlData.SPECIALBTN_MENU) { menuControl = true; break; }
+        }
+        if (mLauncherImportSection != null) {
+            mLauncherImportSection.setVisibility(launcherEditor ? VISIBLE : GONE);
+        }
+        if (mImportImageButton != null) {
+            mImportImageButton.setVisibility(launcherEditor && menuControl ? VISIBLE : GONE);
+        }
     }
 
 }

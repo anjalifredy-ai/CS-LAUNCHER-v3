@@ -288,9 +288,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
                     case 1: openLogOutput(); break;
                     case 2: dialogSendCustomKey(); break;
                     case 3: openQuickSettings(); break;
-                    case 4:
-                        Toast.makeText(this, "Edit controls from Launcher → Control Customisation", Toast.LENGTH_LONG).show();
-                        break;
+                    case 4: openCustomControls(); break;
                     case 5: openResourceBrowser(); break; // user req: packs/shaders without leaving the game
                 }
                 drawerLayout.closeDrawers();
