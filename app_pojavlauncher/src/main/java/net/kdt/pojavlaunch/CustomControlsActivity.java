@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.core.view.GravityCompat;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
@@ -58,7 +59,10 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
         mPullDrawerButton.setAlpha(0f);
         mPullDrawerButton.animate().alpha(1f).setStartDelay(100).setDuration(220).start();
 
-		mPullDrawerButton.setOnClickListener(v -> mDrawerLayout.openDrawer(mDrawerNavigationView));
+		// The ListView is nested inside the redesigned drawer panel, so opening it
+        // as a drawer child causes a LayoutParams ClassCastException. Address
+        // the direct DrawerLayout child by edge gravity instead.
+		mPullDrawerButton.setOnClickListener(v -> mDrawerLayout.openDrawer(GravityCompat.END));
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
 		String[] menuItems = getResources().getStringArray(R.array.menu_customcontrol_customactivity);
