@@ -416,13 +416,13 @@ public class EditControlSideDialog extends SideDialogView {
      */
     private void setupRealTimeListeners() {
         if (mImportImageButton != null) mImportImageButton.setOnClickListener(v -> {
-            Context context = getContext();
+            Context context = mParent.getContext();
             if (context instanceof LauncherControlImportHost && mCurrentlyEditedButton != null) {
                 ((LauncherControlImportHost) context).requestControlImage(mCurrentlyEditedButton);
             }
         });
         if (mImportLayoutButton != null) mImportLayoutButton.setOnClickListener(v -> {
-            Context context = getContext();
+            Context context = mParent.getContext();
             if (context instanceof LauncherControlImportHost) {
                 ((LauncherControlImportHost) context).requestControlLayoutImport();
             }
@@ -722,7 +722,7 @@ public class EditControlSideDialog extends SideDialogView {
             mCurrentlyEditedButton.getControlView().removeOnLayoutChangeListener(mLayoutChangedListener);
         mCurrentlyEditedButton = button;
         mCurrentlyEditedButton.getControlView().addOnLayoutChangeListener(mLayoutChangedListener);
-        boolean launcherEditor = getContext() instanceof LauncherControlImportHost;
+        boolean launcherEditor = mParent.getContext() instanceof LauncherControlImportHost;
         boolean menuControl = false;
         for (int key : button.getProperties().keycodes) {
             if (key == ControlData.SPECIALBTN_MENU) { menuControl = true; break; }
