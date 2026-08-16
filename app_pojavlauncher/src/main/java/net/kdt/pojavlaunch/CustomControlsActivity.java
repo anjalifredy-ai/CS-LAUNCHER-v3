@@ -11,8 +11,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import net.kdt.pojavlaunch.customcontrols.ControlData;
+import net.kdt.pojavlaunch.customcontrols.buttons.ControlInterface;
 import net.kdt.pojavlaunch.customcontrols.ControlDrawerData;
 import net.kdt.pojavlaunch.customcontrols.ControlJoystickData;
 import net.kdt.pojavlaunch.customcontrols.ControlLayout;
@@ -20,12 +23,19 @@ import net.kdt.pojavlaunch.customcontrols.EditorExitable;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 
 
 public class CustomControlsActivity extends BaseActivity implements EditorExitable {
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerNavigationView;
 	private ControlLayout mControlLayout;
+    private final ActivityResultLauncher<String> mMenuImagePicker = registerForActivityResult(
+            new ActivityResultContracts.GetContent(), this::applyMenuButtonImage);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +47,13 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 		mDrawerLayout = findViewById(R.id.customctrl_drawerlayout);
 		mDrawerNavigationView = findViewById(R.id.customctrl_navigation_view);
 		View mPullDrawerButton = findViewById(R.id.drawer_button);
+        View menuImageButton = findViewById(R.id.menu_custom_image_button);
+        menuImageButton.setOnClickListener(v -> mMenuImagePicker.launch("image/*"));
+        menuImageButton.setOnLongClickListener(v -> {
+            applyMenuIconData(null);
+            android.widget.Toast.makeText(this, "MENU image cleared", android.widget.Toast.LENGTH_SHORT).show();
+            return true;
+        });
 
 		mPullDrawerButton.setOnClickListener(v -> mDrawerLayout.openDrawer(mDrawerNavigationView));
 		mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
@@ -123,6 +140,39 @@ public class CustomControlsActivity extends BaseActivity implements EditorExitab
 			Tools.showError(this, e);
 		}
 	}
+
+    private void applyMenuButtonImage(Uri uri) {
+        if (uri == null) return;
+        try (InputStream in = getContentResolver().openInputStream(uri)) {
+            Bitmap source = BitmapFactory.decodeStream(in);
+            if (source == null) throw new IOException("Unsupported image");
+            int max = 192;
+            float scale = Math.min(1f, max / (float)Math.max(source.getWidth(), source.getHeight()));
+            Bitmap bitmap = scale < 1f ? Bitmap.createScaledBitmap(source,
+                    Math.max(1, Math.round(source.getWidth() * scale)),
+                    Math.max(1, Math.round(source.getHeight() * scale)), true) : source;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            applyMenuIconData("data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP));
+            android.widget.Toast.makeText(this, "MENU image applied", android.widget.Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Tools.showError(this, e);
+        }
+    }
+
+    private void applyMenuIconData(String data) {
+        for (int i = 0; i < mControlLayout.getChildCount(); i++) {
+            View child = mControlLayout.getChildAt(i);
+            if (!(child instanceof ControlInterface)) continue;
+            ControlInterface control = (ControlInterface) child;
+            ControlData properties = control.getProperties();
+            boolean menu = false;
+            for (int key : properties.keycodes) if (key == ControlData.SPECIALBTN_MENU) menu = true;
+            if (!menu) continue;
+            properties.customIcon = data;
+            control.setProperties(properties);
+        }
+    }
 
 	@Override
 	public void onBackPressed() {

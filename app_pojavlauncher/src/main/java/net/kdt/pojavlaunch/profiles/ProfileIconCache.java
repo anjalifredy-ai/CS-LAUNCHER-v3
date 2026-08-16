@@ -3,6 +3,7 @@ package net.kdt.pojavlaunch.profiles;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Base64;
@@ -195,7 +196,7 @@ public class ProfileIconCache {
         opts.inSampleSize = computeInSampleSize(opts, targetSize, targetSize);
         opts.inJustDecodeBounds = false;
         opts.inMutable = false; // Immutable bitmaps are more memory-efficient on some platforms
-        opts.inPreferredConfig = Bitmap.Config.RGB_565; // No alpha needed for profile icons
+        opts.inPreferredConfig = Bitmap.Config.ARGB_8888; // Preserve round/transparent icon corners
 
         Bitmap iconBitmap = BitmapFactory.decodeByteArray(iconData, 0, iconData.length, opts);
         if(iconBitmap == null) {
@@ -203,6 +204,20 @@ public class ProfileIconCache {
             return null;
         }
         return new BitmapDrawable(resources, iconBitmap);
+    }
+
+    /** Detect transparent source corners, the normal signature of a round PNG/WebP icon. */
+    public static boolean hasTransparentCorners(@Nullable Drawable drawable) {
+        if (!(drawable instanceof BitmapDrawable)) return false;
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        if (bitmap == null || bitmap.getWidth() < 2 || bitmap.getHeight() < 2) return false;
+        int w = bitmap.getWidth() - 1, h = bitmap.getHeight() - 1;
+        int transparent = 0;
+        if (Color.alpha(bitmap.getPixel(0, 0)) < 40) transparent++;
+        if (Color.alpha(bitmap.getPixel(w, 0)) < 40) transparent++;
+        if (Color.alpha(bitmap.getPixel(0, h)) < 40) transparent++;
+        if (Color.alpha(bitmap.getPixel(w, h)) < 40) transparent++;
+        return transparent >= 3;
     }
 
     /**

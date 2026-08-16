@@ -193,6 +193,11 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         holder.cardRoot.setOnLongClickListener(null);
 
         holder.btnPlay.setOnClickListener(v -> {
+            if (holder.btnPlay.isStopMode()) {
+                holder.btnPlay.cancelPendingLaunch();
+                v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                return;
+            }
             // Phase 3: "launch" is a unique morph, not the old download pulse.
             holder.btnPlay.beginLaunch();
             v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
@@ -297,6 +302,9 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
             drawable = ContextCompat.getDrawable(target.getContext(), R.drawable.ic_cs_logo_placeholder);
         }
         target.setImageDrawable(drawable);
+        target.setClipToOutline(true);
+        target.setBackgroundResource(ProfileIconCache.hasTransparentCorners(drawable)
+                ? R.drawable.bg_profile_icon_circle : R.drawable.bg_profile_icon_square);
         // GIF icons survive refresh/rebinds (Req-4 lifecycle): resume if paused
         net.kdt.pojavlaunch.profiles.ProfileGifSupport.resumeDrawable(drawable);
     }

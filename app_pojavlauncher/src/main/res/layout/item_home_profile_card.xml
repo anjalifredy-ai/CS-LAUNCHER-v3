@@ -230,7 +230,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_browse_resources"
+                    android:src="@drawable/ic_profile_download"
                     android:tint="#D9DAE0" />
             </FrameLayout>
 

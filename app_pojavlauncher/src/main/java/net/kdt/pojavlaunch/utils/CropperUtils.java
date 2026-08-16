@@ -5,6 +5,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.ImageDecoder;
+import android.os.Build;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
@@ -122,6 +124,14 @@ public class CropperUtils {
         try (InputStream inputStream = contentResolver.openInputStream(selectedUri)) {
             if(inputStream == null) return null;
             Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
+            if (originalBitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, selectedUri);
+                originalBitmap = ImageDecoder.decodeBitmap(source, (decoder, info, src) -> {
+                    decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
+                    decoder.setMemorySizePolicy(ImageDecoder.MEMORY_POLICY_LOW_RAM);
+                });
+            }
+            if (originalBitmap == null) throw new IOException("Unsupported or damaged image file");
             BitmapCropBehaviour cropBehaviour = new BitmapCropBehaviour(cropImageView);
             cropBehaviour.setBitmap(originalBitmap);
             return cropBehaviour;

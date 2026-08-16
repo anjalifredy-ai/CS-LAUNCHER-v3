@@ -72,6 +72,8 @@ public class ControlData {
      * Null / empty for normal keycode-based buttons.
      */
     public String command;
+    /** Optional launcher-editor supplied PNG/WebP icon as a data URI. */
+    public String customIcon;
     private float width;         //Dp instead of Px now
     private float height;        //Dp instead of Px now
 
@@ -158,6 +160,8 @@ public class ControlData {
                 controlData.isSwipeable,
                 controlData.passThruEnabled
         );
+        this.command = controlData.command;
+        this.customIcon = controlData.customIcon;
     }
 
     public static ControlData[] getSpecialButtons() {

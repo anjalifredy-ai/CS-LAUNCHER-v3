@@ -55,6 +55,10 @@ public class FastClientHomeFragment extends Fragment {
         // 3. Play Button Functionality — premium Phase-3 launch morph
         PremiumPlayButtonView btnPlay = view.findViewById(R.id.btn_play_main);
         btnPlay.setOnClickListener(v -> {
+            if (btnPlay.isStopMode()) {
+                btnPlay.cancelPendingLaunch();
+                return;
+            }
             btnPlay.beginLaunch();
             v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
             ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);

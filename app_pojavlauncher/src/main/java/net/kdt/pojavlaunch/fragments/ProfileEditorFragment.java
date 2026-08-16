@@ -79,7 +79,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private String mProfileKey;
     private MinecraftProfile mTempProfile = null;
     private String mValueToConsume = "";
-    private Button mSaveButton, mDeleteButton, mControlSelectButton, mGameDirButton, mVersionSelectButton;
+    private Button mSaveButton, mControlSelectButton, mGameDirButton, mVersionSelectButton;
+    private TextView mDeleteButton;
     private ImageButton mModsImport, mResourcePacksFolder, mShaderPacksFolder, mResourcePacksImport, mShaderPacksImport;
     private RecyclerView mModsRecycler, mResourcePacksRecycler, mShaderPacksRecycler;
     private TextView mModsHeader, mModsEmpty, mResourcePacksEmpty, mShaderPacksEmpty;
@@ -473,6 +474,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     @Override
     public void onCropped(Bitmap contentBitmap) {
         mProfileIcon.setImageBitmap(contentBitmap);
+        applyProfileIconShape(new android.graphics.drawable.BitmapDrawable(getResources(), contentBitmap));
         Log.i(TAG_ASYNC, "w="+contentBitmap.getWidth() +" h="+contentBitmap.getHeight());
         mBgExecutor.execute(() -> {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -649,6 +651,13 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         return String.format(java.util.Locale.US, "%.1f MB", bytes / (1024f * 1024f));
     }
 
+    private void applyProfileIconShape(@Nullable Drawable drawable) {
+        if (mProfileIcon == null) return;
+        mProfileIcon.setClipToOutline(true);
+        mProfileIcon.setBackgroundResource(ProfileIconCache.hasTransparentCorners(drawable)
+                ? R.drawable.bg_profile_icon_circle : R.drawable.bg_profile_icon_square);
+    }
+
     private void loadProfileBackground() {
         if (mProfileBackground == null || mTempProfile == null) return;
         Drawable bg = ProfileIconCache.fetchBackground(
@@ -674,9 +683,10 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         refreshProfileLogSummary();
 
         // Static UI population (cheap, on UI thread) — only string setters
-        mProfileIcon.setImageDrawable(
-                ProfileIconCache.fetchIcon(getResources(), mProfileKey, mTempProfile.icon)
-        );
+        Drawable profileIconDrawable = ProfileIconCache.fetchIcon(
+                getResources(), mProfileKey, mTempProfile.icon);
+        mProfileIcon.setImageDrawable(profileIconDrawable);
+        applyProfileIconShape(profileIconDrawable);
         mDefaultVersion.setText(mTempProfile.lastVersionId);
         mDefaultJvmArgument.setText(mTempProfile.javaArgs == null ? "" : mTempProfile.javaArgs);
         mDefaultName.setText(mTempProfile.name);

@@ -48,4 +48,27 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
+    <!-- Cosmetic cold/warm start greeting. It never blocks initialization or touch. -->
+    <LinearLayout
+        android:id="@+id/welcome_back_overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:alpha="0"
+        android:background="@drawable/bg_skin_library_panel"
+        android:clickable="false"
+        android:elevation="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="30dp"
+        android:paddingVertical="18dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:letterSpacing="0.16" android:text="WELCOME BACK" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Your profiles are ready" android:textColor="#A0A0A4" android:textSize="9sp" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

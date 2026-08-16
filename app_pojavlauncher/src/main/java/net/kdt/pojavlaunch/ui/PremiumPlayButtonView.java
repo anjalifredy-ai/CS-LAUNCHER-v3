@@ -36,7 +36,7 @@ import net.kdt.pojavlaunch.progresskeeper.TaskCountListener;
 public class PremiumPlayButtonView extends FrameLayout implements TaskCountListener {
 
     private static final int PARTICLE_COUNT = 14;
-    private static final long FAILSAFE_MS = 4000L;
+    private static final long FAILSAFE_MS = 12000L;
 
     private final Paint mBasePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mSheenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -56,6 +56,7 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
     private float mLaunchFraction = 0f;
     private boolean mLaunching;
     private boolean mExplicitLaunch;
+    private boolean mStopMode;
     private boolean mAnimationsAllowed = true;
 
     private final float[] mPX = new float[PARTICLE_COUNT];
@@ -138,13 +139,40 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
                         .start())
                 .start();
         removeCallbacks(mFailsafeReset);
+        postDelayed(() -> {
+            if (mExplicitLaunch) setStopMode(true);
+        }, 360);
         postDelayed(mFailsafeReset, FAILSAFE_MS);
     }
 
     /** Return to the idle platinum state. */
     public void reset() {
         mExplicitLaunch = false;
+        setStopMode(false);
         setLaunching(false);
+    }
+
+    public boolean isStopMode() { return mStopMode; }
+
+    /** Cancel pending verification/download work before the game-process handoff. */
+    public void cancelPendingLaunch() {
+        net.kdt.pojavlaunch.utils.DownloadControl.requestCancel(com.kdt.mcgui.ProgressLayout.DOWNLOAD_MINECRAFT);
+        net.kdt.pojavlaunch.utils.DownloadControl.requestCancel(com.kdt.mcgui.ProgressLayout.UNPACK_RUNTIME);
+        net.kdt.pojavlaunch.utils.DownloadControl.requestCancel(com.kdt.mcgui.ProgressLayout.INSTALL_MODPACK);
+        net.kdt.pojavlaunch.launch.LaunchTracker.fail();
+        reset();
+    }
+
+    private void setStopMode(boolean stop) {
+        if (mStopMode == stop) return;
+        mStopMode = stop;
+        if (getChildCount() > 0 && getChildAt(0) instanceof android.widget.ImageView) {
+            android.widget.ImageView icon = (android.widget.ImageView) getChildAt(0);
+            icon.setImageResource(stop ? net.kdt.pojavlaunch.R.drawable.ic_stop_square
+                    : net.kdt.pojavlaunch.R.drawable.ic_play_arrow);
+            icon.setColorFilter(stop ? 0xFFFFFFFF : 0xFF0E0E11);
+        }
+        invalidate();
     }
 
     /**
@@ -161,7 +189,7 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
                         .setInterpolator(new AccelerateDecelerateInterpolator())
                         .start())
                 .start();
-        postDelayed(this::reset, 500);
+        // Keep the red STOP state visible until the game-process handoff.
     }
 
     public boolean isLaunching() {
@@ -213,6 +241,7 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
         stopLaunchAnimator();
         mLaunching = false;
         mExplicitLaunch = false;
+        mStopMode = false;
         clearParticles();
         super.onDetachedFromWindow();
     }
@@ -278,7 +307,12 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
     protected void dispatchDraw(Canvas canvas) {
         int save = canvas.save();
         canvas.clipPath(mRoundPath);
+        if (mStopMode) {
+            mBasePaint.setShader(null);
+            mBasePaint.setColor(0xFFE53945);
+        }
         canvas.drawPath(mRoundPath, mBasePaint);
+        if (mStopMode) mBasePaint.setShader(mBaseGradient);
 
         // Idle sheen: a quiet diagonal sweep; runs only while visible.
         float sheenX = (-0.35f + mIdleFraction * 1.7f) * getWidth();
@@ -307,7 +341,7 @@ public class PremiumPlayButtonView extends FrameLayout implements TaskCountListe
             mStrokePaint.setStrokeWidth(dp(4.5f + pulse * 1.3f));
             canvas.drawPath(mRoundPath, mStrokePaint);
         }
-        mStrokePaint.setColor(mLaunching ? 0x99F3F3F7 : 0x66FFFFFF);
+        mStrokePaint.setColor(mStopMode ? 0xFFFFA0A7 : mLaunching ? 0x99F3F3F7 : 0x66FFFFFF);
         mStrokePaint.setStrokeWidth(dp(1.15f));
         canvas.drawPath(mRoundPath, mStrokePaint);
 

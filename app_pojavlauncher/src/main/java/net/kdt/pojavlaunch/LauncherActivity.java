@@ -641,7 +641,8 @@ public class LauncherActivity extends BaseActivity {
         mProgressLayout.observe(ProgressLayout.UNPACK_RUNTIME);
         mProgressLayout.observe(ProgressLayout.INSTALL_MODPACK);
         mProgressLayout.observe(ProgressLayout.AUTHENTICATE_MICROSOFT);
-        mProgressLayout.observe(ProgressLayout.DOWNLOAD_VERSION_LIST);
+        // Version-list refresh runs silently on startup. Observing this record
+        // caused the Download Console to flash for 1–2 seconds on every open.
 
         // Shortcut launches stage the identical boot overlay right away so the
         // home UI never flashes; onboarding dialogs stay out of the way.
@@ -650,7 +651,27 @@ public class LauncherActivity extends BaseActivity {
         } else if (!maybeShowRuntimeWizard()) {
             // Official partner welcome — shown exactly once, after first launch settles
             maybeShowInfrawireWelcome();
+            showWelcomeBack();
         }
+    }
+
+    /** Lightweight greeting replacing the false startup-download flash. */
+    private void showWelcomeBack() {
+        View welcome = findViewById(R.id.welcome_back_overlay);
+        if (welcome == null) return;
+        welcome.animate().cancel();
+        welcome.setVisibility(View.VISIBLE);
+        welcome.setAlpha(0f);
+        welcome.setScaleX(0.97f);
+        welcome.setScaleY(0.97f);
+        welcome.setTranslationY(dp(10f));
+        welcome.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f)
+                .setDuration(260)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(() -> welcome.postDelayed(() -> welcome.animate()
+                        .alpha(0f).translationY(-dp(8f)).setDuration(240)
+                        .withEndAction(() -> welcome.setVisibility(View.GONE)).start(), 520))
+                .start();
     }
 
     /**

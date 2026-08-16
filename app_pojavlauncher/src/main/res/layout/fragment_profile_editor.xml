@@ -927,7 +927,7 @@
             android:elevation="6dp"
             android:background="@drawable/bg_cs_primary_button" />
 
-        <Button
+        <TextView
             android:id="@+id/vprof_editor_delete_button"
             android:layout_width="0dp"
             android:layout_height="52dp"
@@ -938,6 +938,9 @@
             android:textSize="13sp"
             android:textStyle="bold"
             android:letterSpacing="0.08"
-            android:background="@drawable/bg_cs_danger_button" />
+            android:background="@drawable/bg_cs_danger_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center" />
     </LinearLayout>
 </LinearLayout>

@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,7 +41,7 @@ public class ProfileLogActivity extends AppCompatActivity {
 
     private TextView mLogText, mMeta, mZoomValue;
     private ProgressBar mLoading;
-    private Button mUpload;
+    private TextView mUpload;
     private File mLogFile;
     private String mContent = "", mUploadedUrl;
     private float mTextSizeSp = 11f;
@@ -125,7 +124,7 @@ public class ProfileLogActivity extends AppCompatActivity {
             final int lineCount = lines;
             runOnUiThread(() -> {
                 mContent = loaded;
-                mLogText.setText(loaded);
+                mLogText.setText(styleLog(loaded));
                 mLoading.setVisibility(View.GONE);
                 if (mLogFile != null && mLogFile.isFile()) {
                     String date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
@@ -135,6 +134,23 @@ public class ProfileLogActivity extends AppCompatActivity {
                 } else mMeta.setText("No saved session");
             });
         });
+    }
+
+    private CharSequence styleLog(String text) {
+        android.text.SpannableString styled = new android.text.SpannableString(text);
+        int start = 0;
+        while (start < text.length()) {
+            int end = text.indexOf('\n', start);
+            if (end < 0) end = text.length();
+            String line = text.substring(start, end).toLowerCase(java.util.Locale.ROOT);
+            int color = 0xFFF2F2F2;
+            if (line.contains("error") || line.contains("exception") || line.contains("fatal")) color = 0xFFFF737D;
+            else if (line.contains("warn")) color = 0xFFFFC857;
+            else if (line.contains("debug") || line.contains("trace")) color = 0xFF8A8C92;
+            styled.setSpan(new android.text.style.ForegroundColorSpan(color), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            start = end + 1;
+        }
+        return styled;
     }
 
     private void applyZoom(float value) {

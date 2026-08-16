@@ -8,6 +8,10 @@ import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -81,7 +85,26 @@ public class ControlButton extends TextView implements ControlInterface {
             mRectPaint.setAlpha(60);
         }
 
+        applyCustomIcon(properties);
+    }
+
+    private void applyCustomIcon(ControlData properties) {
+        setCompoundDrawables(null, null, null, null);
         setText(properties.name);
+        String data = properties.customIcon;
+        if (data == null || !data.startsWith("data:image")) return;
+        try {
+            int comma = data.indexOf(',');
+            if (comma < 0) return;
+            byte[] bytes = Base64.decode(data.substring(comma + 1), Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            if (bitmap == null) return;
+            BitmapDrawable icon = new BitmapDrawable(getResources(), bitmap);
+            int size = Math.round(Tools.dpToPx(30));
+            icon.setBounds(0, 0, size, size);
+            setCompoundDrawables(null, icon, null, null);
+            setText("");
+        } catch (Throwable ignored) {}
     }
 
     @Override
