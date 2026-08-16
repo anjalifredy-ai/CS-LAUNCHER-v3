@@ -11,41 +11,6 @@
         android:layout_height="match_parent"
         android:background="#0D0E12">
 
-        <TextView
-            android:id="@+id/control_editor_title"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:layout_marginStart="14dp"
-            android:gravity="center_vertical"
-            android:letterSpacing="0.12"
-            android:text="CONTROL CUSTOMISATION"
-            android:textColor="#FFFFFF"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/control_editor_hint"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:layout_marginEnd="14dp"
-            android:gravity="center_vertical"
-            android:text="Hold to move • drag handles to resize • tap to edit"
-            android:textColor="#85878E"
-            android:textSize="8sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <View
-            android:id="@+id/control_editor_divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:background="#292A31"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/control_editor_title" />
-
         <net.kdt.pojavlaunch.customcontrols.ControlLayout
             android:id="@+id/customctrl_controllayout"
             android:layout_width="0dp"
@@ -53,7 +18,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/control_editor_divider" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <net.kdt.pojavlaunch.customcontrols.handleview.DrawerPullButton
             android:id="@+id/drawer_button"
