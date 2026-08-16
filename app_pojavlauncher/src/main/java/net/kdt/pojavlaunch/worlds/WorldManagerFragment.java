@@ -420,12 +420,22 @@ public class WorldManagerFragment extends Fragment implements WorldListAdapter.L
 
     @Override
     public void onWorldClick(@NonNull WorldEntry world) {
-        showWorldDetails(world);
+        openWorldDetailPage(world);
     }
 
     @Override
     public void onWorldMenu(@NonNull WorldEntry world, @NonNull View anchor) {
-        showWorldDetails(world);
+        openWorldDetailPage(world);
+    }
+
+    private void openWorldDetailPage(@NonNull WorldEntry world) {
+        Bundle args = new Bundle();
+        args.putString(WorldDetailFragment.ARG_WORLD, world.folder.getAbsolutePath());
+        args.putString(WorldDetailFragment.ARG_GAME_DIR, mGameDir.getAbsolutePath());
+        // Use the activity container intentionally: details must be a genuine
+        // full-screen page, never the old popup/right-pane card.
+        Tools.swapFragment(requireActivity(), WorldDetailFragment.class,
+                WorldDetailFragment.TAG, args);
     }
 
     // ══════════════════════ DETAILS ══════════════════════

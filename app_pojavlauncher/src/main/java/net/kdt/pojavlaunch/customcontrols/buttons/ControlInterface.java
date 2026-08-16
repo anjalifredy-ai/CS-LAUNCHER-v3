@@ -338,9 +338,11 @@ public interface ControlInterface extends View.OnLongClickListener, GrabListener
     default void injectTouchEventBehavior() {
         getControlView().setOnTouchListener(new View.OnTouchListener() {
             private boolean mCanTriggerLongClick = true;
-            private float downX, downY;
+            private boolean mDragArmed;
+            private float touchOffsetX, touchOffsetY;
             private float downRawX, downRawY;
             private float mTouchSlop = 8f;
+            private long downTime;
 
             @SuppressLint("ClickableViewAccessibility")
             @Override
@@ -354,31 +356,48 @@ public interface ControlInterface extends View.OnLongClickListener, GrabListener
                 /* If the button can be modified/moved */
                 //Instantiate the gesture detector only when needed
 
-                if (event.getActionMasked() == MotionEvent.ACTION_UP && mCanTriggerLongClick) {
-                    //TODO change this.
-                    onLongClick(view);
-                }
-
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         mCanTriggerLongClick = true;
+                        mDragArmed = false;
+                        downTime = event.getEventTime();
                         mTouchSlop = ViewConfiguration.get(view.getContext()).getScaledTouchSlop();
                         downRawX = event.getRawX();
                         downRawY = event.getRawY();
-                        downX = downRawX - view.getX();
-                        downY = downRawY - view.getY();
+                        touchOffsetX = event.getX();
+                        touchOffsetY = event.getY();
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        // Density-aware slop (was a raw 8px): FCL-smooth drag start,
-                        // no micro-jitter, no accidental cancel of the edit tap.
-                        if (Math.abs(event.getRawX() - downRawX) > mTouchSlop || Math.abs(event.getRawY() - downRawY) > mTouchSlop)
+                        if (!mDragArmed && event.getEventTime() - downTime >= 220) {
+                            mDragArmed = true;
                             mCanTriggerLongClick = false;
-                        getControlLayoutParent().adaptPanelPosition();
-                        snapAndAlign(
-                                MathUtils.clamp(event.getRawX() - downX, 0, CallbackBridge.physicalWidth - view.getWidth()),
-                                MathUtils.clamp(event.getRawY() - downY, 0, CallbackBridge.physicalHeight - view.getHeight())
-                        );
+                            view.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                            onLongClick(view);
+                        }
+                        if (!mDragArmed) break;
+                        ControlLayout parent = getControlLayoutParent();
+                        int[] parentLocation = new int[2];
+                        parent.getLocationOnScreen(parentLocation);
+                        float targetX = event.getRawX() - parentLocation[0] - touchOffsetX;
+                        float targetY = event.getRawY() - parentLocation[1] - touchOffsetY;
+                        float maxX = Math.max(0, parent.getWidth() - view.getWidth());
+                        float maxY = Math.max(0, parent.getHeight() - view.getHeight());
+                        parent.adaptPanelPosition();
+                        snapAndAlign(MathUtils.clamp(targetX, 0, maxX),
+                                MathUtils.clamp(targetY, 0, maxY));
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        if (!mDragArmed
+                                && Math.abs(event.getRawX() - downRawX) <= mTouchSlop
+                                && Math.abs(event.getRawY() - downRawY) <= mTouchSlop) {
+                            onLongClick(view);
+                        }
+                        mDragArmed = false;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        mDragArmed = false;
                         break;
                 }
 
