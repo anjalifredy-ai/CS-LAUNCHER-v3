@@ -664,12 +664,12 @@ public class LauncherActivity extends BaseActivity {
         welcome.setAlpha(0f);
         welcome.setScaleX(0.97f);
         welcome.setScaleY(0.97f);
-        welcome.setTranslationY(dp(10f));
+        welcome.setTranslationY(10f * getResources().getDisplayMetrics().density);
         welcome.animate().alpha(1f).scaleX(1f).scaleY(1f).translationY(0f)
                 .setDuration(260)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .withEndAction(() -> welcome.postDelayed(() -> welcome.animate()
-                        .alpha(0f).translationY(-dp(8f)).setDuration(240)
+                        .alpha(0f).translationY(-8f * getResources().getDisplayMetrics().density).setDuration(240)
                         .withEndAction(() -> welcome.setVisibility(View.GONE)).start(), 520))
                 .start();
     }
