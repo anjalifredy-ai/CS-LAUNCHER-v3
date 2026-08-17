@@ -1,34 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="#0B0C10" android:orientation="vertical">
-
-    <LinearLayout android:id="@+id/csc_versions_header"
-        android:layout_width="match_parent" android:layout_height="78dp"
-        android:background="@drawable/bg_cs_client_header" android:gravity="center_vertical"
-        android:orientation="horizontal" android:paddingHorizontal="14dp">
-        <ImageView android:layout_width="44dp" android:layout_height="44dp"
-            android:background="@drawable/bg_cs_client_icon" android:padding="7dp" android:src="@drawable/cs_logo"/>
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_marginStart="12dp" android:layout_weight="1" android:orientation="vertical">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="CS CLIENT" android:textColor="#22C9CB" android:textSize="9sp" android:textStyle="bold"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginTop="2dp" android:text="Choose Minecraft version"
-                android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Latest compatible Blaze build" android:textColor="#9698A0" android:textSize="8sp"/>
-        </LinearLayout>
-        <TextView android:id="@+id/csc_versions_back" android:layout_width="40dp" android:layout_height="40dp"
-            android:background="@drawable/bg_skin_slot_action" android:gravity="center"
-            android:text="‹" android:textColor="#FFFFFF" android:textSize="28sp"/>
-    </LinearLayout>
-
-    <ProgressBar android:id="@+id/csc_versions_loading" android:layout_width="32dp" android:layout_height="32dp"
-        android:layout_gravity="center" android:layout_marginTop="30dp" android:indeterminateTint="#22C9CB"/>
-    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
-        android:overScrollMode="never" android:scrollbars="none">
-        <LinearLayout android:id="@+id/csc_versions_container" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp"/>
-    </ScrollView>
-</LinearLayout>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/bg_csc_screen">
+ <ImageView android:layout_width="280dp" android:layout_height="280dp" android:layout_gravity="center" android:alpha="0.025" android:src="@drawable/cs_logo"/>
+ <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:padding="16dp">
+  <LinearLayout android:id="@+id/csc_versions_header" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.34" android:background="@drawable/bg_csc_panel" android:orientation="vertical" android:padding="18dp">
+   <TextView android:id="@+id/csc_versions_back" android:layout_width="42dp" android:layout_height="42dp" android:background="@drawable/bg_csc_outline_button" android:gravity="center" android:text="‹" android:textColor="#F2F3F5" android:textSize="28sp"/>
+   <ImageView android:layout_width="78dp" android:layout_height="78dp" android:layout_gravity="center_horizontal" android:layout_marginTop="18dp" android:src="@drawable/cs_logo"/>
+   <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center" android:text="CS CLIENT" android:textColor="#F2F3F5" android:textSize="21sp" android:textStyle="bold"/>
+   <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:gravity="center" android:text="PROFILE BUILDER • MODRINTH VERIFIED" android:textColor="#7F8994" android:textSize="7sp"/>
+   <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1"/>
+   <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:text="LATEST COMPATIBLE BLAZE BUILD\nSELECTED AUTOMATICALLY" android:textColor="#68737E" android:textSize="6sp"/>
+  </LinearLayout>
+  <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginStart="14dp" android:layout_weight="0.66" android:background="@drawable/bg_csc_panel">
+   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SELECT MINECRAFT VERSION" android:textColor="#F2F3F5" android:textSize="18sp" android:textStyle="bold"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="FABRIC • BLAZE CLIENT • VERIFIED BUILDS" android:textColor="#7F8994" android:textSize="7sp"/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginTop="12dp" android:layout_weight="1" android:overScrollMode="never" android:scrollbars="none"><LinearLayout android:id="@+id/csc_versions_container" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/></ScrollView>
+   </LinearLayout>
+   <ProgressBar android:id="@+id/csc_versions_loading" android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center" android:indeterminateTint="#BCC3CC"/>
+  </FrameLayout>
+ </LinearLayout>
+</FrameLayout>

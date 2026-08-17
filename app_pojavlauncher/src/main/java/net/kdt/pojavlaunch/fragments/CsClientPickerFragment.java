@@ -73,7 +73,7 @@ public class CsClientPickerFragment extends Fragment {
         LinearLayout root=new LinearLayout(requireContext());root.setOrientation(LinearLayout.HORIZONTAL);root.setGravity(Gravity.CENTER_VERTICAL);
         root.setPadding(dp(10),dp(8),dp(10),dp(8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(76));lp.bottomMargin=dp(8);root.setLayoutParams(lp);
 
-        ImageView icon=new ImageView(requireContext());icon.setScaleType(ImageView.ScaleType.CENTER_CROP);icon.setClipToOutline(true);icon.setBackgroundResource(R.drawable.bg_cs_client_icon);
+        ImageView icon=new ImageView(requireContext());icon.setScaleType(ImageView.ScaleType.CENTER_CROP);icon.setClipToOutline(true);icon.setBackgroundResource(R.drawable.bg_csc_icon);
         icon.setPadding(dp(3),dp(3),dp(3),dp(3));root.addView(icon,new LinearLayout.LayoutParams(dp(50),dp(50)));loadIcon(icon,entry.iconUrl,entry.modpack);
 
         LinearLayout textBox=new LinearLayout(requireContext());textBox.setOrientation(LinearLayout.VERTICAL);textBox.setGravity(Gravity.CENTER_VERTICAL);
@@ -105,7 +105,7 @@ public class CsClientPickerFragment extends Fragment {
     private final class RowBinding{
         final LinearLayout root;final TextView title,check;final CsClientCatalog.ProjectEntry entry;
         RowBinding(LinearLayout root,TextView title,TextView check,CsClientCatalog.ProjectEntry entry){this.root=root;this.title=title;this.check=check;this.entry=entry;}
-        void render(boolean animate){boolean yes=selected(entry);root.setBackgroundResource(yes?R.drawable.bg_skin_slot_selected:R.drawable.bg_cs_client_transparent);
+        void render(boolean animate){boolean yes=selected(entry);root.setBackgroundResource(yes?R.drawable.bg_csc_manifest_selected:R.drawable.bg_csc_manifest_row);
             title.setText(entry.title);check.setText(yes?"✓":"+");check.setTextColor(yes?0xff22c9cb:0xffa0a2aa);
             if(animate){check.setScaleX(.75f);check.setScaleY(.75f);check.setAlpha(.4f);check.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(150).start();}}
     }

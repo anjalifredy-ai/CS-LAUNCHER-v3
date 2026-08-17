@@ -354,19 +354,41 @@ public class ModrinthApi implements ModpackApi{
     }
 
     public ModLoader installMrpack(File mrpackFile, File instanceDestination) throws IOException {
+        return installMrpack(mrpackFile, instanceDestination,
+                new DownloaderProgressWrapper(R.string.modpack_download_downloading_mods, ProgressLayout.INSTALL_MODPACK),
+                true);
+    }
+
+    /**
+     * Installs an mrpack while reporting only to the supplied callback. This is
+     * used by the full-screen CS Client installer so the launcher's global
+     * ProgressLayout is never started.
+     */
+    public ModLoader installMrpack(File mrpackFile, File instanceDestination,
+                                   Tools.DownloaderFeedback feedback) throws IOException {
+        return installMrpack(mrpackFile, instanceDestination, feedback, false);
+    }
+
+    private ModLoader installMrpack(File mrpackFile, File instanceDestination,
+                                    Tools.DownloaderFeedback feedback,
+                                    boolean publishGlobalProgress) throws IOException {
         try (ZipFile modpackZipFile = new ZipFile(mrpackFile)){
             ModrinthIndex modrinthIndex = Tools.GLOBAL_GSON.fromJson(
                     Tools.read(ZipUtils.getEntryStream(modpackZipFile, "modrinth.index.json")),
                     ModrinthIndex.class);
-            
-            ModDownloader modDownloader = new ModDownloader(instanceDestination);
+
+            ModDownloader modDownloader = publishGlobalProgress
+                    ? new ModDownloader(instanceDestination)
+                    : new ModDownloader(instanceDestination, false, null);
             for(ModrinthIndex.ModrinthIndexFile indexFile : modrinthIndex.files) {
                 modDownloader.submitDownload(indexFile.fileSize, indexFile.path, indexFile.hashes.sha1, indexFile.downloads);
             }
-            modDownloader.awaitFinish(new DownloaderProgressWrapper(R.string.modpack_download_downloading_mods, ProgressLayout.INSTALL_MODPACK));
-            ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.modpack_download_applying_overrides, 1, 2);
+            modDownloader.awaitFinish(feedback);
+            if (publishGlobalProgress) ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.modpack_download_applying_overrides, 1, 2);
+            else feedback.updateProgress(1, 2);
             ZipUtils.zipExtract(modpackZipFile, "overrides/", instanceDestination);
-            ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 50, R.string.modpack_download_applying_overrides, 2, 2);
+            if (publishGlobalProgress) ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 50, R.string.modpack_download_applying_overrides, 2, 2);
+            else feedback.updateProgress(2, 2);
             ZipUtils.zipExtract(modpackZipFile, "client-overrides/", instanceDestination);
             return createInfo(modrinthIndex);
         }

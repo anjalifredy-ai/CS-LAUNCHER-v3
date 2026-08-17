@@ -26,6 +26,7 @@ public class ModDownloader {
     private final Object mExceptionSyncPoint = new Object();
     private final File mDestinationDirectory;
     private final boolean mUseFileCount;
+    private final String mControlKey;
     private IOException mFirstIOException;
     private long mTotalSize;
 
@@ -34,9 +35,14 @@ public class ModDownloader {
     }
 
     public ModDownloader(File destinationDirectory, boolean useFileCount) {
+        this(destinationDirectory, useFileCount, ProgressLayout.INSTALL_MODPACK);
+    }
+
+    public ModDownloader(File destinationDirectory, boolean useFileCount, @Nullable String controlKey) {
         this.mDownloadPool.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         this.mDestinationDirectory = destinationDirectory;
         this.mUseFileCount = useFileCount;
+        this.mControlKey = controlKey;
     }
 
     public void submitDownload(int fileSize, String relativePath, @Nullable String downloadHash, String... url) {
@@ -121,7 +127,7 @@ public class ModDownloader {
         /** Lets the monitored copy loop apply deck pause/stop to modpack file transfers. */
         @Override
         public String getControlKey() {
-            return ProgressLayout.INSTALL_MODPACK;
+            return mControlKey;
         }
 
         @Override

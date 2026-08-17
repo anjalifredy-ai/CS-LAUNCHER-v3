@@ -2,156 +2,61 @@ package net.kdt.pojavlaunch.csclient;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 
-/**
- * CS Client-only installation visual. A restrained orbit/core animation is
- * combined with real installer progress; it is never used by normal downloads.
- */
+import net.kdt.pojavlaunch.R;
+
+/** Landscape cinematic CS Client installer; real progress drives its rail and stages. */
 public final class CsClientInstallView extends View {
-    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final RectF arc = new RectF();
-    private final Path diamond = new Path();
-    private ValueAnimator orbitAnimator;
-    private float orbit;
-    private float displayedProgress;
-    private float targetProgress;
-    private String stage = "PREPARING";
-    private String detail = "Atomic profile installation";
-    private final String[] steps = {"LOADER", "PACK", "BLAZE", "MODS", "FINAL"};
+    private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);private final Path path=new Path();private final RectF rect=new RectF();
+    private final Bitmap logo;private ValueAnimator motion;private float phase,shown,target;private String status="PREPARING CLIENT";private String detail="Atomic profile installation";private boolean done,failed;
+    private final String[] stages={"LOADER","PACK","BLAZE","MODS","FINALIZE"};
 
-    public CsClientInstallView(Context context) { super(context); init(); }
-    public CsClientInstallView(Context context, @Nullable AttributeSet attrs) { super(context, attrs); init(); }
-    public CsClientInstallView(Context context, @Nullable AttributeSet attrs, int style) { super(context, attrs, style); init(); }
+    public CsClientInstallView(Context c){this(c,null);}public CsClientInstallView(Context c,@Nullable AttributeSet a){this(c,a,0);}public CsClientInstallView(Context c,@Nullable AttributeSet a,int s){super(c,a,s);logo=BitmapFactory.decodeResource(getResources(),R.drawable.cs_logo);init();}
+    private void init(){setLayerType(LAYER_TYPE_HARDWARE,null);motion=ValueAnimator.ofFloat(0,1);motion.setDuration(2600);motion.setRepeatCount(ValueAnimator.INFINITE);motion.setInterpolator(new LinearInterpolator());motion.addUpdateListener(a->{phase=(float)a.getAnimatedValue();float d=target-shown;shown=Math.abs(d)<.08f?target:shown+d*.1f;invalidate();});}
+    public void start(){if(!motion.isStarted())motion.start();}public void stop(){motion.cancel();}
+    public void setInstallProgress(int pct,String text){target=Math.max(0,Math.min(100,pct));detail=text==null?"":text;status=stageFor(pct);invalidate();}
+    public void complete(String text){target=100;done=true;failed=false;status="PROFILE READY";detail=text;invalidate();}
+    public void fail(String text){failed=true;done=false;status="INSTALLATION STOPPED";detail=text;invalidate();}
+    private String stageFor(int n){if(n<18)return"RESOLVING FABRIC LOADER";if(n<45)return"MERGING CLIENT PACK";if(n<58)return"INSTALLING BLAZE CLIENT";if(n<90)return"INSTALLING VERIFIED MODULES";return"FINALIZING PROFILE";}
 
-    private void init() {
-        setLayerType(LAYER_TYPE_HARDWARE, null);
-        orbitAnimator = ValueAnimator.ofFloat(0f, 1f);
-        orbitAnimator.setDuration(2400L);
-        orbitAnimator.setRepeatCount(ValueAnimator.INFINITE);
-        orbitAnimator.setInterpolator(new LinearInterpolator());
-        orbitAnimator.addUpdateListener(a -> {
-            orbit = (float) a.getAnimatedValue();
-            float delta = targetProgress - displayedProgress;
-            if (Math.abs(delta) > .15f) displayedProgress += delta * .12f;
-            else displayedProgress = targetProgress;
-            invalidate();
-        });
+    @Override protected void onAttachedToWindow(){super.onAttachedToWindow();start();}@Override protected void onDetachedFromWindow(){stop();super.onDetachedFromWindow();}
+    @Override protected void onDraw(Canvas c){super.onDraw(c);float w=getWidth(),h=getHeight(),cx=w*.5f,cy=h*.42f;int silver=0xffbcc3cc,white=0xfff2f3f5,green=0xff62d99b;
+        // Faceted cinematic background with restrained parallax.
+        c.drawColor(0xff090d11);p.setStyle(Paint.Style.FILL);float shift=(phase-.5f)*dp(18);
+        facet(c,new float[]{0,0,w*.34f+shift,0,w*.57f,h,0,h},0xff0d1319);facet(c,new float[]{w*.29f,0,w*.68f,0,w*.53f,h,w*.13f,h},0xff10161d);facet(c,new float[]{w*.68f-shift,0,w,0,w,h,w*.47f,h},0xff0c1117);
+        p.setShader(new LinearGradient(0,0,w,0,0x00131920,0x55131920,Shader.TileMode.CLAMP));c.drawRect(0,0,w,h,p);p.setShader(null);
+        // Fine technical grid/rails.
+        p.setStrokeWidth(dp(.65f));p.setColor(0x182f3944);for(int i=1;i<10;i++)c.drawLine(w*i/10f,0,w*i/10f,h,p);for(int i=1;i<6;i++)c.drawLine(0,h*i/6f,w,h*i/6f,p);
+        // Logo and lock-on brackets.
+        float logoSize=Math.min(w,h)*.145f;if(logo!=null){rect.set(cx-logoSize/2,cy-logoSize/2,cx+logoSize/2,cy+logoSize/2);p.setAlpha(done?255:225);c.drawBitmap(logo,null,rect,p);p.setAlpha(255);}float lock=logoSize*.8f+dp(20)*(1-(float)Math.sin(phase*Math.PI)*.14f);drawBrackets(c,cx,cy,lock,silver);
+        // Incoming data fragments.
+        p.setColor(0x99bcc3cc);for(int i=0;i<7;i++){float t=(phase+i*.137f)%1f;float side=i%2==0?-1:1;float x=cx+side*(logoSize*.8f+(1-t)*w*.18f);float y=cy+(i-3)*dp(7)*(1-t);float sz=dp(1.5f+2*t);p.setAlpha((int)(35+160*t));c.drawRect(x,y,x+sz,y+sz,p);}p.setAlpha(255);
+        text(c,"CS CLIENT",cx,cy+logoSize*.76f+dp(34),dp(24),white,true,Paint.Align.CENTER);
+        text(c,status,cx,cy+logoSize*.76f+dp(57),dp(8.5f),done?green:(failed?0xffff7e86:silver),true,Paint.Align.CENTER);
+        text(c,trim(detail,66),cx,cy+logoSize*.76f+dp(73),dp(7.5f),0xff7f8994,false,Paint.Align.CENTER);
+        // Thin exclusive progress rail.
+        float left=w*.23f,right=w*.77f,y=h*.76f;p.setStyle(Paint.Style.STROKE);p.setStrokeCap(Paint.Cap.SQUARE);p.setStrokeWidth(dp(1));p.setColor(0xff59636e);c.drawRect(left,y,right,y+dp(7),p);p.setStyle(Paint.Style.FILL);float fill=left+(right-left)*shown/100f;p.setColor(done?green:white);c.drawRect(left+dp(2),y+dp(2),Math.max(left+dp(2),fill),y+dp(5),p);
+        if(!done&&!failed){float travel=(phase*1.22f)%1f;float sx=left+(right-left)*travel;p.setShader(new LinearGradient(sx-dp(32),0,sx+dp(16),0,0x00ffffff,0xffffffff,Shader.TileMode.CLAMP));c.drawRect(Math.max(left,sx-dp(34)),y+dp(1),Math.min(right,sx+dp(18)),y+dp(6),p);p.setShader(null);}
+        text(c,Math.round(shown)+"%",right+dp(18),y+dp(7),dp(9),white,true,Paint.Align.LEFT);
+        int active=shown<18?0:shown<45?1:shown<58?2:shown<90?3:4;float gap=(right-left)/4f;for(int i=0;i<5;i++){float x=left+gap*i;p.setColor(i<active||done?green:(i==active?white:0xff46505a));c.drawCircle(x,y+dp(3.5f),dp(i==active?3:2),p);text(c,stages[i],x,y+dp(24),dp(6.5f),i<=active?silver:0xff59616b,true,Paint.Align.CENTER);}
+        text(c,failed?"ROLLBACK COMPLETE":(done?"VERIFIED  •  READY TO LAUNCH":"VERIFIED FILES  •  ATOMIC INSTALL  •  ROLLBACK SAFE"),cx,h-dp(22),dp(7),done?green:0xff717b86,true,Paint.Align.CENTER);
     }
-
-    public void setInstallProgress(int percent, String status) {
-        targetProgress = Math.max(0, Math.min(100, percent));
-        if (status != null && !status.trim().isEmpty()) {
-            detail = status;
-            stage = stageFor(percent);
-        }
-        if (getVisibility() == VISIBLE && !orbitAnimator.isStarted()) orbitAnimator.start();
-        invalidate();
-    }
-
-    public void start() {
-        if (!orbitAnimator.isStarted()) orbitAnimator.start();
-    }
-
-    public void stop() {
-        if (orbitAnimator != null) orbitAnimator.cancel();
-    }
-
-    private String stageFor(int p) {
-        if (p < 18) return "RESOLVING FABRIC LOADER";
-        if (p < 45) return "MERGING MODPACK";
-        if (p < 58) return "INSTALLING BLAZE CLIENT";
-        if (p < 90) return "INSTALLING VERIFIED MODS";
-        return "FINALIZING PROFILE";
-    }
-
-    @Override protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if (getVisibility() == VISIBLE) start();
-    }
-
-    @Override protected void onDetachedFromWindow() {
-        stop();
-        super.onDetachedFromWindow();
-    }
-
-    @Override protected void onDraw(Canvas c) {
-        super.onDraw(c);
-        final float w = getWidth(), h = getHeight();
-        final float cx = w / 2f, cy = h * .39f;
-        final float r = Math.min(w, h) * .19f;
-        final int cyan = Color.rgb(34, 201, 203);
-
-        // Quiet halo and progress track.
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStrokeWidth(dp(3));
-        paint.setColor(0x2622C9CB);
-        c.drawCircle(cx, cy, r, paint);
-        arc.set(cx-r, cy-r, cx+r, cy+r);
-        paint.setColor(cyan);
-        c.drawArc(arc, -90, 360f * displayedProgress / 100f, false, paint);
-
-        // Two segmented orbital arcs, rotating in opposite visual directions.
-        paint.setStrokeWidth(dp(1.4f));
-        paint.setColor(0xB322C9CB);
-        arc.set(cx-r-dp(9), cy-r-dp(9), cx+r+dp(9), cy+r+dp(9));
-        for (int i=0;i<4;i++) c.drawArc(arc, orbit*360f+i*90f, 42f, false, paint);
-        paint.setColor(0x66FFFFFF);
-        arc.inset(-dp(7), -dp(7));
-        for (int i=0;i<3;i++) c.drawArc(arc, -orbit*240f+i*120f, 28f, false, paint);
-
-        // Data particles travelling along a short beam into the core.
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(0x5522C9CB);
-        c.drawRect(cx-r-dp(38), cy-dp(.5f), cx-dp(18), cy+dp(.5f), paint);
-        for (int i=0;i<4;i++) {
-            float t=(orbit+i*.24f)%1f;
-            float x=(cx-r-dp(35))+(r+dp(17))*t;
-            paint.setAlpha(90+(int)(150*t));
-            c.drawRect(x,cy-dp(2),x+dp(3),cy+dp(1),paint);
-        }
-        paint.setAlpha(255);
-
-        // CS core: a crisp diamond/cube mark.
-        float d=dp(16);
-        diamond.reset(); diamond.moveTo(cx,cy-d); diamond.lineTo(cx+d,cy);
-        diamond.lineTo(cx,cy+d); diamond.lineTo(cx-d,cy); diamond.close();
-        paint.setColor(0xFF11171A); c.drawPath(diamond,paint);
-        paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(dp(2)); paint.setColor(cyan); c.drawPath(diamond,paint);
-        paint.setStyle(Paint.Style.FILL); paint.setColor(Color.WHITE); paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); paint.setTextSize(dp(9));
-        c.drawText("CS",cx,cy+dp(3),paint);
-
-        paint.setColor(Color.WHITE); paint.setTextSize(dp(21));
-        c.drawText(Math.round(displayedProgress)+"%",cx,cy+r+dp(38),paint);
-        paint.setColor(cyan); paint.setTextSize(dp(9)); paint.setLetterSpacing(.08f);
-        c.drawText(stage,cx,cy+r+dp(57),paint); paint.setLetterSpacing(0);
-        paint.setColor(0xFF9A9CA5); paint.setTypeface(android.graphics.Typeface.DEFAULT); paint.setTextSize(dp(9));
-        c.drawText(ellipsize(detail, 48),cx,cy+r+dp(73),paint);
-
-        // Five-stage timeline.
-        float left=dp(25), right=w-dp(25), y=h-dp(35), gap=(right-left)/4f;
-        paint.setStrokeWidth(dp(2)); paint.setColor(0xFF303239);
-        c.drawLine(left,y,right,y,paint);
-        int active = displayedProgress < 18 ? 0 : displayedProgress < 45 ? 1 : displayedProgress < 58 ? 2 : displayedProgress < 90 ? 3 : 4;
-        paint.setColor(cyan); c.drawLine(left,y,left+gap*active,y,paint);
-        for(int i=0;i<5;i++){
-            paint.setColor(i<=active?cyan:0xFF3C3E46); c.drawCircle(left+gap*i,y,dp(i==active?5:4),paint);
-            paint.setTextSize(dp(7)); paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD); paint.setTextAlign(Paint.Align.CENTER);
-            paint.setColor(i<=active?0xFFE8FFFF:0xFF74767F); c.drawText(steps[i],left+gap*i,y+dp(17),paint);
-        }
-    }
-
-    private String ellipsize(String s,int max){return s.length()<=max?s:s.substring(0,max-1)+"…";}
-    private float dp(float n){return n*getResources().getDisplayMetrics().density;}
+    private void facet(Canvas c,float[]v,int color){path.reset();path.moveTo(v[0],v[1]);for(int i=2;i<v.length;i+=2)path.lineTo(v[i],v[i+1]);path.close();p.setColor(color);c.drawPath(path,p);}
+    private void drawBrackets(Canvas c,float x,float y,float r,int color){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(dp(1));p.setColor(color);float l=dp(17);for(int sx:new int[]{-1,1})for(int sy:new int[]{-1,1}){float bx=x+sx*r,by=y+sy*r;c.drawLine(bx,by,bx-sx*l,by,p);c.drawLine(bx,by,bx,by-sy*l,p);}p.setStyle(Paint.Style.FILL);}
+    private void text(Canvas c,String s,float x,float y,float size,int color,boolean bold,Paint.Align align){p.setShader(null);p.setStyle(Paint.Style.FILL);p.setColor(color);p.setTextSize(size);p.setTextAlign(align);p.setTypeface(bold?android.graphics.Typeface.DEFAULT_BOLD:android.graphics.Typeface.DEFAULT);c.drawText(s,x,y,p);}
+    private String trim(String s,int n){return s==null?"":s.length()<=n?s:s.substring(0,n-1)+"…";}private float dp(float n){return n*getResources().getDisplayMetrics().density;}
 }

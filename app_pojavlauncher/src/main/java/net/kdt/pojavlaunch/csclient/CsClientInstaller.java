@@ -5,8 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 
-import com.kdt.mcgui.ProgressLayout;
-
 import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
@@ -49,7 +47,7 @@ public final class CsClientInstaller {
             String profileJson=net.kdt.pojavlaunch.utils.DownloadUtils.downloadString(FabriclikeUtils.FABRIC_UTILS.createJsonDownloadUrl(blaze.minecraft,loader));
             String versionId=new JSONObject(profileJson).getString("id");File versionDir=new File(Tools.DIR_HOME_VERSION,versionId);versionDir.mkdirs();Tools.write(new File(versionDir,versionId+".json").getAbsolutePath(),profileJson);
 
-            if(pack!=null){status(cb,"Merging modpack: "+pack.title+"…",22);CsClientCatalog.FileEntry f=CsClientCatalog.latestFile(pack.id,blaze.minecraft,true);File mr=new File(Tools.DIR_CACHE,"csclient_pack.mrpack");download(f,mr);new ModrinthApi().installMrpack(mr,tmp);mr.delete();}
+            if(pack!=null){status(cb,"Merging modpack: "+pack.title+"…",22);CsClientCatalog.FileEntry f=CsClientCatalog.latestFile(pack.id,blaze.minecraft,true);File mr=new File(Tools.DIR_CACHE,"csclient_pack.mrpack");download(f,mr);new ModrinthApi().installMrpack(mr,tmp,(current,total)->{int pct=22+(int)(18f*current/Math.max(1,total));status(cb,"Merging modpack: "+pack.title+"…",pct);});mr.delete();}
 
             status(cb,"Installing Blaze Client…",48);download(new CsClientCatalog.FileEntry(blaze.fileUrl,blaze.fileName,blaze.sha1),new File(tmp,"mods/"+blaze.fileName));
             status(cb,"Installing Fabric API for "+blaze.minecraft+"…",60);removeMatching(new File(tmp,"mods"),"fabric-api");CsClientCatalog.FileEntry api=CsClientCatalog.latestFile(CsClientCatalog.FABRIC_API_PROJECT,blaze.minecraft,false);download(api,new File(tmp,"mods/"+api.name));
@@ -58,12 +56,12 @@ public final class CsClientInstaller {
             status(cb,"Finalizing CS Client profile…",92);dest.getParentFile().mkdirs();if(!tmp.renameTo(dest))throw new Exception("Could not finalize instance directory");
             LauncherProfiles.load();String key=LauncherProfiles.getFreeProfileKey();MinecraftProfile p=MinecraftProfile.createTemplate();p.name="CS Client • "+blaze.minecraft;p.type="custom";p.lastVersionId=versionId;p.gameDir="./custom_instances/"+token;p.icon=encodeLogo(ctx);p.background=net.kdt.pojavlaunch.profiles.ProfileGifSupport.DEFAULT_PROFILE_BG_URL;
             String now=new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",Locale.US).format(new java.util.Date());p.created=now;p.lastUsed=now;LauncherProfiles.mainProfileJson.profiles.put(key,p);LauncherProfiles.write();LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE,key).commit();
-            ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);done(cb,true,"CS Client • "+blaze.minecraft+" created");
-        }catch(Throwable e){try{org.apache.commons.io.FileUtils.deleteDirectory(tmp);}catch(Exception ignored){}try{org.apache.commons.io.FileUtils.deleteDirectory(dest);}catch(Exception ignored){}ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);done(cb,false,e.getMessage()==null?"CS Client installation failed":e.getMessage());}
+            done(cb,true,"CS Client • "+blaze.minecraft+" created");
+        }catch(Throwable e){try{org.apache.commons.io.FileUtils.deleteDirectory(tmp);}catch(Exception ignored){}try{org.apache.commons.io.FileUtils.deleteDirectory(dest);}catch(Exception ignored){}done(cb,false,e.getMessage()==null?"CS Client installation failed":e.getMessage());}
     }
     private static void download(CsClientCatalog.FileEntry f,File out)throws Exception{out.getParentFile().mkdirs();Tools.downloadFile(f.url,out.getAbsolutePath());if(f.sha1!=null&&!Tools.compareSHA1(out,f.sha1)){out.delete();throw new Exception("File verification failed: "+f.name);}}
     private static void removeMatching(File dir,String needle){File[]a=dir.listFiles();if(a!=null)for(File f:a)if(f.getName().toLowerCase().contains(needle))f.delete();}
     private static String encodeLogo(Context c){try{Bitmap b=BitmapFactory.decodeResource(c.getResources(),R.drawable.cs_logo);ByteArrayOutputStream o=new ByteArrayOutputStream();b.compress(Bitmap.CompressFormat.PNG,100,o);b.recycle();return"data:image/png;base64,"+Base64.encodeToString(o.toByteArray(),Base64.NO_WRAP);}catch(Throwable e){return"default";}}
-    private static void status(Callback cb,String s,int pct){ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK,pct,R.string.global_waiting);Tools.runOnUiThread(()->cb.onStatus(s,pct));}
+    private static void status(Callback cb,String s,int pct){Tools.runOnUiThread(()->cb.onStatus(s,pct));}
     private static void done(Callback cb,boolean ok,String s){Tools.runOnUiThread(()->cb.onDone(ok,s));}
 }
