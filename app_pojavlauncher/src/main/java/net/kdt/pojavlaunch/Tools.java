@@ -388,13 +388,8 @@ public final class Tools {
             if(LifecycleAwareAlertDialog.haltOnDialog(activity.getLifecycle(), activity, dialogCreator)) {
                 return;
             }
-            // If the code goes here, it means that the user clicked "OK". Fix the render distance.
-            try {
-                MCOptionUtils.set("renderDistance", "7");
-                MCOptionUtils.save();
-            }catch (Exception e) {
-                Log.e("Tools", "Failed to fix render distance setting", e);
-            }
+            // Warning only: never alter the player's render distance automatically.
+            // The user can explicitly choose a different renderer or setting.
         }
 
 
@@ -494,69 +489,128 @@ public final class Tools {
         String args = LauncherPreferences.PREF_CUSTOM_JAVA_ARGS;
         if(Tools.isValidString(minecraftProfile.javaArgs)) args = minecraftProfile.javaArgs;
         FFmpegPlugin.discover(activity);
-        JREUtils.launchJavaVM(activity, runtime, gamedir, javaArgList, args, minecraftAccount);
+        try {
+            JREUtils.launchJavaVM(activity, runtime, gamedir, javaArgList, args, minecraftAccount);
+        } finally {
+            stopControllableMitigation();
+        }
         // If we returned, this means that the JVM exit dialog has been shown and we don't need to be active anymore.
         // We never return otherwise. The process will be killed anyway, and thus we will become inactive
     }
     private static Logger.eventLogListener controllableMitigationLogListener;
+    private static volatile Thread controllableMitigationThread;
+    private static volatile android.os.FileObserver controllableMitigationObserver;
+
+    /** Stop and detach every Controllable mitigation hook. Safe to call repeatedly. */
+    private static synchronized void stopControllableMitigation() {
+        Thread thread = controllableMitigationThread;
+        controllableMitigationThread = null;
+        if (thread != null && thread != Thread.currentThread()) thread.interrupt();
+        android.os.FileObserver observer = controllableMitigationObserver;
+        controllableMitigationObserver = null;
+        if (observer != null) {
+            try { observer.stopWatching(); } catch (Throwable ignored) {}
+        }
+        if (controllableMitigationLogListener != null) {
+            Logger.removeLogListener(controllableMitigationLogListener);
+            controllableMitigationLogListener = null;
+        }
+    }
+
+    /** Locate Controllable's extracted SDL library using one bounded directory snapshot per level. */
+    private static File findControllableSdlLibrary(File root) {
+        File[] versions = root.listFiles();
+        if (versions == null) return null;
+        for (File version : versions) {
+            if (version == null || !version.isDirectory()) continue;
+            File[] libraries = version.listFiles();
+            if (libraries == null) continue;
+            for (File library : libraries) {
+                if (library != null && library.isFile() && library.exists()) return library;
+            }
+        }
+        return null;
+    }
+
     /*
-     * This is does not work when debugging. This is not reliable.
-     * This is a monstrosity that races the mod, trying to ensure that when the folder is checked
-     * after extraction but before dlopen, it is empty, so it loads the bundled SDL2 we have instead
+     * Controllable extracts an incompatible SDL library immediately before loading it.
+     * Preserve the compatibility race, but never busy-spin: FileObserver wakes a bounded
+     * 50 ms fallback poll and an absolute timeout guarantees cleanup on failed launches.
      */
-    private static void startControllableMitigation(Activity activity ,File gamedir) {
-        String TAG = "ControllableMitigation";
-        File deleted = new File(gamedir + "/controllable_natives/SDL");
-        boolean hasControllable = false;
+    private static void startControllableMitigation(Activity activity, File gamedir) {
+        final String TAG = "ControllableMitigation";
+        final File deleted = new File(gamedir, "controllable_natives/SDL");
         File modsDir = new File(gamedir, "mods");
         File[] mods = modsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".jar"));
+        boolean hasControllable = false;
         if (mods != null) {
             for (File file : mods) {
-                String name = file.getName();
-                if (name.contains("controllable")) {
+                if (file.getName().toLowerCase(java.util.Locale.ROOT).contains("controllable")) {
                     hasControllable = true;
                     break;
                 }
             }
         }
-        if (hasControllable) {
-            Tools.runOnUiThread(() -> {
-                Tools.dialog(activity, activity.getString(R.string.global_warning), activity.getString(R.string.controllableFound));
-            });
-            Thread mitigationThread = new Thread(() -> {
-                // This is total garbage but it seems to be the best jank for the job
-                Log.i(TAG, "Controllable detected! Starting mitigation thread");
-                try {org.apache.commons.io.FileUtils.deleteDirectory(deleted);} catch (IOException ignored) {}
-                while (!Thread.currentThread().isInterrupted()) {
-                    // Looks for controllable_natives/SDL/<sdl_version_number>/libSDL2.so and
-                    // deletes it. We can assume array index 0 because this dir gets fully deleted
-                    // before the loop is started.
-                    if (deleted.isDirectory()) {
-                        if (deleted.listFiles().length > 0) {
-                            if (deleted.listFiles()[0].listFiles().length > 0) {
-                                if (deleted.listFiles()[0].listFiles()[0].exists()) {
-                                    deleted.listFiles()[0].listFiles()[0].delete();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                // We can end here because SdlNativeLibraryLoader only extracts libSDL2.so once
-                // If NativeLibrary can't find it in the folder to load() it uses java.library.path
-                Log.i(TAG, "Success! Ending Controllable crash mitigation..");
-            });
-            mitigationThread.start();
-            controllableMitigationLogListener = loggedLine -> {
-                // Hard off switch if it somehow didn't delete anything, just in case.
-                if (loggedLine.contains("Sound engine started") && mitigationThread.isAlive()) {
-                    Log.i(TAG, "Nothing happened. Ending Controllable crash mitigation..");
-                    Logger.removeLogListener(controllableMitigationLogListener);
-                    mitigationThread.interrupt();
+        if (!hasControllable) return;
+
+        stopControllableMitigation();
+        Tools.runOnUiThread(() -> Tools.dialog(activity,
+                activity.getString(R.string.global_warning), activity.getString(R.string.controllableFound)));
+
+        final Object wakeSignal = new Object();
+        File observeRoot = new File(gamedir, "controllable_natives");
+        if (!observeRoot.isDirectory()) observeRoot = gamedir;
+        try {
+            controllableMitigationObserver = new android.os.FileObserver(observeRoot.getAbsolutePath(),
+                    android.os.FileObserver.CREATE | android.os.FileObserver.MOVED_TO
+                            | android.os.FileObserver.CLOSE_WRITE | android.os.FileObserver.MODIFY) {
+                @Override public void onEvent(int event, String path) {
+                    synchronized (wakeSignal) { wakeSignal.notifyAll(); }
                 }
             };
-            Logger.addLogListener(controllableMitigationLogListener);
+            controllableMitigationObserver.startWatching();
+        } catch (Throwable observerError) {
+            Log.w(TAG, "FileObserver unavailable; bounded polling fallback remains active", observerError);
+            controllableMitigationObserver = null;
         }
+
+        Thread mitigationThread = new Thread(() -> {
+            final long deadline = android.os.SystemClock.uptimeMillis() + 30_000L;
+            boolean removed = false;
+            try {
+                org.apache.commons.io.FileUtils.deleteDirectory(deleted);
+                while (!Thread.currentThread().isInterrupted()
+                        && android.os.SystemClock.uptimeMillis() < deadline) {
+                    File candidate = deleted.isDirectory() ? findControllableSdlLibrary(deleted) : null;
+                    if (candidate != null) {
+                        removed = candidate.delete() || !candidate.exists();
+                        break;
+                    }
+                    long remaining = deadline - android.os.SystemClock.uptimeMillis();
+                    if (remaining <= 0) break;
+                    synchronized (wakeSignal) {
+                        try { wakeSignal.wait(Math.min(50L, remaining)); }
+                        catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+                    }
+                }
+            } catch (Throwable error) {
+                Log.w(TAG, "Controllable mitigation ended with an error", error);
+            } finally {
+                Log.i(TAG, removed ? "Compatibility library removed; mitigation complete"
+                        : "Mitigation stopped or timed out without a library removal");
+                stopControllableMitigation();
+            }
+        }, "Controllable-Mitigation");
+        controllableMitigationThread = mitigationThread;
+        controllableMitigationLogListener = loggedLine -> {
+            if (loggedLine.contains("Sound engine started")) {
+                Log.i(TAG, "Launch stage passed; cancelling remaining mitigation work");
+                mitigationThread.interrupt();
+                synchronized (wakeSignal) { wakeSignal.notifyAll(); }
+            }
+        };
+        Logger.addLogListener(controllableMitigationLogListener);
+        mitigationThread.start();
     }
 
     private static Logger.eventLogListener oldL4JMitigationLogListener;

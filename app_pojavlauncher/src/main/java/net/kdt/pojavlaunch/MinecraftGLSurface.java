@@ -17,6 +17,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
 import android.view.InputDevice;
+import android.hardware.input.InputManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -60,6 +61,16 @@ import fr.spse.gamepad_remapper.RemapperView;
 public class MinecraftGLSurface extends View implements GrabListener, DirectGamepadEnableHandler {
     /* Gamepad object for gamepad inputs, instantiated on need */
     private GamepadHandler mGamepadHandler;
+    private int mActiveGamepadDeviceId = -1;
+    private InputManager mAndroidInputManager;
+    private boolean mInputListenerRegistered;
+    private final InputManager.InputDeviceListener mInputDeviceListener = new InputManager.InputDeviceListener() {
+        @Override public void onInputDeviceAdded(int deviceId) {}
+        @Override public void onInputDeviceChanged(int deviceId) {}
+        @Override public void onInputDeviceRemoved(int deviceId) {
+            if (deviceId == mActiveGamepadDeviceId) releaseGamepadHandler();
+        }
+    };
     /* The RemapperView.Builder object allows you to set which buttons to remap */
     private final RemapperManager mInputManager = new RemapperManager(getContext(), new RemapperView.Builder(null)
             .remapA(true)
@@ -134,6 +145,13 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
      *                 when the cursor is not grabbed
      */
     public void start(boolean isAlreadyRunning, AbstractTouchpad touchpad){
+        if (!mInputListenerRegistered) {
+            mAndroidInputManager = (InputManager) getContext().getSystemService(Context.INPUT_SERVICE);
+            if (mAndroidInputManager != null) {
+                mAndroidInputManager.registerInputDeviceListener(mInputDeviceListener, null);
+                mInputListenerRegistered = true;
+            }
+        }
         if(Tools.isAndroid8OrHigher()) setUpPointerCapture(touchpad);
         mInGUIProcessor.setAbstractTouchpad(touchpad);
         // Kopper Zink has orientation issues on SurfaceView
@@ -149,6 +167,7 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
                 private boolean isCalled = isAlreadyRunning;
                 @Override
                 public void surfaceCreated(@NonNull SurfaceHolder holder) {
+                    net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setSurfaceAttached(true);
                     if(isCalled) {
                         JREUtils.setupBridgeWindow(mNativeSurface);
                         return;
@@ -165,6 +184,8 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
 
                 @Override
                 public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+                    clearSurfaceFrameRate(holder.getSurface());
+                    net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setSurfaceAttached(false);
                     /*
                     Surface recreation in SurfaceView happens very often. When tabbing back in from
                     out, when minimizing floating window, when turning into floating window, etc.
@@ -187,6 +208,7 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
                 @Override
                 public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
                     mNativeSurface = new Surface(surface);
+                    net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setSurfaceAttached(true);
                     setupSDL(getContext(), mNativeSurface, (ViewGroup) getParent());
                     if(isCalled) {
                         JREUtils.setupBridgeWindow(mNativeSurface);
@@ -204,6 +226,9 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
 
                 @Override
                 public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
+                    clearSurfaceFrameRate(mNativeSurface);
+                    net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setSurfaceAttached(false);
+                    net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setCursorVisible(false);
                     /*
                     Surface recreation in TextureView can only really happen once, when turning
                     into a floating window. Subsequent turns to floating window no longer trigger
@@ -261,6 +286,7 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
     }
 
     private void createGamepad(View contextView, InputDevice inputDevice) {
+        mActiveGamepadDeviceId = inputDevice != null ? inputDevice.getId() : -1;
         if(CallbackBridge.sGamepadDirectInput && !sdlEnabled) {
             mGamepadHandler = new DirectGamepad();
         }else if(!sdlEnabled) {
@@ -454,21 +480,68 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
 
     }
 
+    private float chooseSupportedRefreshRate() {
+        Display display = getDisplay();
+        if (display == null) return 0f;
+        Display.Mode[] modes = display.getSupportedModes();
+        if (modes == null || modes.length == 0) return display.getRefreshRate();
+        java.util.TreeSet<Float> supported = new java.util.TreeSet<>();
+        for (Display.Mode mode : modes) {
+            if (mode != null && mode.getRefreshRate() > 0f) supported.add(mode.getRefreshRate());
+        }
+        if (supported.isEmpty()) return display.getRefreshRate();
+
+        float desired = supported.last(); // Unlimited/VSync path: highest actually supported rate.
+        String maxFps = MCOptionUtils.get("maxFps");
+        try {
+            int configured = Integer.parseInt(maxFps);
+            // Minecraft's 260 slider value represents Unlimited. A lower value
+            // is a target/cap selected by the user; request the smallest panel
+            // rate that can present it without asking for an unsupported value.
+            if (configured > 0 && configured < 260) desired = configured;
+        } catch (Throwable ignored) {}
+
+        for (Float rate : supported) if (rate + 0.01f >= desired) return rate;
+        return supported.last();
+    }
+
+    private void applySurfaceFrameRate(Surface surface) {
+        if (surface == null || !surface.isValid() || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
+        float supportedRate = chooseSupportedRefreshRate();
+        if (supportedRate <= 0f) return;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                surface.setFrameRate(supportedRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT,
+                        Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS);
+            } else {
+                surface.setFrameRate(supportedRate, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT);
+            }
+            Log.i(TAG, "Game surface requested supported refresh rate: " + supportedRate + " Hz");
+        } catch (Throwable error) {
+            Log.w(TAG, "Unable to set game surface frame rate", error);
+        }
+    }
+
+    private void clearSurfaceFrameRate(Surface surface) {
+        if (surface == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                surface.setFrameRate(0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT,
+                        Surface.CHANGE_FRAME_RATE_ONLY_IF_SEAMLESS);
+            } else {
+                surface.setFrameRate(0f, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT);
+            }
+        } catch (Throwable ignored) {}
+    }
+
     private void realStart(Surface surface){
         // Initial size set. Request immedate refresh, otherwise the initial width and height for the game
         // may be broken/unknown.
         refreshSize(true);
-        // Ensures we run at correct refresh rate (should also NOT change the resolution being used)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            float maxHz = 120f; // Set to 120 by default just to be safe
-            for (float altHz : getDisplay().getMode().getAlternativeRefreshRates()) {
-                maxHz = Math.max(maxHz, altHz);
-            }
-            surface.setFrameRate(maxHz, Surface.FRAME_RATE_COMPATIBILITY_DEFAULT, Surface.CHANGE_FRAME_RATE_ALWAYS);
-        }
-
-        // Load latest Minecraft options from disk before applying window overrides so in-game settings (Video, Audio, Controls, Resource Packs) are never overwritten:
+        // Load options only to derive a display-rate hint and required window integration.
+        // This never changes Minecraft's FPS limit or VSync choice.
         MCOptionUtils.load();
+        applySurfaceFrameRate(surface);
         MCOptionUtils.set("fullscreen", "off");
         MCOptionUtils.set("overrideWidth", String.valueOf(windowWidth));
         MCOptionUtils.set("overrideHeight", String.valueOf(windowHeight));
@@ -507,23 +580,43 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
             mCurrentTouchProcessor = desiredProcessor;
             mLastGrabState = isGrabbing;
         }
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setCursorVisible(!isGrabbing);
         if (!isGrabbing) {
-            net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.startAnimation();
             net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.updateCursorFrame();
-        } else {
-            net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.stopAnimation();
+        }
+    }
+
+    private void releaseGamepadHandler() {
+        post(() -> {
+            if (mGamepadHandler instanceof Gamepad) ((Gamepad) mGamepadHandler).removeSelf();
+            mGamepadHandler = null;
+            mActiveGamepadDeviceId = -1;
+        });
+    }
+
+    public void onHostPause() {
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(false);
+        if (mGamepadHandler instanceof Gamepad) ((Gamepad) mGamepadHandler).setPaused(true);
+    }
+
+    public void onHostResume() {
+        if (mGamepadHandler instanceof Gamepad) ((Gamepad) mGamepadHandler).setPaused(false);
+    }
+
+    public void releaseHostResources() {
+        clearSurfaceFrameRate(mNativeSurface);
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setSurfaceAttached(false);
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setCursorVisible(false);
+        releaseGamepadHandler();
+        if (mInputListenerRegistered && mAndroidInputManager != null) {
+            mAndroidInputManager.unregisterInputDeviceListener(mInputDeviceListener);
+            mInputListenerRegistered = false;
         }
     }
 
     @Override
     public void onDirectGamepadEnabled() {
-        post(()->{
-            if(mGamepadHandler != null && mGamepadHandler instanceof Gamepad) {
-                ((Gamepad)mGamepadHandler).removeSelf();
-            }
-            // Force gamepad recreation on next event
-            mGamepadHandler = null;
-        });
+        releaseGamepadHandler(); // Recreate in the newly selected mode on the next event.
     }
 
     /** A small interface called when the listener is ready for the first time */

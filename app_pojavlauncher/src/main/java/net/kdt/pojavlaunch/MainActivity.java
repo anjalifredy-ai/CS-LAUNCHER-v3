@@ -376,37 +376,18 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     public void onResume() {
         super.onResume();
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(true);
+        if (minecraftGLView != null) minecraftGLView.onHostResume();
         if(PREF_ENABLE_GYRO) mGyroControl.enable();
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_FOCUSED, 1);
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 1);
-        applyDisplayRefreshRate();
-    }
-
-    private void applyDisplayRefreshRate() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            android.view.Window window = getWindow();
-            android.view.WindowManager.LayoutParams params = window.getAttributes();
-            android.view.Display.Mode[] modes = getWindowManager().getDefaultDisplay().getSupportedModes();
-
-            android.view.Display.Mode maxMode = null;
-            float maxRefreshRate = 0;
-
-            for (android.view.Display.Mode mode : modes) {
-                if (mode.getRefreshRate() > maxRefreshRate) {
-                    maxRefreshRate = mode.getRefreshRate();
-                    maxMode = mode;
-                }
-            }
-
-            if (maxMode != null) {
-                params.preferredDisplayModeId = maxMode.getModeId();
-                window.setAttributes(params);
-            }
-        }
     }
 
     @Override
     protected void onPause() {
+        stopFpsTicker();
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(false);
+        if (minecraftGLView != null) minecraftGLView.onHostPause();
         mGyroControl.disable();
         if (CallbackBridge.isGrabbing()){
             sendKeyPress(LwjglGlfwKeycode.GLFW_KEY_ESCAPE);
@@ -428,6 +409,9 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
 
     @Override
     protected void onStop() {
+        stopFpsTicker();
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(false);
+        if (minecraftGLView != null) minecraftGLView.onHostPause();
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_VISIBLE, 0);
         super.onStop();
     }
@@ -436,6 +420,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     protected void onDestroy() {
         super.onDestroy();
         stopFpsTicker(); // CS Perf
+        net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(false);
+        if (minecraftGLView != null) minecraftGLView.releaseHostResources();
         CallbackBridge.removeGrabListener(touchpad);
         CallbackBridge.removeGrabListener(minecraftGLView);
         ContextExecutor.clearActivity();
@@ -473,6 +459,19 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     };
 
     private TextView mMemChip;
+    private long mLastMemorySampleUptime;
+    private String mLastMemoryText = "RAM —";
+    private static final long FPS_HUD_INTERVAL_MS = 750L;
+    private static final long MEMORY_HUD_INTERVAL_MS = 2500L;
+
+    private boolean isDiagnosticHudEnabled(String key) {
+        try {
+            SharedPreferences p = LauncherPreferences.DEFAULT_PREF != null
+                    ? LauncherPreferences.DEFAULT_PREF
+                    : getSharedPreferences("cslauncher_settings", MODE_PRIVATE);
+            return p.getBoolean(key, false);
+        } catch (Throwable ignored) { return false; }
+    }
 
     private void startFpsTicker() {
         if (mFpsChip == null) mFpsChip = findViewById(R.id.fps_counter_chip);
@@ -480,7 +479,19 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         if (mFpsChip != null) armFpsChipDrag(mFpsChip, "fpsChipTx", "fpsChipTy");
         if (mMemChip != null) armFpsChipDrag(mMemChip, "memChipTx", "memChipTy");
         Tools.MAIN_HANDLER.removeCallbacks(mFpsTicker);
-        Tools.MAIN_HANDLER.postDelayed(mFpsTicker, 500);
+        boolean showFps = isDiagnosticHudEnabled("showFpsCounter");
+        boolean showMem = isDiagnosticHudEnabled("showMemoryChip");
+        if (!showFps && !showMem) {
+            if (mFpsChip != null) mFpsChip.setVisibility(View.GONE);
+            if (mMemChip != null) mMemChip.setVisibility(View.GONE);
+            return; // No hidden heartbeat while both diagnostics are disabled.
+        }
+        Tools.MAIN_HANDLER.post(mFpsTicker);
+    }
+
+    /** Re-evaluate HUD scheduling immediately after the in-game toggle changes. */
+    public void refreshDiagnosticHudTicker() {
+        if (hasWindowFocus()) startFpsTicker();
     }
 
     // Item-2: the live FPS overlay is user-draggable anywhere on screen.
@@ -586,7 +597,8 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             if (fps >= 0) chip.setText(fps + " FPS");
         }
 
-        // CS HUD memory chip — real PSS of THIS (game) process, 1 Hz via the same ticker
+        // RAM/PSS is a diagnostic query, not a frame metric. Sample it much
+        // slower than FPS even when both chips are visible.
         TextView mem = mMemChip;
         if (mem != null) {
             if (!showMem) {
@@ -596,11 +608,21 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
                     mem.setVisibility(View.VISIBLE);
                     restoreFpsChipPosition(mem, "memChipTx", "memChipTy");
                 }
-                mem.setText(buildMemoryText());
+                long now = android.os.SystemClock.uptimeMillis();
+                if (mLastMemorySampleUptime == 0
+                        || now - mLastMemorySampleUptime >= MEMORY_HUD_INTERVAL_MS) {
+                    mLastMemoryText = buildMemoryText();
+                    mLastMemorySampleUptime = now;
+                }
+                if (!mLastMemoryText.contentEquals(mem.getText())) mem.setText(mLastMemoryText);
             }
         }
 
-        Tools.MAIN_HANDLER.postDelayed(mFpsTicker, (showFps || showMem) ? 500 : 1500);
+        if (!showFps && !showMem) {
+            return; // Completely stop until a toggle explicitly restarts it.
+        }
+        Tools.MAIN_HANDLER.postDelayed(mFpsTicker,
+                showFps ? FPS_HUD_INTERVAL_MS : MEMORY_HUD_INTERVAL_MS);
     }
 
     /** "RAM 1234 MB" — real total PSS of the game process (includes everything). */
@@ -724,35 +746,10 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
             }
         }
 
-        // FIRST-INITIALIZATION RULE: only apply default FPS/VSync settings when creating options.txt
-        // for the very first time on a new profile. Once options.txt exists, NEVER modify or override it
-        // so any Minecraft in-game settings (Video, Audio, Controls, Resource Packs) remain 100% untouched.
-        try {
-            File optFile = new File(Tools.getGameDirPath(minecraftProfile), "options.txt");
-            if (!optFile.exists()) {
-                MCOptionUtils.load(optFile.getParent());
-                // Mobile-first baseline. These are written only for a brand-new
-                // profile; after that the player's in-game choices are untouched.
-                MCOptionUtils.set("enableVsync", "false");
-                MCOptionUtils.set("maxFps", "260");
-                MCOptionUtils.set("graphicsMode", "0");
-                MCOptionUtils.set("fancyGraphics", "false");
-                MCOptionUtils.set("renderDistance", "8");
-                MCOptionUtils.set("simulationDistance", "6");
-                MCOptionUtils.set("entityShadows", "false");
-                MCOptionUtils.set("ao", "1");
-                MCOptionUtils.set("biomeBlendRadius", "0");
-                MCOptionUtils.set("particles", "2");
-                MCOptionUtils.set("clouds", "false");
-                MCOptionUtils.set("mipmapLevels", "2");
-                MCOptionUtils.save();
-                Log.i("runCraft", "[ProfileInit] mobile performance baseline applied (Fast, 8/6 chunks, no VSync/shadows/clouds)");
-            } else {
-                Log.i("runCraft", "[ProfileInit] existing=true; skipped default options copy to preserve user settings");
-            }
-        } catch (Throwable t) {
-            Log.w("runCraft", "[ProfileInit] check failed (non-fatal)", t);
-        }
+        // Minecraft owns every graphics/quality default. The launcher does not
+        // create a performance preset or mutate render distance, simulation
+        // distance, VSync, FPS limit, particles, clouds, shadows, or related
+        // visual settings. Existing options.txt remains user/Minecraft-owned.
 
         // Use the exact account carried across the launcher → game process
         // boundary. Re-reading async SharedPreferences here could select a stale

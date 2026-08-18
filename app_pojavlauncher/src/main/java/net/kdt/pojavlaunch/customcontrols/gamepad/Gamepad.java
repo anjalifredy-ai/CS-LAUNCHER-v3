@@ -86,7 +86,9 @@ public class Gamepad implements GrabListener, GamepadHandler {
 
     /* Choreographer with time to compute delta on ticking */
     private final Choreographer mScreenChoreographer;
+    private final Choreographer.FrameCallback mFrameCallback;
     private long mLastFrameTime;
+    private boolean mPaused;
 
     /* Listen for change in gui scale */
     @SuppressWarnings("FieldCanBeLocal") //the field is used in a WeakReference
@@ -101,14 +103,14 @@ public class Gamepad implements GrabListener, GamepadHandler {
         Settings.setDeadzoneScale(PREF_DEADZONE_SCALE);
 
         mScreenChoreographer = Choreographer.getInstance();
-        Choreographer.FrameCallback frameCallback = new Choreographer.FrameCallback() {
-            @Override
-            public void doFrame(long frameTimeNanos) {
+        mFrameCallback = new Choreographer.FrameCallback() {
+            @Override public void doFrame(long frameTimeNanos) {
+                if (mRemoved || mPaused) return;
                 tick(frameTimeNanos);
-                if(!mRemoved) mScreenChoreographer.postFrameCallback(this);
+                if (!mRemoved && !mPaused) mScreenChoreographer.postFrameCallback(this);
             }
         };
-        mScreenChoreographer.postFrameCallback(frameCallback);
+        mScreenChoreographer.postFrameCallback(mFrameCallback);
         mLastFrameTime = System.nanoTime();
 
         /* Add the listener for the cross hair */
@@ -481,12 +483,26 @@ public class Gamepad implements GrabListener, GamepadHandler {
         }
     }
 
+    /** Pause per-frame joystick integration while the host Activity is not interactive. */
+    public void setPaused(boolean paused) {
+        if (mRemoved || mPaused == paused) return;
+        mPaused = paused;
+        mScreenChoreographer.removeFrameCallback(mFrameCallback);
+        if (!paused) {
+            mLastFrameTime = System.nanoTime();
+            mScreenChoreographer.postFrameCallback(mFrameCallback);
+        }
+    }
+
     /**
      * Stops the Gamepad and removes all traces of the Gamepad from the view hierarchy.
      * After this call, the Gamepad is not recoverable and a new one must be made.
      */
     public void removeSelf() {
+        if (mRemoved) return;
         mRemoved = true;
+        mScreenChoreographer.removeFrameCallback(mFrameCallback);
+        MCOptionUtils.removeMCOptionListener(mGuiScaleListener);
         mMapProvider.detachGrabListener(this);
         ViewGroup viewGroup = (ViewGroup) mPointerImageView.getParent();
         if(viewGroup != null) viewGroup.removeView(mPointerImageView);

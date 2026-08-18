@@ -35,12 +35,18 @@ public class CustomCursorRenderer {
     
     private static long mAnimationStartTime = 0;
     private static boolean mIsRunning = false;
+    private static volatile boolean mHostResumed = false;
+    private static volatile boolean mSurfaceAttached = false;
+    private static volatile boolean mCursorVisible = false;
     
     private static final Runnable mAnimationRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!mIsRunning) return;
-            
+            if (!mIsRunning || !canAnimate()) {
+                stopAnimation();
+                return;
+            }
+
             updateCursorFrame();
             
             // Render at ~60fps (16ms per frame)
@@ -48,12 +54,34 @@ public class CustomCursorRenderer {
         }
     };
     
-    public static void startAnimation() {
-        if (!LauncherPreferences.PREF_CUSTOM_CURSOR_ENABLED) return;
+    private static boolean canAnimate() {
+        if (!mHostResumed || !mSurfaceAttached || !mCursorVisible) return false;
+        if (!LauncherPreferences.PREF_CUSTOM_CURSOR_ENABLED) return false;
         String path = LauncherPreferences.PREF_CUSTOM_CURSOR_PATH;
-        if (path == null || !path.toLowerCase().endsWith(".gif")) return;
-        
-        if (mIsRunning) return;
+        return path != null && path.toLowerCase(java.util.Locale.ROOT).endsWith(".gif");
+    }
+
+    private static void reevaluateAnimation() {
+        if (canAnimate()) startAnimation(); else stopAnimation();
+    }
+
+    public static void setHostResumed(boolean resumed) {
+        mHostResumed = resumed;
+        reevaluateAnimation();
+    }
+
+    public static void setSurfaceAttached(boolean attached) {
+        mSurfaceAttached = attached;
+        reevaluateAnimation();
+    }
+
+    public static void setCursorVisible(boolean visible) {
+        mCursorVisible = visible;
+        reevaluateAnimation();
+    }
+
+    public static void startAnimation() {
+        if (!canAnimate() || mIsRunning) return;
         mIsRunning = true;
         mAnimationStartTime = System.currentTimeMillis();
         Tools.MAIN_HANDLER.post(mAnimationRunnable);

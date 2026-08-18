@@ -597,7 +597,7 @@ public class LauncherPreferenceFragment extends Fragment {
                 case "Experimental":
                     List<SettingItem> expItems = new ArrayList<>();
                     expItems.add(new SettingItem("dump_shaders", SettingItem.TYPE_SWITCH, getString(R.string.preference_shader_dump_title), getString(R.string.preference_shader_dump_description), false));
-                    expItems.add(new SettingItem("bigCoreAffinity", SettingItem.TYPE_SWITCH, getString(R.string.preference_force_big_core_title), getString(R.string.preference_force_big_core_desc), false));
+                    // Manual CPU affinity is deprecated: Android's scheduler owns core placement.
                     expItems.add(new SettingItem("force_landscape", SettingItem.TYPE_SWITCH, getString(R.string.preference_force_landscape_title), getString(R.string.preference_force_landscape_summary), false));
                     expItems.add(new SettingItem("enable_bg_gradient", SettingItem.TYPE_SWITCH, getString(R.string.preference_bg_gradient_title), getString(R.string.preference_bg_gradient_summary), false));
                     categories.add(new SettingCategory("Experimental Settings", expItems));
@@ -1804,7 +1804,6 @@ public class LauncherPreferenceFragment extends Fragment {
             int ram = 1024;
             int resRatio = 60;
             boolean sustained = true;
-            boolean bigCore = false;
             String fsrMode = "4"; // MobileGlues FSR: performance
             String modeName = "low";
             String toastMsg = "Low-End Mobile preset applied (1024 MB RAM, 60% resolution)";
@@ -1819,7 +1818,6 @@ public class LauncherPreferenceFragment extends Fragment {
                 ram = highRam;
                 resRatio = 90;
                 sustained = false;
-                bigCore = true;
                 fsrMode = "2"; // quality
                 modeName = "high";
                 toastMsg = "Maximum FPS preset applied (" + highRam + " MB RAM, 90% resolution)";
@@ -1834,7 +1832,7 @@ public class LauncherPreferenceFragment extends Fragment {
                 e.putBoolean("force_vsync", false);
                 e.putBoolean("vsync_in_zink", false);
                 e.putBoolean("sustainedPerformance", sustained);
-                e.putBoolean("bigCoreAffinity", bigCore);
+                e.remove("bigCoreAffinity");
                 e.putBoolean("alternate_surface", false);
                 e.putBoolean("low_pause_gc", true);
                 e.putString("mg_renderer_setting_fsr", fsrMode);
@@ -1849,7 +1847,7 @@ public class LauncherPreferenceFragment extends Fragment {
                     d.putBoolean("force_vsync", false);
                     d.putBoolean("vsync_in_zink", false);
                     d.putBoolean("sustainedPerformance", sustained);
-                    d.putBoolean("bigCoreAffinity", bigCore);
+                    d.remove("bigCoreAffinity");
                     d.putBoolean("alternate_surface", false);
                     d.putBoolean("low_pause_gc", true);
                     d.putString("mg_renderer_setting_fsr", fsrMode);

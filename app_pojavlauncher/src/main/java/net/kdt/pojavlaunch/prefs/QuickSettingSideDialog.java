@@ -75,6 +75,8 @@ public abstract class QuickSettingSideDialog extends com.kdt.SideDialogView {
             mOsdFpsSwitch.setChecked(LauncherPreferences.DEFAULT_PREF.getBoolean("showFpsCounter", false));
             mOsdFpsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 mEditor.putBoolean("showFpsCounter", isChecked).apply();
+                if (buttonView.getContext() instanceof net.kdt.pojavlaunch.MainActivity)
+                    ((net.kdt.pojavlaunch.MainActivity) buttonView.getContext()).refreshDiagnosticHudTicker();
                 showSaveFeedback(buttonView.getContext());
             });
         }
@@ -82,6 +84,8 @@ public abstract class QuickSettingSideDialog extends com.kdt.SideDialogView {
             mOsdMemSwitch.setChecked(LauncherPreferences.DEFAULT_PREF.getBoolean("showMemoryChip", false));
             mOsdMemSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 mEditor.putBoolean("showMemoryChip", isChecked).apply();
+                if (buttonView.getContext() instanceof net.kdt.pojavlaunch.MainActivity)
+                    ((net.kdt.pojavlaunch.MainActivity) buttonView.getContext()).refreshDiagnosticHudTicker();
                 showSaveFeedback(buttonView.getContext());
             });
         }

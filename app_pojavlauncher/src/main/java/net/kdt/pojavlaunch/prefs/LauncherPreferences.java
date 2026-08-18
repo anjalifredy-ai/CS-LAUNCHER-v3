@@ -127,7 +127,10 @@ public class LauncherPreferences {
         PREF_BUTTON_ALL_CAPS = DEFAULT_PREF.getBoolean("buttonAllCaps", true);
         PREF_DUMP_SHADERS = DEFAULT_PREF.getBoolean("dump_shaders", false);
         PREF_DEADZONE_SCALE = ((float) DEFAULT_PREF.getInt("gamepad_deadzone_scale", 100))/100f;
-        PREF_BIG_CORE_AFFINITY = DEFAULT_PREF.getBoolean("bigCoreAffinity", false);
+        // Deprecated: manual affinity fights Android scheduling/thermal policy.
+        PREF_BIG_CORE_AFFINITY = false;
+        if (DEFAULT_PREF.contains("bigCoreAffinity"))
+            DEFAULT_PREF.edit().remove("bigCoreAffinity").apply();
         PREF_ZINK_PREFER_SYSTEM_DRIVER = DEFAULT_PREF.getBoolean("zinkPreferSystemDriver", false);
         PREF_DOWNLOAD_SOURCE = DEFAULT_PREF.getString("downloadSource", "default");
         PREF_GAME_LOG_DISPLAY_MODE = DEFAULT_PREF.getString("game_log_display_mode", "animated_smart");
