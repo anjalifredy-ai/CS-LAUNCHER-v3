@@ -433,7 +433,10 @@ public class SkinManagerFragment extends Fragment {
     }
 
     private void refreshAccountFaces() {
-        if (mActiveAccount != null) mActiveAccount.clearFaceCache();
+        if (mActiveAccount != null) {
+            mActiveAccount.clearFaceCache();
+            net.kdt.pojavlaunch.ui.SkinHead3DRenderer.invalidate(mActiveAccount.username);
+        }
         if (getActivity() != null) {
             com.kdt.mcgui.mcAccountSpinner spinner = getActivity().findViewById(R.id.account_spinner);
             if (spinner != null) spinner.reloadAccounts(true, spinner.getSelectedItemPosition());

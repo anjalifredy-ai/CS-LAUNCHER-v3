@@ -203,7 +203,7 @@ public class FastClientHomeFragment extends Fragment {
 
         if (account != null) {
             tvPlayerName.setText(account.username);
-            Bitmap head = account.getSkinFace();
+            Bitmap head = net.kdt.pojavlaunch.ui.SkinHead3DRenderer.resolve(getResources(), account);
             if (head != null) {
                 ivPlayerHead.setImageBitmap(head);
             } else {

@@ -351,119 +351,32 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
     }
 
     private void setImageFromSelectedAccount(){
+        android.widget.SpinnerAdapter adapter=getAdapter();
+        if(adapter instanceof android.widget.BaseAdapter)((android.widget.BaseAdapter)adapter).notifyDataSetChanged();
+        post(()->{View selected=getSelectedView();if(selected==null)return;View head=selected.findViewById(R.id.account_head);if(head!=null){head.animate().cancel();head.setAlpha(0f);head.setScaleX(.86f);head.setScaleY(.86f);head.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(180).start();}});
+        invalidate();
+    }
 
-        if(mSelectecAccount != null){
-            View layout = getSelectedView();
-            if(layout != null){
-                ExtendedTextView view = layout.findViewById(R.id.account_item);
-                Bitmap bitmap = mSelectecAccount.getSkinFace();
-                if (bitmap == null) {
-                    bitmap = MinecraftAccount.getSkinFace(mSelectecAccount.username);
-                }
-                if(bitmap != null) {
-                    mHeadDrawable = new BitmapDrawable(getResources(), bitmap);
-                    view.setCompoundDrawables(mHeadDrawable, null, null, null);
-                }else{
-                    Bitmap steve = BitmapFactory.decodeResource(getResources(), R.drawable.ic_steve);
-                    if(steve != null) {
-                        Bitmap extractedSteve = MinecraftAccount.extractSkinHead(steve);
-                        if (extractedSteve != null) {
-                            Bitmap roundedSteve = MinecraftAccount.roundBitmap(extractedSteve, 64, 10f);
-                            mHeadDrawable = new BitmapDrawable(getResources(), roundedSteve);
-                            extractedSteve.recycle();
-                        }
-                        steve.recycle();
-                    }
-                    view.setCompoundDrawables(mHeadDrawable, null, null, null);
-                }
-                view.postProcessDrawables();
-            }
-        }
-
-        // NOTE: We intentionally do NOT recycle oldBitmap here.
-        // The old drawable's bitmap may still be referenced by a View that
-        // is in the process of being drawn. Recycling it would cause a
-        // "Canvas: trying to use a recycled bitmap" crash.
-        // Android's GC will reclaim the native memory once all references are dropped.
+    private String accountSubtitle(MinecraftAccount account){
+        if(account==null)return "ADD OR SELECT ACCOUNT";
+        if(account.isMicrosoft)return "PREMIUM • OFFICIAL SKIN";
+        if(account.isElyByAccount())return "ELY.BY • ONLINE SKIN";
+        try{File meta=new File(Tools.DIR_DATA+"/skins/"+account.username+"_metadata.json");if(meta.isFile()){org.json.JSONObject o=new org.json.JSONObject(Tools.read(meta.getAbsolutePath()));int slot=o.optInt("slot",0);if(slot>0)return "LOCAL • ACTIVE SKIN SLOT "+slot;}}catch(Throwable ignored){}
+        return "LOCAL ACCOUNT";
     }
 
     private class AccountAdapter extends ArrayAdapter<String> {
-
-        private final HashMap<String, Drawable> mImageCache = new HashMap<>();
-        public AccountAdapter(@NonNull Context context, int resource, @NonNull String[] objects) {
-            super(context, resource, objects);
+        private final HashMap<String,MinecraftAccount> accountCache=new HashMap<>();
+        AccountAdapter(@NonNull Context context,int resource,@NonNull String[]objects){super(context,resource,objects);for(int i=1;i<objects.length;i++){MinecraftAccount a=PojavProfile.getCurrentProfileContent(context,objects[i]);if(a!=null)accountCache.put(objects[i],a);}}
+        private boolean selected(String username){return mSelectecAccount!=null&&username!=null&&username.equals(mSelectecAccount.username);}
+        private void bindAccount(View row,int position,boolean compact){ImageView head=row.findViewById(R.id.account_head);TextView name=row.findViewById(R.id.account_name);TextView subtitle=row.findViewById(R.id.account_subtitle);String username=getItem(position);name.setText(username);
+            if(position==0){head.setImageResource(R.drawable.ic_add);subtitle.setText("CREATE OR SIGN IN");if(!compact){View badge=row.findViewById(R.id.account_badge);if(badge!=null)badge.setVisibility(View.GONE);View check=row.findViewById(R.id.account_check);if(check!=null)check.setVisibility(View.GONE);View del=row.findViewById(R.id.delete_account_button);if(del!=null)del.setVisibility(View.GONE);}return;}
+            MinecraftAccount account=accountCache.get(username);head.setImageBitmap(net.kdt.pojavlaunch.ui.SkinHead3DRenderer.resolve(getResources(),account!=null?account.username:username));subtitle.setText(accountSubtitle(account));
+            if(!compact){TextView badge=row.findViewById(R.id.account_badge);badge.setVisibility(View.VISIBLE);badge.setText(account!=null&&account.isMicrosoft?"MICROSOFT":account!=null&&account.isElyByAccount()?"ELY.BY":"LOCAL");View root=row.findViewById(R.id.account_row);root.setBackgroundResource(account!=null&&account.isMicrosoft?R.drawable.bg_account_row_microsoft:selected(username)?R.drawable.bg_account_row_active:R.drawable.bg_account_row);View check=row.findViewById(R.id.account_check);check.setVisibility(selected(username)?View.VISIBLE:View.GONE);ImageView del=row.findViewById(R.id.delete_account_button);del.setVisibility(View.VISIBLE);del.setOnClickListener(v->showDeleteDialog(getContext(),position));}
         }
-
-        @Override
-        public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            if(convertView == null){
-                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_minecraft_account, parent, false);
-            }
-
-            ExtendedTextView textview = convertView.findViewById(R.id.account_item);
-            ImageView deleteButton = convertView.findViewById(R.id.delete_account_button);
-            textview.setText(super.getItem(position));
-
-            // Handle the "Add account section"
-            if(position == 0) {
-                textview.setCompoundDrawables(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_add, null), null, null, null);
-                deleteButton.setVisibility(View.GONE);
-            }
-            else {
-                String username = super.getItem(position);
-                Drawable accountHead = mImageCache.get(username);
-                if (accountHead == null){
-                    Bitmap bitmap = MinecraftAccount.getSkinFace(username);
-                    if (bitmap != null) {
-                        accountHead = new BitmapDrawable(parent.getResources(), bitmap);
-                    } else {
-                        Bitmap steve = BitmapFactory.decodeResource(parent.getResources(), R.drawable.ic_steve);
-                        if (steve != null) {
-                            Bitmap extractedSteve = MinecraftAccount.extractSkinHead(steve);
-                            if (extractedSteve != null) {
-                                Bitmap roundedSteve = MinecraftAccount.roundBitmap(extractedSteve, 64, 10f);
-                                accountHead = new BitmapDrawable(parent.getResources(), roundedSteve);
-                                extractedSteve.recycle();
-                            }
-                            steve.recycle();
-                        } else {
-                            accountHead = ResourcesCompat.getDrawable(parent.getResources(), R.drawable.ic_steve, null);
-                        }
-                    }
-                    if (accountHead != null) {
-                        mImageCache.put(username, accountHead);
-                    }
-                }
-                textview.setCompoundDrawables(accountHead, null, null, null);
-
-                deleteButton.setVisibility(View.VISIBLE);
-                deleteButton.setOnClickListener(v -> {
-                    showDeleteDialog(getContext(), position);
-                });
-            }
-            return convertView;
-        }
-
-
-
-        @NonNull
-        @Override
-        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            View view = getDropDownView(position, convertView, parent);
-            view.findViewById(R.id.delete_account_button).setVisibility(View.GONE);
-            return view;
-        }
-
-        private void showDeleteDialog(Context context, int position) {
-            new AlertDialog.Builder(context)
-                    .setMessage(R.string.warning_remove_account)
-                    .setPositiveButton(android.R.string.cancel, null)
-                    .setNeutralButton(R.string.global_delete, (dialog, which) -> {
-                        onDetachedFromWindow();
-                        removeAccount(position);
-                    })
-                    .show();
-        }
+        @Override public View getDropDownView(int position,@Nullable View convertView,@NonNull ViewGroup parent){if(convertView==null||!"drop".equals(convertView.getTag())){convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.item_minecraft_account,parent,false);convertView.setTag("drop");}bindAccount(convertView,position,false);return convertView;}
+        @NonNull @Override public View getView(int position,@Nullable View convertView,@NonNull ViewGroup parent){if(convertView==null||!"selected".equals(convertView.getTag())){convertView=LayoutInflater.from(parent.getContext()).inflate(R.layout.item_minecraft_account_selected,parent,false);convertView.setTag("selected");}bindAccount(convertView,position,true);return convertView;}
+        private void showDeleteDialog(Context context,int position){new AlertDialog.Builder(context).setMessage(R.string.warning_remove_account).setPositiveButton(android.R.string.cancel,null).setNeutralButton(R.string.global_delete,(dialog,which)->{onDetachedFromWindow();removeAccount(position);}).show();}
     }
 
     /** Resolve a theme colour attribute (e.g. R.attr.themeAccent) to an int colour. */

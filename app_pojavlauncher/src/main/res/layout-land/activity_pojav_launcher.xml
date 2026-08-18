@@ -226,10 +226,12 @@
         <!-- Account Spinner -->
         <com.kdt.mcgui.mcAccountSpinner
             android:id="@+id/account_spinner"
-            android:layout_width="@dimen/_150sdp"
-            android:layout_height="@dimen/_38sdp"
-            android:dropDownWidth="wrap_content"
+            android:layout_width="190dp"
+            android:layout_height="44dp"
+            android:dropDownWidth="280dp"
             android:dropDownVerticalOffset="@dimen/_40sdp"
+            android:popupBackground="@drawable/bg_account_popup"
+            android:popupElevation="10dp"
             android:background="@drawable/bg_account_spinner"
             android:paddingStart="@dimen/_6sdp"
             android:paddingEnd="@dimen/_6sdp" />

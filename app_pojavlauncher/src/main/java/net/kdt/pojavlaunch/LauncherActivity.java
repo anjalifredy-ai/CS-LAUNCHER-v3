@@ -1249,7 +1249,7 @@ public class LauncherActivity extends BaseActivity {
         PojavApplication.sExecutorService.execute(() -> {
             MinecraftAccount account = PojavProfile.getCurrentProfileContent(this, expectedAccount);
             if (account == null) return;
-            android.graphics.Bitmap face = account.getSkinFace();
+            android.graphics.Bitmap face = net.kdt.pojavlaunch.ui.SkinHead3DRenderer.resolve(getResources(), account);
             if ((face == null || face.isRecycled()) && account.isMicrosoft
                     && account.username != null && !account.username.isEmpty()) {
                 face = net.kdt.pojavlaunch.shortcuts.ShortcutSkinHeadHelper
