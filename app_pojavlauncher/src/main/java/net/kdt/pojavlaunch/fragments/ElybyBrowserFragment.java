@@ -65,6 +65,13 @@ public class ElybyBrowserFragment extends Fragment {
         }
     }
 
+    @Override public void onResume(){super.onResume();if(mWebView!=null)mWebView.onResume();}
+    @Override public void onPause(){if(mWebView!=null){mWebView.onPause();mWebView.stopLoading();}super.onPause();}
+    @Override public void onDestroyView(){
+        if(mWebView!=null){android.view.ViewParent parent=mWebView.getParent();if(parent instanceof android.view.ViewGroup)((android.view.ViewGroup)parent).removeView(mWebView);mWebView.stopLoading();mWebView.setWebChromeClient(null);mWebView.setWebViewClient(null);mWebView.destroy();mWebView=null;}
+        super.onDestroyView();
+    }
+
     private void navigateBack() {
         Fragment parent = getParentFragment();
         if (parent instanceof MainMenuFragment) {

@@ -20,6 +20,7 @@ import com.kdt.mcgui.ProgressLayout;
 import net.kdt.pojavlaunch.JAssetInfo;
 import net.kdt.pojavlaunch.JAssets;
 import net.kdt.pojavlaunch.JMinecraftVersionList;
+import net.kdt.pojavlaunch.BuildConfig;
 import net.kdt.pojavlaunch.NewJREUtil;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
@@ -47,6 +48,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MinecraftDownloader {
     private static final double ONE_MEGABYTE = (1024d * 1024d);
@@ -239,22 +243,63 @@ public class MinecraftDownloader {
         org.apache.commons.io.FileUtils.copyFile(mSourceJarFile, mTargetJarFile, false);
     }
 
+    private File nativeManifest(File directory) { return new File(directory, ".native-cache-manifest.json"); }
+
+    private JSONArray nativeSourceFingerprint() throws Exception {
+        JSONArray array=new JSONArray();
+        java.util.ArrayList<File> sorted=new java.util.ArrayList<>(mDeclaredNatives);
+        sorted.sort((a,b)->a.getAbsolutePath().compareTo(b.getAbsolutePath()));
+        for(File source:sorted){JSONObject o=new JSONObject();o.put("path",source.getAbsolutePath());o.put("size",source.length());o.put("mtime",source.lastModified());array.put(o);}return array;
+    }
+
+    private boolean isNativeCacheValid(File target,String versionName){
+        File manifest=nativeManifest(target);if(!manifest.isFile())return false;
+        try{JSONObject o=new JSONObject(Tools.read(manifest.getAbsolutePath()));
+            if(o.optInt("schema")!=1||o.optInt("build")!=BuildConfig.VERSION_CODE||!BuildConfig.VERSION_NAME.equals(o.optString("buildName")))return false;
+            if(!versionName.equals(o.optString("minecraft")))return false;
+            if(o.optInt("arch")!=Tools.DEVICE_ARCHITECTURE)return false;
+            if(!nativeSourceFingerprint().toString().equals(o.optJSONArray("sources").toString()))return false;
+            JSONArray files=o.optJSONArray("files");if(files==null||files.length()==0)return false;
+            for(int i=0;i<files.length();i++){JSONObject f=files.getJSONObject(i);File out=new File(target,f.getString("name"));if(!out.isFile()||out.length()!=f.getLong("size")||out.length()==0)return false;}
+            return true;
+        }catch(Throwable ignored){return false;}
+    }
+
+    private void writeNativeManifest(File target,String versionName) throws Exception{
+        JSONObject o=new JSONObject();o.put("schema",1);o.put("build",BuildConfig.VERSION_CODE);o.put("buildName",BuildConfig.VERSION_NAME);o.put("minecraft",versionName);o.put("arch",Tools.DEVICE_ARCHITECTURE);o.put("sources",nativeSourceFingerprint());
+        JSONArray files=new JSONArray();File[] outputs=target.listFiles(f->f.isFile()&&!f.getName().startsWith(".native-cache"));if(outputs!=null){java.util.Arrays.sort(outputs,(a,b)->a.getName().compareTo(b.getName()));for(File output:outputs){JSONObject f=new JSONObject();f.put("name",output.getName());f.put("size",output.length());files.put(f);}}
+        if(files.length()==0)throw new IOException("Native extraction produced no files");o.put("files",files);Tools.write(nativeManifest(target).getAbsolutePath(),o.toString());
+    }
+
     private void extractNatives(String versionName) throws IOException {
         if(mDeclaredNatives.isEmpty()) return;
-        int totalCount = mDeclaredNatives.size();
-
-        ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0,
-                R.string.newdl_extracting_native_libraries, 0, totalCount);
-
-        File targetDirectory = new File(Tools.DIR_CACHE, "natives/"+versionName);
-        FileUtils.ensureDirectory(targetDirectory);
-        NativesExtractor nativesExtractor = new NativesExtractor(targetDirectory);
-        int extractedCount = 0;
-        for(File source : mDeclaredNatives) {
-            nativesExtractor.extractFromAar(source);
-            extractedCount++;
-            ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, extractedCount * 100 / totalCount,
-                    R.string.newdl_extracting_native_libraries, extractedCount, totalCount);
+        int totalCount=mDeclaredNatives.size();
+        File targetDirectory=new File(Tools.DIR_CACHE,"natives/"+versionName);
+        if(isNativeCacheValid(targetDirectory,versionName)){
+            Log.i("NativeCache","Verified cache hit for "+versionName);return;
+        }
+        ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT,0,R.string.newdl_extracting_native_libraries,0,totalCount);
+        File parent=targetDirectory.getParentFile();FileUtils.ensureDirectory(parent);
+        File tempDirectory=new File(parent,"."+versionName+".extracting");
+        File backupDirectory=new File(parent,"."+versionName+".backup");
+        org.apache.commons.io.FileUtils.deleteDirectory(tempDirectory);FileUtils.ensureDirectory(tempDirectory);
+        try{
+            NativesExtractor extractor=new NativesExtractor(tempDirectory);int count=0;
+            for(File source:mDeclaredNatives){extractor.extractFromAar(source);count++;ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT,count*100/totalCount,R.string.newdl_extracting_native_libraries,count,totalCount);}
+            writeNativeManifest(tempDirectory,versionName);
+            org.apache.commons.io.FileUtils.deleteDirectory(backupDirectory);
+            if(targetDirectory.exists()&&!targetDirectory.renameTo(backupDirectory))throw new IOException("Could not stage old native cache");
+            if(!tempDirectory.renameTo(targetDirectory)){
+                org.apache.commons.io.FileUtils.copyDirectory(tempDirectory,targetDirectory);org.apache.commons.io.FileUtils.deleteDirectory(tempDirectory);
+            }
+            org.apache.commons.io.FileUtils.deleteDirectory(backupDirectory);
+        }catch(Throwable error){
+            org.apache.commons.io.FileUtils.deleteDirectory(tempDirectory);
+            if(backupDirectory.exists()){
+                org.apache.commons.io.FileUtils.deleteDirectory(targetDirectory);
+                backupDirectory.renameTo(targetDirectory);
+            }
+            if(error instanceof IOException)throw(IOException)error;throw new IOException("Native extraction cache update failed",error);
         }
     }
 

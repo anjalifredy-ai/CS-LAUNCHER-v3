@@ -32,6 +32,7 @@ public class GameService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if(intent != null && intent.getBooleanExtra("kill", false)) {
+            net.kdt.pojavlaunch.performance.GameSessionState.clear();
             stopSelf();
             Process.killProcess(Process.myPid());
             return START_NOT_STICKY;
@@ -63,6 +64,7 @@ public class GameService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        net.kdt.pojavlaunch.performance.GameSessionState.clear();
         //At this point in time  only the game runs and the user poofed the window, time to die
         stopSelf();
         Process.killProcess(Process.myPid());

@@ -438,8 +438,11 @@ public class JREUtils {
         //Add automatically generated args
         // Per-profile RAM was removed (Phase 5) — the global launcher setting rules.
         int effectiveRam = LauncherPreferences.PREF_RAM_ALLOCATION;
-        // Safety policy: the launched JVM always receives a device-safe value.
-        effectiveRam = Tools.sanitizeRamAllocation(activity, effectiveRam);
+        if (effectiveRam < 256) {
+            throw new IllegalArgumentException("Selected Minecraft RAM is invalid: " + effectiveRam + " MB");
+        }
+        // Exact user selection: warnings happen before launch, never by silently
+        // clamping the final JVM heap behind the user's back.
         // Do not commit the whole Xmx heap at startup. On Android, Xms=Xmx plus
         // AlwaysPreTouch competes with the GPU/OS and can trigger LMK or long
         // first-frame stalls. Grow from a modest, aligned initial heap instead.
@@ -450,38 +453,23 @@ public class JREUtils {
         Log.i("ProfileLaunch", "Effective JVM RAM: -Xms" + initialRam
                 + "M -Xmx" + effectiveRam + "M (mobile adaptive heap)");
 
-        // Mobile client GC policy. Do not apply Aikar/server heap-shaping
-        // flags (fixed 8M regions, one-cycle tenuring, oversized young-gen)
-        // to Android heaps. Let HotSpot size regions and age objects from the
-        // actual Xmx while only bounding collector worker overhead.
-        if (LauncherPreferences.DEFAULT_PREF.getBoolean("low_pause_gc", true)) {
-            String[] managedGcPrefixes = {
-                    "-XX:+UseG1GC", "-XX:+UseSerialGC", "-XX:+UseParallelGC",
-                    "-XX:MaxGCPauseMillis", "-XX:ParallelGCThreads", "-XX:ConcGCThreads",
-                    "-XX:G1NewSizePercent", "-XX:G1MaxNewSizePercent", "-XX:G1HeapRegionSize",
-                    "-XX:G1ReservePercent", "-XX:G1HeapWastePercent", "-XX:G1MixedGCCountTarget",
-                    "-XX:InitiatingHeapOccupancyPercent", "-XX:G1MixedGCLiveThresholdPercent",
-                    "-XX:G1RSetUpdatingPauseTimePercent", "-XX:SurvivorRatio",
-                    "-XX:MaxTenuringThreshold", "-XX:ReservedCodeCacheSize",
-                    "-XX:+ParallelRefProcEnabled", "-XX:+PerfDisableSharedMem",
-                    "-XX:+UseStringDeduplication"
-            };
-            for (String prefix : managedGcPrefixes) purgeArg(userArgs, prefix);
-            int cpuCount = Math.max(1, java.lang.Runtime.getRuntime().availableProcessors());
-            int parallelGcThreads = Math.max(1, Math.min(2, cpuCount / 2));
-            int concurrentGcThreads = 1;
-            userArgs.add("-XX:+UseG1GC");
-            userArgs.add("-XX:+ParallelRefProcEnabled");
-            userArgs.add("-XX:MaxGCPauseMillis=100");
-            userArgs.add("-XX:ParallelGCThreads=" + parallelGcThreads);
-            userArgs.add("-XX:ConcGCThreads=" + concurrentGcThreads);
+        // Developer benchmark variants. Default remains the proven current CS policy;
+        // no alternative is selected for users without an explicit developer override.
+        String gcVariant=LauncherPreferences.DEFAULT_PREF.getString("developer_gc_variant","current_cs");
+        boolean lowPause=LauncherPreferences.DEFAULT_PREF.getBoolean("low_pause_gc",true);
+        String[] managedGcPrefixes={"-XX:+UseG1GC","-XX:+UseSerialGC","-XX:+UseParallelGC","-XX:MaxGCPauseMillis","-XX:ParallelGCThreads","-XX:ConcGCThreads","-XX:G1NewSizePercent","-XX:G1MaxNewSizePercent","-XX:G1HeapRegionSize","-XX:G1ReservePercent","-XX:G1HeapWastePercent","-XX:G1MixedGCCountTarget","-XX:InitiatingHeapOccupancyPercent","-XX:G1MixedGCLiveThresholdPercent","-XX:G1RSetUpdatingPauseTimePercent","-XX:SurvivorRatio","-XX:MaxTenuringThreshold","-XX:ReservedCodeCacheSize","-XX:+ParallelRefProcEnabled","-XX:+PerfDisableSharedMem","-XX:+UseStringDeduplication"};
+        if("ergonomic_defaults".equals(gcVariant)){
+            for(String prefix:managedGcPrefixes)purgeArg(userArgs,prefix);
+            Log.i("ProfileLaunch","GC benchmark variant: JVM ergonomic defaults");
+        }else if(lowPause){
+            for(String prefix:managedGcPrefixes)purgeArg(userArgs,prefix);
+            int cpuCount=Math.max(1,java.lang.Runtime.getRuntime().availableProcessors());
+            userArgs.add("-XX:+UseG1GC");userArgs.add("-XX:+ParallelRefProcEnabled");userArgs.add("-XX:MaxGCPauseMillis=100");
+            if(!"g1_ergonomic_workers".equals(gcVariant)){userArgs.add("-XX:ParallelGCThreads="+Math.max(1,Math.min(2,cpuCount/2)));userArgs.add("-XX:ConcGCThreads=1");}
             userArgs.add("-XX:+PerfDisableSharedMem");
-            // String dedup is useful for mod metadata and language strings but
-            // does not alter region sizing or object lifetime policy.
-            userArgs.add("-XX:+UseStringDeduplication");
-            userArgs.add("-Dlog4j2.formatMsgNoLookups=true");
-            userArgs.add("-Dsodium.checks.issue2561=false");
-            Log.i("ProfileLaunch", "CS Perf: mobile G1 policy enabled (JVM-sized regions, max 2 GC workers)");
+            if(!"current_no_dedup".equals(gcVariant))userArgs.add("-XX:+UseStringDeduplication");
+            userArgs.add("-Dlog4j2.formatMsgNoLookups=true");userArgs.add("-Dsodium.checks.issue2561=false");
+            Log.i("ProfileLaunch","GC benchmark variant: "+gcVariant);
         }
         if(LOCAL_RENDERER != null) userArgs.add("-Dorg.lwjgl.opengl.libname=" + graphicsLib);
 

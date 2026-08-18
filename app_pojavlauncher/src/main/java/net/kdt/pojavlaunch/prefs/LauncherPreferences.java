@@ -286,9 +286,12 @@ public class LauncherPreferences {
         File configFile = new File(Tools.DIR_DATA + "/MobileGlues", "config.json");
         FileUtils.ensureParentDirectory(configFile);
         try {
-            Tools.write(configFile.getAbsolutePath(),Tools.GLOBAL_GSON.toJson(MGConfigJson));
-            Logger.appendToLog("Writing MG configs to " + configFile.getAbsolutePath());
-            Logger.appendToLog("MG Config is " + Tools.GLOBAL_GSON.toJson(MGConfigJson));
+            String desired = Tools.GLOBAL_GSON.toJson(MGConfigJson);
+            String existing = configFile.isFile() ? Tools.read(configFile.getAbsolutePath()) : null;
+            if (!desired.equals(existing)) {
+                Tools.write(configFile.getAbsolutePath(), desired);
+                Logger.appendToLog("Updated MG configs at " + configFile.getAbsolutePath());
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

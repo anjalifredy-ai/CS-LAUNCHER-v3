@@ -129,6 +129,10 @@ public final class FirebaseSyncManager {
     }
 
     private static void start(Context ctx) {
+        if (net.kdt.pojavlaunch.performance.GameSessionState.isGameActive()) {
+            Log.i(TAG, "Game session active; deferring realtime sync");
+            return;
+        }
         if (sStarted.getAndSet(true)) return;
         final String db = effectiveDbUrl(ctx);
         if (db.isEmpty()) return;

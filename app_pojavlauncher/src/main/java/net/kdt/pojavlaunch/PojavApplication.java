@@ -92,7 +92,10 @@ public class PojavApplication extends Application {
 												originalJNIDirectory.lastIndexOf("/"))
 												.concat("/x86");
 			}
-			AsyncAssetManager.unpackRuntime(getAssets());
+			// If FCM recreates :launcher during gameplay, keep Application startup
+			// lightweight and defer runtime/update work until the game session ends.
+			if (!net.kdt.pojavlaunch.performance.GameSessionState.isGameActive())
+				AsyncAssetManager.unpackRuntime(getAssets());
 		} catch (Throwable throwable) {
 			Intent ferrorIntent = new Intent(this, FatalErrorActivity.class);
 			ferrorIntent.putExtra("throwable", throwable);

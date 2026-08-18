@@ -571,7 +571,10 @@ public class LauncherPreferenceFragment extends Fragment {
                     javaItems.add(new SettingItem("javaArgs", SettingItem.TYPE_INPUT, getString(R.string.mcl_setting_title_javaargs), getString(R.string.mcl_setting_subtitle_javaargs), ""));
 
                     int maxRAM = Tools.getMaximumRamAllocation(requireContext());
-                    javaItems.add(new SettingItem("allocation", SettingItem.TYPE_SLIDER, getString(R.string.mcl_memory_allocation), getString(R.string.mcl_memory_allocation_subtitle), 1024).setSliderConfig(256, maxRAM, 128, " MB"));
+                    int selectedRam = LauncherPreferences.DEFAULT_PREF.getInt("allocation", 1024);
+                    javaItems.add(new SettingItem("allocation", SettingItem.TYPE_SLIDER, getString(R.string.mcl_memory_allocation), getString(R.string.mcl_memory_allocation_subtitle), 1024).setSliderConfig(256, Math.max(maxRAM, selectedRam), 128, " MB"));
+                    javaItems.add(new SettingItem("ram_effective_info", SettingItem.TYPE_INFO,
+                            "Exact Minecraft heap", "Minecraft will launch with -Xmx" + selectedRam + "M", null));
 
                     javaItems.add(new SettingItem("disable_autojre_select", SettingItem.TYPE_SWITCH, "Disable automatic JRE selection", "Stops automatic selection of which runtime to use", false));
                     javaItems.add(new SettingItem("java_sandbox", SettingItem.TYPE_SWITCH, getString(R.string.mcl_setting_java_sandbox), getString(R.string.mcl_setting_java_sandbox_subtitle), true));
@@ -598,6 +601,8 @@ public class LauncherPreferenceFragment extends Fragment {
                     List<SettingItem> expItems = new ArrayList<>();
                     expItems.add(new SettingItem("dump_shaders", SettingItem.TYPE_SWITCH, getString(R.string.preference_shader_dump_title), getString(R.string.preference_shader_dump_description), false));
                     // Manual CPU affinity is deprecated: Android's scheduler owns core placement.
+                    expItems.add(new SettingItem("thermalTelemetry", SettingItem.TYPE_SWITCH,
+                            "Thermal benchmark telemetry", "Opt-in measurement only; never changes Minecraft settings", false));
                     expItems.add(new SettingItem("force_landscape", SettingItem.TYPE_SWITCH, getString(R.string.preference_force_landscape_title), getString(R.string.preference_force_landscape_summary), false));
                     expItems.add(new SettingItem("enable_bg_gradient", SettingItem.TYPE_SWITCH, getString(R.string.preference_bg_gradient_title), getString(R.string.preference_bg_gradient_summary), false));
                     categories.add(new SettingCategory("Experimental Settings", expItems));

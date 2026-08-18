@@ -98,6 +98,13 @@ public class MicrosoftLoginFragment extends Fragment {
         mWebview.saveState(outState);
     }
 
+    @Override public void onResume(){super.onResume();if(mWebview!=null)mWebview.onResume();}
+    @Override public void onPause(){if(mWebview!=null){mWebview.onPause();mWebview.stopLoading();}super.onPause();}
+    @Override public void onDestroyView(){
+        if(mWebview!=null){android.view.ViewParent parent=mWebview.getParent();if(parent instanceof ViewGroup)((ViewGroup)parent).removeView(mWebview);mWebview.stopLoading();mWebview.setWebViewClient(null);mWebview.destroy();mWebview=null;}
+        super.onDestroyView();
+    }
+
     /* Expose webview actions to others */
     public boolean canGoBack(){ return mWebview.canGoBack();}
     public void goBack(){ mWebview.goBack();}

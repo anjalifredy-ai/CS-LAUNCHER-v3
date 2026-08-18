@@ -114,10 +114,18 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     private GameService.LocalBinder mServiceBinder;
 
     private QuickSettingSideDialog mQuickSettingSideDialog;
+    private net.kdt.pojavlaunch.performance.AndroidGameStateController mGameStateController;
+    private net.kdt.pojavlaunch.performance.ThermalTelemetry mThermalTelemetry;
+    private boolean mFirstGameFramePresented;
+    private final Runnable mFirstFrameWatcher=new Runnable(){@Override public void run(){if(isFinishing()||isDestroyed()||mFirstGameFramePresented)return;long frames=net.kdt.pojavlaunch.utils.FpsCounter.getTotalPresents();if(frames>0){mFirstGameFramePresented=true;if(mGameStateController!=null)mGameStateController.playing();return;}Tools.MAIN_HANDLER.postDelayed(this,250L);}};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        net.kdt.pojavlaunch.performance.GameSessionState.markActive(this);
+        mGameStateController=new net.kdt.pojavlaunch.performance.AndroidGameStateController(this);mGameStateController.loading();
+        mThermalTelemetry=new net.kdt.pojavlaunch.performance.ThermalTelemetry(this);mThermalTelemetry.start();
+        Tools.MAIN_HANDLER.post(mFirstFrameWatcher);
         if (LauncherPreferences.PREF_GAMEPAD_SDL_PASSTHRU) {
             // TODO: Use lower level HID capture that needs a dialogue box from the user for the
             // app to fully take focus of the input devices. Might cause issues with older android
@@ -378,6 +386,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         super.onResume();
         net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(true);
         if (minecraftGLView != null) minecraftGLView.onHostResume();
+        if(mGameStateController!=null){if(mFirstGameFramePresented)mGameStateController.playing();else mGameStateController.loading();}
         if(PREF_ENABLE_GYRO) mGyroControl.enable();
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_FOCUSED, 1);
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 1);
@@ -386,6 +395,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     protected void onPause() {
         stopFpsTicker();
+        if(mGameStateController!=null)mGameStateController.paused();
         net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(false);
         if (minecraftGLView != null) minecraftGLView.onHostPause();
         mGyroControl.disable();
@@ -419,6 +429,9 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        net.kdt.pojavlaunch.performance.GameSessionState.clear();
+        Tools.MAIN_HANDLER.removeCallbacks(mFirstFrameWatcher);
+        if(mThermalTelemetry!=null)mThermalTelemetry.stop();
         stopFpsTicker(); // CS Perf
         net.kdt.pojavlaunch.customcontrols.mouse.CustomCursorRenderer.setHostResumed(false);
         if (minecraftGLView != null) minecraftGLView.releaseHostResources();
@@ -930,7 +943,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         try {
             mControlLayout.loadLayout((CustomControls)null);
             mControlLayout.setModifiable(false);
-            System.gc();
+            // Let the runtime collect naturally; forced full GC can stall gameplay.
             mControlLayout.loadLayout(
                     minecraftProfile.controlFile == null
                             ? LauncherPreferences.PREF_DEFAULTCTRL_PATH

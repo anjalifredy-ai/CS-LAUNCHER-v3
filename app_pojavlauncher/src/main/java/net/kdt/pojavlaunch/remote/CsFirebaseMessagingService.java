@@ -76,6 +76,7 @@ public class CsFirebaseMessagingService extends FirebaseMessagingService {
      */
     public static void initFcm(Context context) {
         createNotificationChannels(context);
+        if (net.kdt.pojavlaunch.performance.GameSessionState.isGameActive()) return;
 
         FirebaseMessaging messaging = FirebaseMessaging.getInstance();
 
@@ -109,6 +110,8 @@ public class CsFirebaseMessagingService extends FirebaseMessagingService {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "New FCM Token: " + token);
         }
+        // During gameplay retain only the lightweight token/notification path.
+        if (net.kdt.pojavlaunch.performance.GameSessionState.isGameActive()) return;
         // Re-subscribe to required topics automatically on token refresh
         try {
             FirebaseMessaging messaging = FirebaseMessaging.getInstance();

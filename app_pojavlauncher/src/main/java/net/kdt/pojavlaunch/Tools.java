@@ -278,8 +278,12 @@ public final class Tools {
      * @param filenames Filename(s) of the .jar mod(s)
      * @return Whether or not the .jar is found
      */
+    private static volatile net.kdt.pojavlaunch.performance.LaunchSnapshot sLaunchSnapshot;
+
     public static boolean hasMods(String... filenames) {
         File gameDir = getGameDir();
+        net.kdt.pojavlaunch.performance.LaunchSnapshot snapshot = sLaunchSnapshot;
+        if (snapshot != null && snapshot.matchesGameDirectory(gameDir)) return snapshot.containsAny(filenames);
         File modsDir = new File(gameDir, "mods");
         File[] modFiles = modsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".jar"));
         if (modFiles == null) return false;
@@ -367,18 +371,36 @@ public final class Tools {
 
         if(LauncherPreferences.PREF_RAM_ALLOCATION > freeDeviceMemory) {
             int finalDeviceMemory = freeDeviceMemory;
+            int requestedMemory = LauncherPreferences.PREF_RAM_ALLOCATION;
+            int suggestedMemory = Math.max(256, (Math.max(256, finalDeviceMemory - 256) / 128) * 128);
+            java.util.concurrent.atomic.AtomicBoolean useSuggested = new java.util.concurrent.atomic.AtomicBoolean(false);
             LifecycleAwareAlertDialog.DialogCreator dialogCreator = (dialog, builder) ->
-                builder.setMessage(activity.getString(localeString, finalDeviceMemory, LauncherPreferences.PREF_RAM_ALLOCATION))
-                        .setPositiveButton(android.R.string.ok, (d, w)->{});
+                builder.setTitle("Minecraft RAM warning")
+                        .setMessage(activity.getString(localeString, finalDeviceMemory, requestedMemory)
+                                + "\n\nSelected JVM heap: -Xmx" + requestedMemory + "M"
+                                + "\nSuggested safe value: -Xmx" + suggestedMemory + "M")
+                        .setPositiveButton("Launch with " + requestedMemory + " MB", (d, w)->{})
+                        .setNegativeButton("Use " + suggestedMemory + " MB", (d, w)->useSuggested.set(true));
 
             if(LifecycleAwareAlertDialog.haltOnDialog(activity.getLifecycle(), activity, dialogCreator)) {
-                return; // If the dialog's lifecycle has ended, return without
-                // actually launching the game, thus giving us the opportunity
-                // to start after the activity is shown again
+                return;
+            }
+            if (useSuggested.get()) {
+                LauncherPreferences.PREF_RAM_ALLOCATION = suggestedMemory;
+                LauncherPreferences.DEFAULT_PREF.edit().putInt("allocation", suggestedMemory).commit();
             }
         }
         LauncherProfiles.load();
         File gamedir = Tools.getGameDirPath(minecraftProfile);
+        String runtimeName = Tools.pickRuntime(minecraftProfile, versionJavaRequirement);
+        Runtime runtime = MultiRTUtils.forceReread(runtimeName);
+        File controlFile = minecraftProfile.controlFile == null ? new File(Tools.CTRLDEF_FILE)
+                : new File(Tools.CTRLMAP_PATH, minecraftProfile.controlFile);
+        sLaunchSnapshot = net.kdt.pojavlaunch.performance.LaunchSnapshot.create(
+                minecraftProfile, gamedir, versionId, runtimeName, Tools.LOCAL_RENDERER,
+                minecraftAccount, controlFile);
+        Log.i("LaunchSnapshot", "mods=" + sLaunchSnapshot.modFileNames.size()
+                + " fingerprint=" + sLaunchSnapshot.modDirectoryFingerprint);
         startControllableMitigation(activity, gamedir);
         startOldLegacy4JMitigation(activity, gamedir);
         if(affectedByLTWRenderDistanceIssue()) {
@@ -393,7 +415,6 @@ public final class Tools {
         }
 
 
-        Runtime runtime = MultiRTUtils.forceReread(Tools.pickRuntime(minecraftProfile, versionJavaRequirement));
         JMinecraftVersionList.Version versionInfo = Tools.getVersionInfo(versionId);
 
 
@@ -452,33 +473,27 @@ public final class Tools {
         javaArgList.add("-Dimgui.library.name=imgui-java");
         // We use an abomination to support all DH versions with a single library.
         javaArgList.add("-DZstdNativePath="+Tools.NATIVE_LIB_DIR+"/libzstd-jni-1.5.7-6-dhcompat.so");
-        // We only ever reach this point when user has already used the force run switch
-        boolean hasSodiumMod = false;
-        for (String modName : sodiumMods) {
-            if (hasMods(sodiumMods)) {
-                hasSodiumMod = true;
+        // Snapshot-backed compatibility detection: scan /mods once per launch.
+        boolean hasSodiumMod = hasMods(sodiumMods);
+        if (hasSodiumMod) {
+            for (String modName : sodiumMods) {
                 File mixinPropertiesConfigFile = new File(getGameDir(), "config/" + modName + "-mixins.properties");
-                // Write mixin configs to somewhat help stability. We don't want more people complaining.
+                if (!mixinPropertiesConfigFile.isFile()) continue;
                 String[] propertiesToAdd = {
                         "mixin.features.buffer_builder.intrinsics=false",
                         "mixin.features.chunk_rendering=false"
                 };
-                List<String> mixinPropertiesConfigStrings = null;
-                try {
-                    mixinPropertiesConfigStrings = org.apache.commons.io.FileUtils.readLines(mixinPropertiesConfigFile, "UTF-8");
-                } catch (IOException ignored) {}
-                if (mixinPropertiesConfigStrings == null) {
-                    mixinPropertiesConfigStrings = new ArrayList<>();
+                List<String> lines;
+                try { lines = org.apache.commons.io.FileUtils.readLines(mixinPropertiesConfigFile, "UTF-8"); }
+                catch (IOException ignored) { continue; }
+                boolean changed = false;
+                for (String required : propertiesToAdd) {
+                    if (!lines.contains(required)) { lines.add(required); changed = true; }
                 }
-                for (String newLine : propertiesToAdd) {
-                    if (!mixinPropertiesConfigStrings.contains(newLine)) {
-                        mixinPropertiesConfigStrings.add(newLine);
-                    }
+                if (changed) {
+                    try { org.apache.commons.io.FileUtils.writeLines(mixinPropertiesConfigFile, lines); }
+                    catch (IOException ignored) {}
                 }
-                try {
-                    org.apache.commons.io.FileUtils.writeLines(mixinPropertiesConfigFile, mixinPropertiesConfigStrings);
-                } catch (IOException ignored) {} // If we can't write it, we tried our best.
-
             }
         }
         // We use a janky lwjgl setup. We don't want more people complaining it crashes.
@@ -493,6 +508,7 @@ public final class Tools {
             JREUtils.launchJavaVM(activity, runtime, gamedir, javaArgList, args, minecraftAccount);
         } finally {
             stopControllableMitigation();
+            sLaunchSnapshot = null;
         }
         // If we returned, this means that the JVM exit dialog has been shown and we don't need to be active anymore.
         // We never return otherwise. The process will be killed anyway, and thus we will become inactive
@@ -540,18 +556,7 @@ public final class Tools {
     private static void startControllableMitigation(Activity activity, File gamedir) {
         final String TAG = "ControllableMitigation";
         final File deleted = new File(gamedir, "controllable_natives/SDL");
-        File modsDir = new File(gamedir, "mods");
-        File[] mods = modsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".jar"));
-        boolean hasControllable = false;
-        if (mods != null) {
-            for (File file : mods) {
-                if (file.getName().toLowerCase(java.util.Locale.ROOT).contains("controllable")) {
-                    hasControllable = true;
-                    break;
-                }
-            }
-        }
-        if (!hasControllable) return;
+        if (!hasMods("controllable")) return;
 
         stopControllableMitigation();
         Tools.runOnUiThread(() -> Tools.dialog(activity,
@@ -624,18 +629,7 @@ public final class Tools {
      * on that version anyway? Legacy4J has LTS for like all the versions.
      */
     private static void startOldLegacy4JMitigation(Activity activity, File gamedir) {
-        boolean hasLegacy4J = false;
-        File modsDir = new File(gamedir, "mods");
-        File[] mods = modsDir.listFiles(file -> file.isFile() && file.getName().endsWith(".jar"));
-        if(mods != null) {
-            for (File file : mods) {
-                String name = file.getName();
-                if (name.contains("Legacy4J")) {
-                    hasLegacy4J = true;
-                    break;
-                }
-            }
-        }
+        boolean hasLegacy4J = hasMods("legacy4j");
         if (hasLegacy4J) {
             String TAG = "OldLegacy4JMitigation";
             Log.i(TAG, "Legacy4J detected!");
@@ -1423,6 +1417,7 @@ public final class Tools {
     }
 
     public static void fullyExit() {
+        net.kdt.pojavlaunch.performance.GameSessionState.clear();
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
@@ -1895,7 +1890,6 @@ public final class Tools {
     /** Releases the cache of compatible renderers. */
     public static void releaseRenderersCache() {
         sCompatibleRenderers = null;
-        System.gc();
     }
 
     public static boolean deviceSupportsGyro(@NonNull Context context) {
