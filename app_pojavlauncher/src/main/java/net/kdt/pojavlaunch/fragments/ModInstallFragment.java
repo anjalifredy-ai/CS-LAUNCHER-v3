@@ -9,7 +9,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -689,14 +688,17 @@ public class ModInstallFragment extends Fragment {
         }
 
         if (mBottomBar != null) {
-            mBottomBar.setTranslationY(80f);
+            // Keep the CTA inside its safe deck at every animation frame.
+            // The old 80px slide + overshoot could leave it clipped on short
+            // landscape screens when a transition was interrupted.
+            mBottomBar.setTranslationY(12f);
             mBottomBar.setAlpha(0f);
             mBottomBar.animate()
                     .translationY(0f)
                     .alpha(1f)
-                    .setDuration(280)
-                    .setStartDelay(60)
-                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                    .setDuration(220)
+                    .setStartDelay(40)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
                     .start();
         }
 
@@ -708,19 +710,12 @@ public class ModInstallFragment extends Fragment {
             }
         }
 
-        // Bounce animation on INSTALL button (on load)
+        // Restrained CTA reveal: alpha only, so it never grows outside the deck.
         if (mInstallButton != null) {
-            mInstallButton.setScaleX(0.8f);
-            mInstallButton.setScaleY(0.8f);
-            mInstallButton.postDelayed(() -> {
-                if (!isAdded()) return;
-                mInstallButton.animate()
-                        .scaleX(1f)
-                        .scaleY(1f)
-                        .setDuration(400)
-                        .setInterpolator(new OvershootInterpolator(1.5f))
-                        .start();
-            }, 200);
+            mInstallButton.setScaleX(1f);
+            mInstallButton.setScaleY(1f);
+            mInstallButton.setAlpha(0f);
+            mInstallButton.animate().alpha(1f).setStartDelay(120).setDuration(180).start();
         }
 
         // Premium button press scale effect
@@ -728,13 +723,11 @@ public class ModInstallFragment extends Fragment {
             mInstallButton.setOnTouchListener((v, event) -> {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        v.animate().scaleX(0.97f).scaleY(0.97f).setDuration(80).start();
+                        v.animate().alpha(0.82f).setDuration(70).start();
                         break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        v.animate().scaleX(1f).scaleY(1f).setDuration(120)
-                                .setInterpolator(new OvershootInterpolator(1.5f))
-                                .start();
+                        v.animate().alpha(1f).setDuration(110).start();
                         break;
                 }
                 return false;

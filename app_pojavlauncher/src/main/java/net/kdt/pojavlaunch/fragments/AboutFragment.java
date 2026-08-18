@@ -27,7 +27,7 @@ public class AboutFragment extends Fragment {
 
     public static final String TAG = "AboutFragment";
 
-    private static final String URL_DISCORD = "https://discord.gg/qcu5Hb5Xe";
+    private static final String URL_DISCORD = "https://discord.gg/bpgYQMA59D";
     private static final String URL_WEBSITE = "https://cs-launcher.netlify.app/";
     private static final String URL_GITHUB = "https://github.com/craftstudioteam";
 

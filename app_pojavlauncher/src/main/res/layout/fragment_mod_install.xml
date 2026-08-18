@@ -15,8 +15,8 @@
         android:id="@+id/install_scroll_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/_52sdp"
-        android:layout_marginBottom="@dimen/_64sdp"
+        android:layout_marginTop="52dp"
+        android:layout_marginBottom="72dp"
         android:clipToPadding="false"
         android:overScrollMode="never"
         android:scrollbars="none">
@@ -553,14 +553,17 @@
     <FrameLayout
         android:id="@+id/install_bottom_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:layout_gravity="bottom"
-        android:background="#0B0B0E"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginBottom="4dp"
+        android:background="#F20B0B0E"
         android:elevation="10dp"
+        android:clipChildren="true"
         android:clipToPadding="true"
         android:paddingHorizontal="12dp"
         android:paddingTop="7dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="7dp">
 
         <TextView
             android:id="@+id/install_button"
@@ -574,7 +577,7 @@
             android:maxLines="1"
             android:text="@string/mod_install_now"
             android:textAllCaps="true"
-            android:textColor="#101014"
+            android:textColor="@color/mod_install_cta_text"
             android:textSize="12sp"
             android:textStyle="bold" />
     </FrameLayout>

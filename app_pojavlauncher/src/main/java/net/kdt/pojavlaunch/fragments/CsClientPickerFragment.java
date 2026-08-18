@@ -78,8 +78,8 @@ public class CsClientPickerFragment extends Fragment {
 
         LinearLayout textBox=new LinearLayout(requireContext());textBox.setOrientation(LinearLayout.VERTICAL);textBox.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams textLp=new LinearLayout.LayoutParams(0,-1,1);textLp.leftMargin=dp(11);textLp.rightMargin=dp(8);root.addView(textBox,textLp);
-        TextView title=new TextView(requireContext());title.setTextColor(0xffffffff);title.setTextSize(12);title.setTypeface(null,1);title.setMaxLines(1);
-        TextView desc=new TextView(requireContext());desc.setText(entry.description);desc.setTextColor(0xff898b92);desc.setTextSize(9);desc.setMaxLines(2);
+        TextView title=new TextView(requireContext());title.setTextColor(0xffffffff);title.setTextSize(12);title.setTypeface(null,1);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setIncludeFontPadding(false);
+        TextView desc=new TextView(requireContext());desc.setText(entry.description);desc.setTextColor(0xff898b92);desc.setTextSize(9);desc.setMaxLines(2);desc.setEllipsize(android.text.TextUtils.TruncateAt.END);desc.setIncludeFontPadding(false);desc.setLineSpacing(0,1.05f);
         textBox.addView(title);textBox.addView(desc);
 
         TextView check=new TextView(requireContext());check.setGravity(Gravity.CENTER);check.setTextSize(18);root.addView(check,new LinearLayout.LayoutParams(dp(38),dp(38)));
