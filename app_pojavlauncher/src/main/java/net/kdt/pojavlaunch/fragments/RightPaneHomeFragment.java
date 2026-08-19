@@ -177,6 +177,11 @@ public class RightPaneHomeFragment extends Fragment {
             List<MinecraftProfile> profiles = new ArrayList<>();
 
             if (profilesMap != null && !profilesMap.isEmpty()) {
+                // Repair only duplicate install placeholders that point at the same
+                // instance. Never merge/delete two completed user profiles.
+                java.util.HashMap<String,String> identities=new java.util.HashMap<>();java.util.ArrayList<String> stale=new java.util.ArrayList<>();
+                for(Map.Entry<String,MinecraftProfile> e:new java.util.ArrayList<>(profilesMap.entrySet())){MinecraftProfile p=e.getValue();if(p==null||p.gameDir==null)continue;String old=identities.get(p.gameDir);if(old==null){identities.put(p.gameDir,e.getKey());continue;}MinecraftProfile prior=profilesMap.get(old);if(p.installing&&!prior.installing)stale.add(e.getKey());else if(!p.installing&&prior.installing){stale.add(old);identities.put(p.gameDir,e.getKey());}else if(p.installing&&prior.installing)stale.add(e.getKey());}
+                if(!stale.isEmpty()){for(String k:stale)profilesMap.remove(k);LauncherProfiles.write();}
                 List<Map.Entry<String, MinecraftProfile>> entries =
                         LauncherProfiles.getOrderedEntries();
                 for (Map.Entry<String, MinecraftProfile> entry : entries) {

@@ -301,6 +301,7 @@ public class LauncherActivity extends BaseActivity {
             return false;
         }
         MinecraftProfile prof = LauncherProfiles.mainProfileJson.profiles.get(selectedProfile);
+        if (prof != null && prof.installing) { Toast.makeText(this, "Profile installation is not complete yet", Toast.LENGTH_LONG).show(); return false; }
         if (prof == null || prof.lastVersionId == null || "Unknown".equals(prof.lastVersionId)){
             Toast.makeText(this, R.string.error_no_version, Toast.LENGTH_LONG).show();
             return false;

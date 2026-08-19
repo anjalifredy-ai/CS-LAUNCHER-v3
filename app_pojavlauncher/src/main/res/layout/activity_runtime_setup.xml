@@ -73,14 +73,15 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
-        <Button
+        <TextView
             android:id="@+id/rs_btn_install"
+            android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@drawable/bg_install_cta_white"
             android:letterSpacing="0.08"
             android:text="@string/rs_install_cta"
-            android:textColor="#0E0E11"
+            android:textColor="@color/runtime_cta_text_dark"
             android:textSize="13sp"
             android:textStyle="bold"
             tools:text="Install Selected (2)" />
@@ -217,14 +218,15 @@
                 android:focusable="false" />
         </FrameLayout>
 
-        <Button
+        <TextView
             android:id="@+id/rs_btn_done"
+            android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:background="@drawable/bg_install_cta_white"
             android:letterSpacing="0.08"
             android:text="@string/rs_done_cta"
-            android:textColor="#0E0E11"
+            android:textColor="@color/runtime_cta_text_dark"
             android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone"

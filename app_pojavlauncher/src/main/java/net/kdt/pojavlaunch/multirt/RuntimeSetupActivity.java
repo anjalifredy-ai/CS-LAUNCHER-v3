@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -55,14 +54,14 @@ public class RuntimeSetupActivity extends BaseActivity {
     // selection state
     private LinearLayout mSelectContainer, mCardContainer;
     private TextView mSkipButton;
-    private Button mInstallButton;
+    private TextView mInstallButton;
     private final List<CardState> mCards = new ArrayList<>();
 
     // install state
     private LinearLayout mInstallContainer, mInstallRows;
     private RuntimeRingView mRing;
     private TextView mOverallPercent, mOverallStep, mStatusLine;
-    private Button mDoneButton;
+    private TextView mDoneButton;
     private final List<InstallRow> mRows = new ArrayList<>();
     private boolean mInstalling = false;
     private int mDoneCount = 0;

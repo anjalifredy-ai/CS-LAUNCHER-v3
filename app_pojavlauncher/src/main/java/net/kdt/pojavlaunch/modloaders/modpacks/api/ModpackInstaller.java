@@ -27,22 +27,13 @@ import java.util.concurrent.Callable;
 import java.util.zip.ZipFile;
 
 public class ModpackInstaller {
+    public static String profileKey(ModDetail d,int v){String key=(d.title.toLowerCase(Locale.ROOT)+" "+d.versionNames[v]).trim().replaceAll("[\\\\/:*?\"<>| \\t\\n]","_");String hash=d.versionHashes[v];if(hash!=null)key+="_"+hash;return key.length()>255?key.substring(0,255):key;}
+    public static String preparePlaceholder(ModDetail d,int v){String key=profileKey(d,v);LauncherProfiles.load();MinecraftProfile existing=LauncherProfiles.mainProfileJson.profiles.get(key);if(existing!=null&&existing.installing&&net.kdt.pojavlaunch.profiles.ProfileInstallProgress.get(key)!=null)return key;if(existing==null||!existing.installing){MinecraftProfile p=MinecraftProfile.createTemplate();p.name=d.title;p.lastVersionId="Installing";p.gameDir="./custom_instances/"+key;p.icon=ModIconCache.getBase64Image(d.getIconCacheTag());p.installing=true;p.installRecord=ProgressLayout.INSTALL_MODPACK;p.installStatus="QUEUED";LauncherProfiles.mainProfileJson.profiles.put(key,p);LauncherProfiles.write();}net.kdt.pojavlaunch.profiles.ProfileInstallProgress.begin(key,ProgressLayout.INSTALL_MODPACK,true,"QUEUED");return key;}
 
     public static ModLoader installModpack(ModDetail modDetail, int selectedVersion, InstallFunction installFunction) throws IOException {
         String versionUrl = modDetail.versionUrls[selectedVersion];
         String versionHash = modDetail.versionHashes[selectedVersion];
-        String modpackName = (modDetail.title.toLowerCase(Locale.ROOT) + " " + modDetail.versionNames[selectedVersion])
-                .trim().replaceAll("[\\\\/:*?\"<>| \\t\\n]", "_" );
-        if (versionHash != null) {
-            modpackName += "_" + versionHash;
-        }
-        if (modpackName.length() > 255){
-            modpackName = modpackName.substring(0,255);
-        }
-
-        // Create a locked placeholder immediately; the home card mirrors the
-        // existing INSTALL_MODPACK record until verified completion.
-        LauncherProfiles.load();MinecraftProfile placeholder=MinecraftProfile.createTemplate();placeholder.name=modDetail.title;placeholder.lastVersionId="Installing";placeholder.gameDir="./custom_instances/"+modpackName;placeholder.icon=ModIconCache.getBase64Image(modDetail.getIconCacheTag());placeholder.installing=true;placeholder.installRecord=ProgressLayout.INSTALL_MODPACK;placeholder.installStatus="QUEUED";LauncherProfiles.mainProfileJson.profiles.put(modpackName,placeholder);LauncherProfiles.write();net.kdt.pojavlaunch.profiles.ProfileInstallProgress.begin(modpackName,ProgressLayout.INSTALL_MODPACK,true,"QUEUED");
+        String modpackName = preparePlaceholder(modDetail,selectedVersion);
 
         // Get the modpack file
         File modpackFile = new File(Tools.DIR_CACHE, modpackName + ".cf"); // Cache File

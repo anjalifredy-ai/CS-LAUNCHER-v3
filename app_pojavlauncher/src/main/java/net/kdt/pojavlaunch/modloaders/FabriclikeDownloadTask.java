@@ -25,6 +25,7 @@ public class FabriclikeDownloadTask implements Runnable, Tools.DownloaderFeedbac
     private final String mLoaderVersion;
     private final boolean mCreateProfile;
     private net.kdt.pojavlaunch.progresskeeper.DownloaderProgressWrapper mProgressWrapper;
+    private String mProfileKey;
     public FabriclikeDownloadTask(ModloaderDownloadListener modloaderDownloadListener, FabriclikeUtils utils, String mGameVersion, String mLoaderVersion, boolean mCreateProfile) {
         this.mModloaderDownloadListener = modloaderDownloadListener;
         this.mUtils = utils;
@@ -36,6 +37,7 @@ public class FabriclikeDownloadTask implements Runnable, Tools.DownloaderFeedbac
     @Override
     public void run() {
         android.util.Log.d("FabricInstall", "STEP 5: Downloading loader");
+        if(mCreateProfile)preparePlaceholder();
         mProgressWrapper = new net.kdt.pojavlaunch.progresskeeper.DownloaderProgressWrapper(R.string.fabric_dl_progress, ProgressLayout.INSTALL_MODPACK);
         mProgressWrapper.extraString = mUtils.getName();
         ProgressKeeper.submitProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.fabric_dl_progress, mUtils.getName());
@@ -43,10 +45,13 @@ public class FabriclikeDownloadTask implements Runnable, Tools.DownloaderFeedbac
             if(runCatching()) mModloaderDownloadListener.onDownloadFinished(null);
             else mModloaderDownloadListener.onDataNotAvailable();
         }catch (IOException e) {
+            if(mProfileKey!=null)net.kdt.pojavlaunch.profiles.ProfileInstallProgress.fail(mProfileKey,"INSTALLATION FAILED");
             mModloaderDownloadListener.onDownloadError(e);
         }
         ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
     }
+
+    private void preparePlaceholder(){LauncherProfiles.load();mProfileKey=LauncherProfiles.getFreeProfileKey();MinecraftProfile p=MinecraftProfile.createTemplate();p.name=mUtils.getName()+" "+mGameVersion;p.lastVersionId="Installing";p.icon=mUtils.getIconName();p.type="custom";p.gameDir="./custom_instances/"+mProfileKey;p.installing=true;p.installRecord=ProgressLayout.INSTALL_MODPACK;p.installStatus="INSTALLING LOADER";LauncherProfiles.mainProfileJson.profiles.put(mProfileKey,p);LauncherProfiles.write();net.kdt.pojavlaunch.profiles.ProfileInstallProgress.begin(mProfileKey,ProgressLayout.INSTALL_MODPACK,true,"INSTALLING LOADER");}
 
     private boolean runCatching() throws IOException{
         String fabricJson = DownloadUtils.downloadString(mUtils.createJsonDownloadUrl(mGameVersion, mLoaderVersion));
@@ -68,27 +73,11 @@ public class FabriclikeDownloadTask implements Runnable, Tools.DownloaderFeedbac
         // profile happened to be selected, which made a successful download look
         // like no profile had been created and mixed mods into another instance.
         if (mCreateProfile) {
-            LauncherProfiles.load();
-            String profileKey = LauncherProfiles.getFreeProfileKey();
-            MinecraftProfile installedProfile = MinecraftProfile.createTemplate();
-            installedProfile.lastVersionId = versionId;
-            installedProfile.name = mUtils.getName() + " " + mGameVersion;
-            installedProfile.icon = mUtils.getIconName();
-            installedProfile.type = "custom";
-            // Each created loader receives its own game directory. The UUID is
-            // safe as a directory name and prevents resource/mod collisions.
-            installedProfile.gameDir = "./custom_instances/" + profileKey;
-            String now = new java.text.SimpleDateFormat(
-                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
-                    .format(new java.util.Date());
-            installedProfile.created = now;
-            installedProfile.lastUsed = now;
-
-            LauncherProfiles.mainProfileJson.profiles.put(profileKey, installedProfile);
-            LauncherPreferences.DEFAULT_PREF.edit()
-                    .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
-                    .apply();
-            LauncherProfiles.write();
+            MinecraftProfile installedProfile=LauncherProfiles.mainProfileJson.profiles.get(mProfileKey);
+            if(installedProfile==null)throw new IOException("Reserved profile disappeared during install");
+            installedProfile.lastVersionId=versionId;installedProfile.installing=false;installedProfile.installProgress=100;installedProfile.installStatus="PROFILE READY";
+            String now=new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",java.util.Locale.US).format(new java.util.Date());installedProfile.created=now;installedProfile.lastUsed=now;
+            LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE,mProfileKey).apply();LauncherProfiles.write();
         }
         return true;
     }

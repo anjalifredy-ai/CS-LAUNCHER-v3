@@ -366,10 +366,9 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             // chrome (PREPARING / VERIFYING / STARTING), the console must NOT
             // pop up for the verification task record. It opens only for real
             // downloads (RUNTIME / DOWNLOADING) and non-launch flows (IDLE).
-            int effectiveTc = tc;
-            if (effectiveTc > 0 && net.kdt.pojavlaunch.launch.LaunchTracker.suppressesDownloadConsole()) {
-                effectiveTc = 0;
-            }
+            int effectiveTc = 0;
+            for(String record:ProgressKeeper.getActiveRecords())if(!net.kdt.pojavlaunch.profiles.ProfileInstallProgress.isRecordClaimed(record))effectiveTc++;
+            if (effectiveTc > 0 && net.kdt.pojavlaunch.launch.LaunchTracker.suppressesDownloadConsole()) effectiveTc = 0;
             if(effectiveTc > 0) {
                 removeCallbacks(mFadeOutRunnable);
                 boolean becameVisible = getVisibility() != VISIBLE;
@@ -408,7 +407,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                 if (mControlsRow != null) {
                     mControlsRow.setVisibility(isCancellableKey(mLastProgressingKey) ? VISIBLE : GONE);
                 }
-                mTaskNumberDisplayer.setText(getContext().getString(R.string.progresslayout_tasks_in_progress, tc));
+                mTaskNumberDisplayer.setText(getContext().getString(R.string.progresslayout_tasks_in_progress, effectiveTc));
                 setVisibility(VISIBLE);
                 // Premium entrance: console rises from the bottom edge with a soft land
                 if (becameVisible) {
@@ -514,6 +513,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
         }
         @Override
         public void onProgressStarted() {
+            if(net.kdt.pojavlaunch.profiles.ProfileInstallProgress.isRecordClaimed(progressKey))return;
             // Fresh attempt for this record: clear stale pause/stop flags & notes
             DownloadControl.reset(progressKey);
             post(()-> {
@@ -524,6 +524,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
 
         @Override
         public void onProgressUpdated(int progress, int resid, Object... va) {
+            if(net.kdt.pojavlaunch.profiles.ProfileInstallProgress.isRecordClaimed(progressKey))return;
             post(()-> {
                 // Update individual task bar in the expandable list
                 int current = textView.getProgress();
