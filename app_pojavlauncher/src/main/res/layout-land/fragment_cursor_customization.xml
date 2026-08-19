@@ -488,8 +488,8 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/btn_import_png"
+                    <TextView
+                        android:id="@+id/btn_import_png" android:gravity="center"
                         android:layout_width="0dp"
                         android:layout_height="42dp"
                         android:layout_weight="1"
@@ -501,8 +501,8 @@
                         android:textStyle="bold"
                         android:background="@drawable/bg_cs_ghost_button" />
 
-                    <Button
-                        android:id="@+id/btn_export_cursor"
+                    <TextView
+                        android:id="@+id/btn_export_cursor" android:gravity="center"
                         android:layout_width="0dp"
                         android:layout_height="42dp"
                         android:layout_weight="1"
@@ -523,15 +523,15 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <Button
-                        android:id="@+id/btn_save_cursor"
+                    <TextView
+                        android:id="@+id/btn_save_cursor" android:gravity="center"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:text="APPLY"
                         android:textAllCaps="true"
-                        android:textColor="#FFFFFF"
+                        android:textColor="#101014"
                         android:textSize="13sp"
                         android:textStyle="bold"
                         android:letterSpacing="0.1"
@@ -548,8 +548,8 @@
                         android:src="@drawable/ic_heart_outline"
                         app:tint="#9CA3AF" />
 
-                    <Button
-                        android:id="@+id/btn_reset_cursor"
+                    <TextView
+                        android:id="@+id/btn_reset_cursor" android:gravity="center"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"

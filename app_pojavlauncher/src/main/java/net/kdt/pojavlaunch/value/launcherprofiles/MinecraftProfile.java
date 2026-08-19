@@ -33,11 +33,6 @@ public class MinecraftProfile {
     public boolean favorite = false;
     public long favoriteOrder = Long.MAX_VALUE;
     public long normalOrder = Long.MAX_VALUE;
-    /** Persisted guard for profiles that are still being assembled. */
-    public boolean installing = false;
-    public int installProgress = 0;
-    public String installStatus;
-    public String installRecord;
 
 
 	public static MinecraftProfile createTemplate(){
@@ -79,10 +74,6 @@ public class MinecraftProfile {
         favorite = profile.favorite;
         favoriteOrder = profile.favoriteOrder;
         normalOrder = profile.normalOrder;
-        installing = profile.installing;
-        installProgress = profile.installProgress;
-        installStatus = profile.installStatus;
-        installRecord = profile.installRecord;
 	}
 
 	/**

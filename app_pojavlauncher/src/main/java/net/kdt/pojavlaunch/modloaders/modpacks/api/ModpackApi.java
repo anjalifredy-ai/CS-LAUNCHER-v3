@@ -54,9 +54,8 @@ public interface ModpackApi {
      * @param selectedVersion The selected version
      */
     default void handleInstallation(Context context, ModDetail modDetail, int selectedVersion) {
-        // Reserve exactly one profile/card before any progress record starts.
-        ModpackInstaller.preparePlaceholder(modDetail,selectedVersion);
-        // Claimed profile progress is rendered on its card, not the global console.
+        // Doing this here since when starting installation, the progress does not start immediately
+        // which may lead to two concurrent installations (very bad)
         ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);
         PojavApplication.sExecutorService.execute(() -> {
             try {

@@ -146,9 +146,8 @@
         </LinearLayout>
 
         <!-- Luminous full-width beam (thicker than the old one) -->
-        <ProgressBar
+        <com.kdt.mcgui.DownloadAssemblyBar
             android:id="@+id/progress_horizontal_bar"
-            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="0dp"
             android:layout_height="6dp"
             android:layout_marginTop="11dp"

@@ -70,16 +70,12 @@ public class RuntimeRingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        float w = getWidth(), h = getHeight();
-        float size = Math.min(w, h) - mPadding * 2;
-        mArcRect.set((w - size) / 2f, (h - size) / 2f, (w + size) / 2f, (h + size) / 2f);
-
-        canvas.drawArc(mArcRect, 0, 360, false, mTrackPaint);
-        float sweep = 360f * mProgress;
-        if (sweep > 0.01f) {
-            canvas.drawArc(mArcRect, -90, sweep, false, mGlowPaint);
-            canvas.drawArc(mArcRect, -90, sweep, false, mArcPaint);
-        }
+        float w=getWidth(),h=getHeight(),d=getResources().getDisplayMetrics().density;
+        Paint fill=new Paint(Paint.ANTI_ALIAS_FLAG);fill.setStyle(Paint.Style.FILL);Paint line=new Paint(Paint.ANTI_ALIAS_FLAG);line.setStyle(Paint.Style.STROKE);line.setStrokeWidth(1.2f*d);
+        int blocks=6;float bw=w*.48f,bh=Math.max(8*d,h*.085f),gap=4*d,left=(w-bw)/2f,bottom=h-mPadding;
+        int complete=(int)Math.floor(mProgress*blocks+0.001f);
+        for(int i=0;i<blocks;i++){float y=bottom-(i+1)*bh-i*gap;RectF r=new RectF(left,y,left+bw,y+bh);fill.setColor(i<complete?0xffd8c79a:0xff202832);line.setColor(i<complete?0xfff0e2b8:0xff56616d);canvas.drawRoundRect(r,3*d,3*d,fill);canvas.drawRoundRect(r,3*d,3*d,line);}
+        float scanY=bottom-(h-mPadding*2)*mProgress;fill.setColor(0x99ffffff);canvas.drawRoundRect(left-8*d,scanY,left+bw+8*d,scanY+2*d,1*d,1*d,fill);
     }
 
     @Override
