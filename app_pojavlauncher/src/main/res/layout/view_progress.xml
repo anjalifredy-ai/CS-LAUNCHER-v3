@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- PREMIUM V4 — Download Console redesign
-     Floating glass deck: accent top rail • 46dp icon tile • title + big % • pills • 8dp luminous beam • segmented controls • mini-pill -->
+<!-- DARK • WHITE • BLACK — Download Console V5 — TOP BEAM
+     Beam now sits flush at the very top of the card (user request).
+     No blue/teal — pure white luminous fill on near-black track.
+     Card: dark #111318, white text, black accents. -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,53 +13,47 @@
     android:clickable="false"
     android:focusable="false">
 
-    <!-- ─────────── Expanded deck ─────────── -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/download_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="18dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/bg_download_console"
-        android:elevation="16dp"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="0dp"
-        android:paddingBottom="14dp"
+        android:elevation="14dp"
+        android:paddingBottom="12dp"
         app:layout_constraintWidth_max="680dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Accent top rail -->
-        <View
+        <!-- TOP BEAM — flush at card top, full width, white luminous -->
+        <com.kdt.mcgui.DownloadAssemblyBar
+            android:id="@+id/progress_horizontal_bar"
             android:layout_width="0dp"
-            android:layout_height="2.2dp"
-            android:background="#7BE8E0"
-            android:alpha="0.9"
+            android:layout_height="6dp"
+            android:max="100"
+            android:progress="0"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Icon tile -->
-        <FrameLayout
-            android:id="@+id/progress_icon_wrap"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+        <!-- Icon -->
+        <ImageView
+            android:id="@+id/progress_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="14dp"
             android:layout_marginTop="14dp"
             android:background="@drawable/bg_deck_icon_tile"
+            android:clipToOutline="true"
+            android:padding="11dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_download"
+            android:tint="#FFFFFF"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/progress_icon"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_download"
-                android:tint="#FFFFFF"
-                tools:ignore="UseAppTint" />
-        </FrameLayout>
+            app:layout_constraintTop_toBottomOf="@id/progress_horizontal_bar"
+            tools:ignore="UseAppTint" />
 
         <!-- Title -->
         <TextView
@@ -65,43 +61,44 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.015"
+            android:letterSpacing="0.01"
             android:maxLines="1"
-            android:textColor="#F1F1F4"
+            android:textColor="#FFFFFF"
             android:textSize="13.5sp"
-            app:layout_constraintStart_toEndOf="@id/progress_icon_wrap"
+            app:layout_constraintStart_toEndOf="@id/progress_icon"
             app:layout_constraintEnd_toStartOf="@id/progress_percentage_text"
-            app:layout_constraintTop_toTopOf="@id/progress_icon_wrap"
-            tools:text="Downloading Sodium 0.6.0" />
+            app:layout_constraintTop_toTopOf="@id/progress_icon"
+            tools:text="Downloading Minecraft 1.21.1" />
 
-        <!-- Big percentage -->
+        <!-- Big % — white on dark -->
         <TextView
             android:id="@+id/progress_percentage_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
             android:fontFamily="sans-serif-light"
-            android:letterSpacing="-0.03"
-            android:textColor="#F6F6F9"
-            android:textSize="32sp"
+            android:letterSpacing="-0.02"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/progress_icon_wrap"
+            app:layout_constraintTop_toTopOf="@id/progress_icon"
             tools:text="42%" />
 
-        <!-- Paused / status chip -->
+        <!-- Paused badge — black/white -->
         <TextView
             android:id="@+id/progress_paused_badge"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/bg_runtime_chip_recommended"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/bg_runtime_chip_neutral"
+            android:paddingHorizontal="7dp"
+            android:paddingVertical="2dp"
             android:text="⏸ PAUSED"
-            android:textColor="#D8C79A"
+            android:textColor="#FFFFFF"
             android:textSize="8sp"
             android:textStyle="bold"
             android:visibility="gone"
@@ -109,29 +106,28 @@
             app:layout_constraintTop_toBottomOf="@id/progress_status_text"
             tools:visibility="visible" />
 
-        <!-- Detail line -->
+        <!-- Detail: downloaded / total — light grey -->
         <TextView
             android:id="@+id/progress_detail_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="10dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="#9FA3B0"
-            android:textSize="11sp"
+            android:textColor="#B8BCC8"
+            android:textSize="10.5sp"
             app:layout_constraintStart_toStartOf="@id/progress_status_text"
             app:layout_constraintEnd_toStartOf="@id/progress_percentage_text"
             app:layout_constraintTop_toBottomOf="@id/progress_status_text"
             tools:text="141.2 MB / 513 MB" />
 
-        <!-- Meta row: speed + ETA as subtle chips -->
+        <!-- Speed + ETA -->
         <LinearLayout
             android:id="@+id/progress_meta_row"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:gravity="center_vertical"
+            android:layout_marginTop="4dp"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="@id/progress_status_text"
             app:layout_constraintEnd_toStartOf="@id/progress_percentage_text"
@@ -140,13 +136,14 @@
             <TextView
                 android:id="@+id/progress_speed_text"
                 android:layout_width="wrap_content"
-                android:layout_height="20dp"
+                android:layout_height="wrap_content"
                 android:background="@drawable/bg_stat_chip"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:paddingHorizontal="7dp"
-                android:textColor="#E2E4EA"
+                android:paddingVertical="2dp"
+                android:textColor="#FFFFFF"
                 android:textSize="10sp"
-                android:fontFamily="sans-serif-medium"
                 android:visibility="gone"
                 tools:text="2.5 MB/s"
                 tools:visibility="visible" />
@@ -156,46 +153,32 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:textColor="#7C8190"
-                android:textSize="10.5sp"
+                android:textColor="#8E929E"
+                android:textSize="10sp"
                 android:visibility="gone"
                 tools:text="• 1m 20s remaining"
                 tools:visibility="visible" />
         </LinearLayout>
 
-        <!-- Premium 8dp luminous beam -->
-        <com.kdt.mcgui.DownloadAssemblyBar
-            android:id="@+id/progress_horizontal_bar"
-            android:layout_width="0dp"
-            android:layout_height="8dp"
-            android:layout_marginTop="14dp"
-            android:max="100"
-            android:progress="42"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/progress_meta_row" />
-
-        <!-- Controls: segmented -->
+        <!-- Controls — dark ghost buttons with white text -->
         <LinearLayout
             android:id="@+id/progress_controls_row"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:gravity="center_vertical"
+            android:layout_marginTop="12dp"
+            android:layout_marginHorizontal="14dp"
             android:orientation="horizontal"
-            android:weightSum="3"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/progress_meta_row"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/progress_horizontal_bar">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <LinearLayout
                 android:id="@+id/progress_btn_pause"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1.45"
+                android:layout_height="34dp"
+                android:layout_weight="1"
                 android:background="@drawable/bg_console_btn"
-                android:clickable="true"
-                android:focusable="true"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -204,92 +187,92 @@
                     android:layout_width="14dp"
                     android:layout_height="14dp"
                     android:src="@drawable/ic_pause"
-                    android:tint="#E8EAEE" />
+                    android:tint="#FFFFFF" />
 
                 <TextView
                     android:id="@+id/progress_btn_pause_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="7dp"
-                    android:letterSpacing="0.04"
-                    android:text="PAUSE"
-                    android:textColor="#E8EAEE"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/download_console_pause"
+                    android:textColor="#FFFFFF"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <Space
-                android:layout_width="8dp"
-                android:layout_height="36dp" />
-
             <LinearLayout
                 android:id="@+id/progress_btn_stop"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="0.85"
+                android:layout_height="34dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
                 android:background="@drawable/bg_console_btn"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:src="@drawable/ic_stop_square"
-                    android:tint="#9FA3B0" />
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:src="@drawable/ic_stop"
+                    android:tint="#FFFFFF" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
-                    android:text="STOP"
-                    android:textColor="#9FA3B0"
+                    android:text="@string/download_console_stop"
+                    android:textColor="#FFFFFF"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <Space
-                android:layout_width="8dp"
-                android:layout_height="36dp" />
-
             <LinearLayout
                 android:id="@+id/progress_btn_hide"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
                 android:background="@drawable/bg_console_btn"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
                     android:src="@drawable/ic_chevron_down"
-                    android:tint="#7C8190" />
+                    android:tint="#FFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/download_console_hide"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ─────────── Collapsed mini-pill ─────────── -->
     <LinearLayout
         android:id="@+id/console_pill"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="18dp"
+        android:layout_height="38dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="14dp"
         android:background="@drawable/bg_console_pill"
-        android:elevation="14dp"
+        android:elevation="12dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="14dp"
+        android:paddingHorizontal="13dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:visibility="visible">
 
         <ImageView
-            android:layout_width="14dp"
-            android:layout_height="14dp"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
             android:src="@drawable/ic_download_trend"
             android:tint="#FFFFFF" />
 
@@ -297,22 +280,21 @@
             android:id="@+id/console_pill_percent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="7dp"
             android:fontFamily="sans-serif-medium"
-            android:textColor="#F0F0F3"
-            android:textSize="13sp"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
             android:textStyle="bold"
             tools:text="42%" />
 
         <ImageView
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="13dp"
+            android:layout_height="13dp"
+            android:layout_marginStart="7dp"
             android:src="@drawable/ic_chevron_up"
-            android:tint="#7C8190" />
+            android:tint="#B8BCC8" />
     </LinearLayout>
 
-    <!-- ─────────── Legacy compatibility (hidden) ─────────── -->
     <FrameLayout
         android:id="@+id/progress_indicator_container"
         android:layout_width="0dp"
@@ -325,31 +307,27 @@
             android:layout_width="0dp"
             android:layout_height="0dp" />
     </FrameLayout>
-
     <com.kdt.mcgui.KineticProgressView
         android:id="@+id/kinetic_progress_legacy"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"/>
     <TextView
         android:id="@+id/progress_textview"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"/>
     <ImageView
         android:id="@+id/progress_flip_arrow"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"/>
     <LinearLayout
         android:id="@+id/progress_linear_layout"
         android:layout_width="0dp"
@@ -357,6 +335,5 @@
         android:visibility="gone"
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintTop_toTopOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

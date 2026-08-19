@@ -1,62 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- PREMIUM V4 — Runtime Forge (shared design system with JAR) -->
+<!-- ════════════════════════════════════════════════════════════════
+     RUNTIME SETUP — dedicated full-screen first-launch installer.
+     Two states: SELECT (runtime cards) and INSTALL (live deck with
+     aggregate ring + per-runtime progress, MB/speed/ETA stats).
+     Completely separate from the normal download deck.
+═════════════════════════════════════════════════════════════════ -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_runtime_setup_page">
 
-    <!-- SELECT STATE -->
+    <!-- ─────────────── STATE 1: SELECTION ─────────────── -->
     <LinearLayout
         android:id="@+id/rs_select_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingHorizontal="18dp"
-        android:paddingTop="22dp"
-        android:paddingBottom="16dp">
+        android:paddingHorizontal="20dp"
+        android:paddingTop="26dp"
+        android:paddingBottom="18dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_runtime_chip_recommended"
-            android:letterSpacing="0.16"
-            android:paddingHorizontal="9dp"
-            android:paddingVertical="4dp"
-            android:text="RUNTIME FORGE"
+            android:letterSpacing="0.18"
+            android:text="@string/rs_eyebrow"
             android:textColor="#D8C79A"
-            android:textSize="9sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="sans-serif-light"
+            android:layout_marginTop="4dp"
             android:text="@string/rs_title"
             android:textColor="#F0F0F3"
             android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:lineSpacingExtra="2dp"
             android:text="@string/rs_summary"
             android:textColor="#9C9CA8"
             android:textSize="12.5sp" />
 
-        <!-- Cards scroll -->
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="18dp"
             android:layout_weight="1"
-            android:clipToPadding="false"
             android:overScrollMode="never"
-            android:scrollbars="none"
-            android:paddingBottom="12dp">
+            android:scrollbars="none">
 
             <LinearLayout
                 android:id="@+id/rs_card_container"
@@ -67,12 +64,9 @@
 
         <TextView
             android:id="@+id/rs_offline_note"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_runtime_forge_offline"
-            android:padding="10dp"
             android:text="@string/rs_offline_note"
             android:textColor="#E5A0A6"
             android:textSize="11sp"
@@ -81,16 +75,16 @@
 
         <TextView
             android:id="@+id/rs_btn_install"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_install_cta_white"
-            android:elevation="3dp"
             android:gravity="center"
-            android:letterSpacing="0.06"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_install_cta_white"
+            android:letterSpacing="0.08"
             android:text="@string/rs_install_cta"
-            android:textColor="#0E0E11"
-            android:textSize="13.5sp"
-            android:textStyle="bold" />
+            android:textColor="@color/runtime_cta_text_dark"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="Install Selected (2)" />
 
         <TextView
             android:id="@+id/rs_btn_skip"
@@ -98,48 +92,47 @@
             android:layout_height="44dp"
             android:layout_gravity="center_horizontal"
             android:gravity="center"
-            android:paddingHorizontal="22dp"
+            android:paddingHorizontal="20dp"
             android:text="@string/rs_skip"
             android:textColor="#7C7C88"
             android:textSize="12.5sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- INSTALL STATE -->
+    <!-- ─────────────── STATE 2: INSTALL DECK ─────────────── -->
     <LinearLayout
         android:id="@+id/rs_install_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingHorizontal="18dp"
-        android:paddingTop="22dp"
-        android:paddingBottom="16dp"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="26dp"
+        android:paddingBottom="18dp"
         android:visibility="gone"
         tools:visibility="visible">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_runtime_chip_recommended"
-            android:letterSpacing="0.16"
-            android:paddingHorizontal="9dp"
-            android:paddingVertical="4dp"
+            android:letterSpacing="0.18"
             android:text="@string/rs_install_eyebrow"
             android:textColor="#D8C79A"
-            android:textSize="9sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
 
+        <!-- Aggregate ring + status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="14dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_width="96dp"
-                android:layout_height="96dp">
+                android:layout_width="104dp"
+                android:layout_height="104dp">
 
+                <!-- violet halo behind the aggregate ring (Req-5 loading visual) -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -157,7 +150,7 @@
                     android:layout_gravity="center"
                     android:fontFamily="sans-serif-light"
                     android:textColor="#F0F0F3"
-                    android:textSize="21sp"
+                    android:textSize="22sp"
                     android:textStyle="bold"
                     tools:text="42%" />
             </FrameLayout>
@@ -165,7 +158,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
+                android:layout_marginStart="16dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -185,10 +178,13 @@
                     android:layout_marginTop="4dp"
                     android:textColor="#9C9CA8"
                     android:textSize="11.5sp"
-                    tools:text="24.1 / 55 MB • 4.2 MB/s" />
+                    tools:text="24.1 / 55 MB • 4.2 MB/s • ~8s left" />
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Req-5: HORIZONTAL stage carousel replaces the old vertical row
+             stack. Each runtime downloads inside a wide gradient stage card;
+             swipe sideways through queued → downloading → ready stages. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -200,8 +196,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:clipToPadding="false"
+                android:paddingEnd="26dp"
                 android:overScrollMode="never"
-                android:paddingEnd="20dp"
                 android:scrollbars="none">
 
                 <LinearLayout
@@ -212,26 +208,29 @@
                     android:orientation="horizontal" />
             </HorizontalScrollView>
 
+            <!-- edge fade hinting at more stages past the fold -->
             <View
-                android:layout_width="28dp"
+                android:layout_width="30dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                android:background="@drawable/bg_rs_fade_edge" />
+                android:background="@drawable/bg_rs_fade_edge"
+                android:clickable="false"
+                android:focusable="false" />
         </FrameLayout>
 
         <TextView
             android:id="@+id/rs_btn_done"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_install_cta_white"
-            android:elevation="3dp"
             android:gravity="center"
-            android:letterSpacing="0.06"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_install_cta_white"
+            android:letterSpacing="0.08"
             android:text="@string/rs_done_cta"
-            android:textColor="#0E0E11"
-            android:textSize="13.5sp"
+            android:textColor="@color/runtime_cta_text_dark"
+            android:textSize="13sp"
             android:textStyle="bold"
             android:visibility="gone"
             tools:visibility="visible" />
     </LinearLayout>
+
 </FrameLayout>

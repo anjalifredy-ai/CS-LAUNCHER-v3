@@ -1,43 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- SHARED PREMIUM CARD — idle (runtime + jar unified) -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:angle="135"
-                android:startColor="#1E2028"
-                android:centerColor="#171922"
-                android:endColor="#13141A"
-                android:type="linear" />
-            <corners android:radius="18dp" />
-            <stroke
-                android:width="1dp"
-                android:color="#262A36" />
-        </shape>
-    </item>
-    <item
-        android:left="1dp"
-        android:right="1dp"
-        android:top="1dp"
-        android:bottom="1dp">
-        <shape android:shape="rectangle">
-            <solid android:color="@android:color/transparent" />
-            <corners android:radius="17dp" />
-            <stroke
-                android:width="0.6dp"
-                android:color="#0FFFFFFF" />
-        </shape>
-    </item>
-    <item
-        android:gravity="top"
-        android:height="1dp"
-        android:left="1dp"
-        android:right="1dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#18FFFFFF" />
-            <corners
-                android:topLeftRadius="18dp"
-                android:topRightRadius="18dp" />
-        </shape>
-    </item>
-</layer-list>
+<!-- Runtime wizard card: resting state -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#15151B" />
+    <stroke android:width="1dp" android:color="#26262E" />
+    <corners android:radius="16dp" />
+</shape>
