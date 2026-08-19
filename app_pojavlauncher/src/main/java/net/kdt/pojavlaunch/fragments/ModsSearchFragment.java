@@ -175,8 +175,18 @@ public class ModsSearchFragment extends Fragment {
             });
         }
 
+        // Infrawire Powered Badge in AppBar
         View poweredBadge = view.findViewById(R.id.infrawire_powered_badge);
-        if (poweredBadge != null) poweredBadge.setVisibility(View.GONE);
+        if (poweredBadge != null) {
+            // Global sponsorship gate (Firebase admin panel).
+            net.kdt.pojavlaunch.remote.FirebaseSyncManager.gateSponsorView(poweredBadge);
+            net.kdt.pojavlaunch.sponsor.InfrawirePartner.applyPressAnimation(poweredBadge);
+            poweredBadge.setOnClickListener(v -> {
+                if (getActivity() != null) {
+                    net.kdt.pojavlaunch.sponsor.InfrawirePartner.openPartnerPage(getActivity());
+                }
+            });
+        }
 
         mSearchEditText.setHint(getString(R.string.browse_search_hint_typed, "mods"));
         updateFilterDot();

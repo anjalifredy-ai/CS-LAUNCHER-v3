@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <solid android:color="#14151B" />
-            <corners android:radius="16dp" />
-            <stroke android:width="1dp" android:color="#26272F" />
-        </shape>
-    </item>
-    <item android:top="1dp" android:left="1dp" android:right="1dp">
-        <shape android:shape="rectangle">
-            <solid android:color="@android:color/transparent" />
-            <corners android:radius="15dp" />
-            <stroke android:width="0.6dp" android:color="#0DFFFFFF" />
-        </shape>
-    </item>
-</layer-list>
+<!-- Runtime wizard card: resting state -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#15151B" />
+    <stroke android:width="1dp" android:color="#26262E" />
+    <corners android:radius="16dp" />
+</shape>

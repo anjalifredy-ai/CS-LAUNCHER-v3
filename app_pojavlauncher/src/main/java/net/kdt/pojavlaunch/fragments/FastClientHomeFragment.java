@@ -82,9 +82,16 @@ public class FastClientHomeFragment extends Fragment {
         // Server cards click listeners
         setupServerCards(view);
 
-        // Sponsorship UI removed from all launcher surfaces.
-        View sponsorPlay=view.findViewById(R.id.infrawire_card_play);if(sponsorPlay!=null)sponsorPlay.setVisibility(View.GONE);
-        View sponsorFeed=view.findViewById(R.id.infrawire_card_feed);if(sponsorFeed!=null)sponsorFeed.setVisibility(View.GONE);
+        // Infrawire Official Partner cards (home card below Play + feed card in right pane)
+        setupInfrawireCard(view.findViewById(R.id.infrawire_card_play), 350);
+        setupInfrawireCard(view.findViewById(R.id.infrawire_card_feed), 450);
+
+        // Global sponsorship gate (Firebase admin panel): when disabled,
+        // every sponsor card disappears automatically.
+        net.kdt.pojavlaunch.remote.FirebaseSyncManager.gateSponsorView(
+                view.findViewById(R.id.infrawire_card_play));
+        net.kdt.pojavlaunch.remote.FirebaseSyncManager.gateSponsorView(
+                view.findViewById(R.id.infrawire_card_feed));
 
         updateNotificationBanner(view);
 
