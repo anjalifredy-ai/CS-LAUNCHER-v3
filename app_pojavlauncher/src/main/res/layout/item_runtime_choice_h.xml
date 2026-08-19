@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One runtime choice card — HORIZONTAL wizard variant (user req).
-     Same view IDs as the vertical card so RuntimeWizardDialog logic is 100%
-     untouched; only the chrome changed. Compact stacked layout, fixed state
-     slot so downloads never jump the row height. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/runtime_card_root"
@@ -11,37 +7,43 @@
     android:background="@drawable/bg_runtime_card"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingHorizontal="6dp"
-    android:paddingTop="12dp"
-    android:paddingBottom="10dp">
+    android:paddingHorizontal="10dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="10dp"
+    android:elevation="1dp">
 
-    <!-- Big version number -->
     <FrameLayout
-        android:layout_width="42dp"
-        android:layout_height="42dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:background="@drawable/bg_deck_icon_tile">
+
+        <View
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="#FFFFFF" />
 
         <TextView
             android:id="@+id/runtime_major_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:fontFamily="sans-serif-light"
-            android:textColor="#F2F2F5"
-            android:textSize="18sp"
+            android:textColor="#0B0B0E"
+            android:textSize="17sp"
             android:textStyle="bold"
-            tools:text="17" />
+            tools:text="21" />
     </FrameLayout>
 
     <TextView
         android:id="@+id/runtime_name_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:textColor="#F0F0F3"
-        android:textSize="11.5sp"
+        android:layout_marginTop="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
         android:textStyle="bold"
-        tools:text="Java 17" />
+        tools:text="Java 21" />
 
     <TextView
         android:id="@+id/runtime_role_text"
@@ -50,55 +52,49 @@
         android:layout_marginTop="2dp"
         android:gravity="center"
         android:maxLines="2"
-        android:textColor="#9C9CA8"
-        android:textSize="7.8sp"
-        tools:text="Minecraft 1.17 – 1.20.4" />
+        android:minHeight="20dp"
+        android:textColor="#9FA3B0"
+        android:textSize="8sp"
+        tools:text="1.20.5 — 1.21.1" />
 
-    <!-- State chip (RECOMMENDED / size / INSTALLED / %) -->
     <TextView
         android:id="@+id/runtime_chip"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="16dp"
         android:layout_marginTop="6dp"
-        android:background="@drawable/bg_runtime_chip_recommended"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:textColor="#D8C79A"
+        android:background="@drawable/bg_runtime_chip_neutral"
+        android:gravity="center"
+        android:paddingHorizontal="6dp"
+        android:textColor="#FFFFFF"
         android:textSize="7sp"
         android:textStyle="bold"
         android:visibility="gone"
         tools:text="RECOMMENDED"
         tools:visibility="visible" />
 
-    <!-- Fixed state slot: check / spinner — no layout jumps -->
     <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="26dp"
-        android:layout_marginTop="6dp">
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/bg_runtime_state_well">
 
         <ImageView
             android:id="@+id/runtime_check"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="center"
             android:background="@drawable/bg_check_circle"
-            android:padding="4dp"
+            android:padding="3dp"
             android:src="@drawable/ic_check_small"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/runtime_spinner"
             style="?android:attr/progressBarStyleSmall"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:layout_gravity="center"
-            android:indeterminate="true"
-            android:indeterminateTint="#D8C79A"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:indeterminateTint="#FFFFFF"
+            android:visibility="gone" />
     </FrameLayout>
-
 </LinearLayout>
