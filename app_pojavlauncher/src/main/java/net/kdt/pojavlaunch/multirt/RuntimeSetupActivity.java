@@ -52,7 +52,8 @@ public class RuntimeSetupActivity extends BaseActivity {
     private static final int[] SIZE_ESTIMATE_MB = {45, 55, 60, 65};
 
     // selection state
-    private LinearLayout mSelectContainer, mCardContainer;
+    private LinearLayout mSelectContainer;
+    private android.view.ViewGroup mCardContainer;
     private TextView mSkipButton;
     private TextView mInstallButton;
     private final List<CardState> mCards = new ArrayList<>();
@@ -185,6 +186,7 @@ public class RuntimeSetupActivity extends BaseActivity {
                 st.root.setVisibility(View.GONE);
             }
             mCards.add(st);
+            if(mCardContainer instanceof android.widget.GridLayout){android.widget.GridLayout.LayoutParams lp=new android.widget.GridLayout.LayoutParams();lp.width=0;lp.height=0;lp.columnSpec=android.widget.GridLayout.spec(i%2,1,1f);lp.rowSpec=android.widget.GridLayout.spec(i/2,1,1f);lp.setMargins(dp(5),dp(5),dp(5),dp(5));st.root.setLayoutParams(lp);}
             mCardContainer.addView(st.root);
             UiMotion.pressFeedback(st.root);
             if (st.root.getVisibility() == View.VISIBLE) {
@@ -353,6 +355,8 @@ public class RuntimeSetupActivity extends BaseActivity {
     }
 
     // ─────────────────────────── lifecycle ───────────────────────────
+
+    private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
 
     private boolean isFinishingOrDestroyedSoft() {
         return isFinishing() || isDestroyed();

@@ -158,7 +158,7 @@ public class LauncherPreferenceFragment extends Fragment {
             });
         }
 
-        Button saveBtn = view.findViewById(R.id.btn_save_settings);
+        TextView saveBtn = view.findViewById(R.id.btn_save_settings);
         net.kdt.pojavlaunch.UiMotion.pressFeedback(saveBtn);
         if (saveBtn != null) {
             saveBtn.setOnClickListener(v -> {
@@ -889,7 +889,7 @@ public class LauncherPreferenceFragment extends Fragment {
         if (getView() == null) return;
         View bar = getView().findViewById(R.id.unsaved_changes_bar);
         if (bar == null) return;
-        Button saveBtn = getView().findViewById(R.id.btn_save_settings);
+        TextView saveBtn = getView().findViewById(R.id.btn_save_settings);
         TextView statusText = getView().findViewById(R.id.save_status_text);
 
         if (mIsDirty) {
@@ -952,6 +952,7 @@ public class LauncherPreferenceFragment extends Fragment {
         boolean prevEnglish = mDraftPrefs.getBoolean("force_english", false);
         boolean prevGradient = mDraftPrefs.getBoolean("enable_bg_gradient", false);
         boolean prevLandscape = mDraftPrefs.getBoolean("force_landscape", false);
+        boolean prevNotch = LauncherPreferences.PREF_IGNORE_NOTCH;
 
         SharedPreferences mainPrefs = context.getSharedPreferences("cslauncher_settings", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = mainPrefs.edit();
@@ -976,8 +977,9 @@ public class LauncherPreferenceFragment extends Fragment {
             boolean newEnglish = mDraftPrefs.getBoolean("force_english", false);
             boolean newGradient = mDraftPrefs.getBoolean("enable_bg_gradient", false);
             boolean newLandscape = mDraftPrefs.getBoolean("force_landscape", false);
+            boolean newNotch = LauncherPreferences.PREF_IGNORE_NOTCH;
 
-            if (prevEnglish != newEnglish || prevGradient != newGradient) {
+            if (prevEnglish != newEnglish || prevGradient != newGradient || prevNotch != newNotch) {
                 requireActivity().recreate();
             } else if (prevLandscape != newLandscape) {
                 requireActivity().setRequestedOrientation(
