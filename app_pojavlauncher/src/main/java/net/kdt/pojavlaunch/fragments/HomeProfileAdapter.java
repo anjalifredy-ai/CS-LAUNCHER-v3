@@ -41,7 +41,7 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
     private final OnProfileActionListener mListener;
     private final Map<String, Integer> mModCountCache = new ConcurrentHashMap<>();
     private OnStartDragListener mDragStartListener;
-    private final net.kdt.pojavlaunch.profiles.ProfileInstallProgress.Listener mInstallListener=key->{int p=mProfileKeys.indexOf(key);if(p>=0){notifyItemChanged(p,PAYLOAD_INSTALL);return;}MinecraftProfile profile=net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles.mainProfileJson==null?null:net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles.mainProfileJson.profiles.get(key);if(profile!=null&&profile.installing){mProfileKeys.add(key);mProfileList.add(profile);notifyItemInserted(mProfileList.size()-1);}};
+    private final net.kdt.pojavlaunch.profiles.ProfileInstallProgress.Listener mInstallListener;
     private boolean mModCountsReady;
     private int mBoundCount = 0;
 
@@ -62,6 +62,7 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
                               OnProfileActionListener listener) {
         mProfileKeys = new ArrayList<>(profileKeys);
         mProfileList = new ArrayList<>(profiles);
+        mInstallListener=key->{int p=mProfileKeys.indexOf(key);if(p>=0){notifyItemChanged(p,PAYLOAD_INSTALL);return;}MinecraftProfile profile=net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles.mainProfileJson==null?null:net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles.mainProfileJson.profiles.get(key);if(profile!=null&&profile.installing){mProfileKeys.add(key);mProfileList.add(profile);notifyItemInserted(mProfileList.size()-1);}};
         mListener = listener;
         setHasStableIds(true);
         preloadModCounts();
