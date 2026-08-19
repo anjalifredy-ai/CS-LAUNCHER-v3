@@ -1,52 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ════════════════════════════════════════════════════════════════
-     FIRST-LAUNCH RUNTIME WIZARD + distinct install sequence UI
-     (Req: onboarding runtime wizard • runtime download design language)
-═════════════════════════════════════════════════════════════════ -->
+<!-- PREMIUM V4 — Runtime Wizard Dialog (shared system) -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/bg_install_page"
-    android:paddingHorizontal="20dp"
-    android:paddingTop="22dp"
-    android:paddingBottom="18dp">
+    android:paddingHorizontal="18dp"
+    android:paddingTop="18dp"
+    android:paddingBottom="14dp">
 
-    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_java_cup" />
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_deck_icon_tile">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_java_cup"
+                android:tint="#7BE8E0" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="12dp"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:letterSpacing="0.14"
+                android:background="@drawable/bg_runtime_chip_recommended"
+                android:letterSpacing="0.12"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="2dp"
                 android:text="@string/rw_eyebrow"
                 android:textColor="#D8C79A"
-                android:textSize="9.5sp"
+                android:textSize="8.5sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/rw_title"
                 android:textColor="#F0F0F3"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
@@ -55,31 +63,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:lineSpacingExtra="3dp"
+        android:lineSpacingExtra="2dp"
         android:text="@string/rw_sub"
         android:textColor="#9C9CA8"
-        android:textSize="12sp" />
+        android:textSize="11.5sp" />
 
-    <!-- Status strip (install sequence progress) -->
     <TextView
         android:id="@+id/rw_status_strip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_runtime_chip_neutral"
         android:gravity="center_vertical"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="9dp"
+        android:paddingVertical="8dp"
         android:textColor="#D8C79A"
-        android:textSize="11.5sp"
+        android:textSize="11sp"
         android:textStyle="bold"
         android:visibility="gone"
         tools:text="Setting up runtimes (1/2) — keep the app open"
         tools:visibility="visible" />
 
-    <!-- Cards (static 4: Java 8 / 17 / 21 / 25) — HORIZONTAL row (user req),
-         compact stacked cards sharing equal width, staggered rise handled
-         in-code via the shared entrance animation -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -122,19 +126,19 @@
             android:layout_marginStart="2dp" />
     </LinearLayout>
 
-    <!-- Footer actions -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <Button
+        <TextView
             android:id="@+id/rw_btn_skip"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@drawable/bg_browse_filter_btn"
+            android:gravity="center"
             android:paddingHorizontal="16dp"
             android:text="@string/rw_skip"
             android:textAllCaps="false"
@@ -146,17 +150,18 @@
             android:layout_height="match_parent"
             android:layout_weight="1" />
 
-        <Button
+        <TextView
             android:id="@+id/rw_btn_action"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2.2"
+            android:layout_weight="2.1"
             android:background="@drawable/bg_install_cta_white"
+            android:elevation="2dp"
+            android:gravity="center"
             android:text="@string/rw_download_cta_none"
             android:textAllCaps="false"
             android:textColor="#0E0E11"
-            android:textSize="13.5sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
     </LinearLayout>
-
 </LinearLayout>

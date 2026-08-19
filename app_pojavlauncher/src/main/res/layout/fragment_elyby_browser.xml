@@ -1,2 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0B0F14" android:orientation="vertical" android:padding="10dp"><LinearLayout android:layout_width="match_parent" android:layout_height="50dp" android:background="@drawable/bg_elyby_card" android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="8dp"><TextView android:id="@+id/btn_elyby_browser_back" android:layout_width="72dp" android:layout_height="36dp" android:background="@drawable/bg_csc_outline_button" android:gravity="center" android:text="‹  BACK" android:textColor="#FFFFFF" android:textSize="9sp" android:textStyle="bold"/><ImageView android:layout_width="28dp" android:layout_height="28dp" android:layout_marginStart="10dp" android:src="@drawable/ic_auth_elyby"/><LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginStart="9dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ELY.BY ACCOUNT PORTAL" android:textColor="#F2F3F5" android:textSize="11sp" android:textStyle="bold"/><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="●  https://ely.by/login  •  SECURE" android:textColor="#83CDA0" android:textSize="7sp"/></LinearLayout><TextView android:id="@+id/btn_elyby_browser_refresh" android:layout_width="82dp" android:layout_height="36dp" android:background="@drawable/bg_csc_outline_button" android:gravity="center" android:text="↻  REFRESH" android:textColor="#FFFFFF" android:textSize="9sp" android:textStyle="bold"/></LinearLayout><WebView android:id="@+id/elyby_browser_webview" android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginTop="8dp" android:layout_weight="1" android:background="#FFFFFF"/></LinearLayout>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0F14"
+    android:paddingTop="8dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp">
+
+    <!-- Top bar -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/elyby_browser_topbar"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_elyby_card"
+        android:elevation="2dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/btn_elyby_browser_back"
+            android:layout_width="72dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_csc_outline_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="‹  BACK"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <ImageView
+            android:id="@+id/elyby_browser_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/ic_auth_elyby"
+            app:layout_constraintStart_toEndOf="@id/btn_elyby_browser_back"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/elyby_browser_icon"
+            app:layout_constraintEnd_toStartOf="@id/btn_elyby_browser_refresh"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="ELY.BY ACCOUNT PORTAL"
+                android:textColor="#F2F3F5"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="●  https://ely.by/login  •  SECURE"
+                android:textColor="#83CDA0"
+                android:textSize="7.5sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btn_elyby_browser_refresh"
+            android:layout_width="82dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_csc_outline_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="↻  REFRESH"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <WebView
+        android:id="@+id/elyby_browser_webview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:background="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/elyby_browser_topbar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

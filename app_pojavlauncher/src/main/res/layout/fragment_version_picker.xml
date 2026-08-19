@@ -1,94 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#111116">
+    android:background="#0F1115"
+    android:orientation="vertical">
 
-    <!-- Top Bar -->
+    <!-- Top bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_52sdp"
+        android:layout_height="56dp"
+        android:background="#1A1C23"
+        android:elevation="3dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:background="#1B1B22"
-        android:paddingHorizontal="@dimen/padding_medium">
+        android:paddingHorizontal="10dp">
 
         <ImageButton
             android:id="@+id/version_picker_back"
-            android:layout_width="@dimen/_38sdp"
-            android:layout_height="@dimen/_38sdp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back_white"
-            android:contentDescription="@string/global_back"
-            app:tint="@color/neon_green"
-            xmlns:app="http://schemas.android.com/apk/res-auto" />
+            app:tint="#7BE8E0" />
 
-        <TextView
-            android:id="@+id/version_picker_title"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
             android:layout_weight="1"
-            android:layout_marginStart="@dimen/padding_moderate"
-            android:textColor="#F0F0F3"
-            android:textSize="@dimen/_15ssp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="Sodium" />
+            android:orientation="vertical">
 
-        <!-- Loading spinner -->
+            <TextView
+                android:id="@+id/version_picker_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="#F0F0F3"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="Select Version" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose the build to install"
+                android:textColor="#7C8190"
+                android:textSize="10sp" />
+        </LinearLayout>
+
         <ProgressBar
             android:id="@+id/version_picker_loading"
-            android:layout_width="@dimen/_20sdp"
-            android:layout_height="@dimen/_20sdp"
-            android:indeterminate="true"
-            android:visibility="gone" />
-
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:indeterminateTint="#7BE8E0"
+            android:visibility="gone"
+            tools:visibility="visible" />
     </LinearLayout>
 
-    <!-- Version label -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Filter / label bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select a version:"
-        android:textColor="#9C9CA8"
-        android:textSize="@dimen/_12ssp"
-        android:paddingHorizontal="@dimen/_16sdp"
-        android:paddingTop="@dimen/_12sdp"
-        android:paddingBottom="@dimen/_4sdp" />
+        android:background="#13151B"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp">
 
-    <!-- RecyclerView for versions -->
+        <View
+            android:layout_width="3dp"
+            android:layout_height="12dp"
+            android:background="@drawable/bg_accent_bar_green" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:letterSpacing="0.08"
+            android:text="AVAILABLE VERSIONS"
+            android:textColor="#88B095"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/version_count_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:background="@drawable/bg_stat_chip"
+            android:gravity="center"
+            android:paddingHorizontal="8dp"
+            android:text="—"
+            android:textColor="#9FA3B0"
+            android:textSize="10sp"
+            android:visibility="gone"
+            tools:text="12 builds"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <!-- List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/version_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingVertical="@dimen/_4sdp"
-        android:requiresFadingEdge="vertical"
-        android:fadingEdgeLength="@dimen/_30sdp"
+        android:paddingTop="8dp"
+        android:paddingBottom="10dp"
         android:scrollbars="none" />
 
-    <!-- Pagination Footer -->
+    <!-- Pagination -->
     <LinearLayout
         android:id="@+id/pagination_footer"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_48sdp"
-        android:gravity="center"
+        android:layout_height="52dp"
+        android:background="#1A1C23"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:background="#1B1B22"
-        android:paddingHorizontal="@dimen/_16sdp"
-        android:visibility="gone">
+        android:paddingHorizontal="10dp"
+        android:visibility="gone"
+        tools:visibility="visible">
 
         <ImageButton
             android:id="@+id/pagination_prev"
-            android:layout_width="@dimen/_36sdp"
-            android:layout_height="@dimen/_36sdp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_console_btn"
             android:src="@drawable/ic_chevron_left"
-            android:contentDescription="Previous page" />
+            app:tint="#DADDE5" />
 
         <TextView
             android:id="@+id/pagination_text"
@@ -96,28 +144,30 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:textColor="#9C9CA8"
-            android:textSize="@dimen/_12ssp" />
+            android:textColor="#DADDE5"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="Page 1 of 3" />
 
         <ImageButton
             android:id="@+id/pagination_next"
-            android:layout_width="@dimen/_36sdp"
-            android:layout_height="@dimen/_36sdp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_console_btn"
             android:src="@drawable/ic_chevron_right"
-            android:contentDescription="Next page" />
-
+            app:tint="#DADDE5" />
     </LinearLayout>
 
-    <!-- Error text -->
     <TextView
         android:id="@+id/version_picker_error"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_16sdp"
+        android:background="#1A0F14"
         android:gravity="center"
+        android:padding="16dp"
         android:textColor="#E5A0A6"
-        android:textSize="@dimen/_13ssp"
-        android:visibility="gone" />
-
+        android:textSize="12.5sp"
+        android:visibility="gone"
+        tools:text="Failed to load versions — tap refresh to retry"
+        tools:visibility="visible" />
 </LinearLayout>

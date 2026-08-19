@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.PathInterpolator;
 import android.widget.LinearLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -39,10 +40,14 @@ import java.util.ArrayList;
  *
  * This class relies on ExtraCore for its behavior.
  *
- * v3 — bottom-anchored "Download Console": big tabular %, luminous beam,
- * size/speed/ETA stats, and PAUSE / STOP / HIDE controls with a collapsed
- * mini-pill state. Pause & stop are delivered to the copy loop through
- * DownloadControl; HIDE collapses the deck into the pill.
+ * v4 — Premium redesign: luminous 8dp pill beam (DownloadAssemblyBar), big tabular %,
+ * accent rail, segmented controls, collapsed pill, and a lightweight animation system:
+ *  - Start: spring rise from bottom (PathInterpolator)
+ *  - Progress: smooth beam + percentage PathInterpolator 0.22/1/0.36/1
+ *  - Completion: success mint tint + scale bounce + check morph
+ *  - Error: shake + coral tint
+ *  - Paused: amber tint + badge
+ * All animations are compositor-only (alpha/translation/scale) — no layout thrash.
  */
 public class ProgressLayout extends ConstraintLayout implements View.OnClickListener, TaskCountListener{
     public static final String UNPACK_RUNTIME = "unpack_runtime";
@@ -57,6 +62,10 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
     private static final int COLOR_TEXT_SECONDARY = 0xFFFFFFFF;
     private static final int COLOR_SUCCESS = 0xFF9FD6AC;
     private static final int COLOR_AMBER = 0xFFD8C79A;
+    private static final int COLOR_ERROR = 0xFFFF6B6B;
+
+    private static final PathInterpolator SMOOTH = new PathInterpolator(0.22f, 1f, 0.36f, 1f);
+    private static final PathInterpolator SPRING = new PathInterpolator(0.22f, 1f, 0.36f, 1f);
 
     public ProgressLayout(@NonNull Context context) {
         super(context);
@@ -79,7 +88,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
     private LinearLayout mLinearLayout;
     private TextView mTaskNumberDisplayer;
     private ImageView mFlipArrow;
-    private PulseOrbitView mPulseOrbit; // Phase-5 premium download animation system (Req-1)
+    private PulseOrbitView mPulseOrbit;
     private TextView mStatusText;
     private TextView mDetailText;
     private TextView mSpeedText;
@@ -93,10 +102,8 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
     private View mDownloadCard;
     private ImageView mProgressIcon;
     private boolean mIsFinishing = false;
-    /** true after the user pressed STOP — the next count-drop must exit quietly, no "✓" flash */
     private boolean mExpectingQuietEnd = false;
 
-    // ── Download Console v3 controls ────────────────────────────────────
     private View mControlsRow;
     private View mBtnPause;
     private ImageView mBtnPauseIcon;
@@ -115,11 +122,11 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
     private final Runnable mFadeOutRunnable = new Runnable() {
         @Override
         public void run() {
-            // Exit downward — the console sinks back off the bottom edge
             ProgressLayout.this.animate()
                 .alpha(0f)
                 .translationY(ProgressLayout.this.getHeight() + dp(24f))
                 .setDuration(420)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .withEndAction(() -> {
                     hideChromeImmediately();
                 })
@@ -127,7 +134,6 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
         }
     };
 
-    /** Instantly parks the whole console off-screen and resets transient state. */
     private void hideChromeImmediately() {
         removeCallbacks(mFadeOutRunnable);
         ProgressLayout.this.animate().cancel();
@@ -145,6 +151,8 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             mDownloadCard.setVisibility(VISIBLE);
             mDownloadCard.setAlpha(1f);
             mDownloadCard.setTranslationY(0f);
+            mDownloadCard.setScaleX(1f);
+            mDownloadCard.setScaleY(1f);
         }
         ProgressLayout.this.setVisibility(GONE);
         ProgressLayout.this.setAlpha(1f);
@@ -167,7 +175,6 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
         return ProgressKeeper.getTaskCount() > 0;
     }
 
-    /** Records that flow through DownloadUtils' monitored loop and honor pause/stop. */
     private static boolean isCancellableKey(String key) {
         return INSTALL_MODPACK.equals(key)
                 || DOWNLOAD_MINECRAFT.equals(key)
@@ -210,9 +217,17 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                     ProgressLayout.this.onClick(ProgressLayout.this);
                 }
             });
+            // subtle press feedback
+            mDownloadCard.setOnTouchListener((v, e) -> {
+                if (e.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                    v.animate().scaleX(0.985f).scaleY(0.985f).setDuration(90).start();
+                } else if (e.getAction() == android.view.MotionEvent.ACTION_UP || e.getAction() == android.view.MotionEvent.ACTION_CANCEL) {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(180).setInterpolator(SMOOTH).start();
+                }
+                return false;
+            });
         }
 
-        // ── PAUSE / RESUME ──────────────────────────────────────────────
         if (mBtnPause != null) {
             mBtnPause.setOnClickListener(v -> {
                 String key = mLastProgressingKey;
@@ -220,38 +235,47 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                 boolean nowPaused = !DownloadControl.isPaused(key);
                 DownloadControl.requestPause(key, nowPaused);
                 updatePauseUi(nowPaused);
+                // micro press
+                v.animate().scaleX(0.94f).scaleY(0.94f).setDuration(70).withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setDuration(160).setInterpolator(SMOOTH).start()).start();
             });
         }
 
-        // ── STOP ────────────────────────────────────────────────────────
         if (mBtnStop != null) {
             mBtnStop.setOnClickListener(v -> {
                 String key = mLastProgressingKey;
                 if (key == null) return;
-                DownloadControl.requestPause(key, false); // clear pause so the loop can see the cancel
+                DownloadControl.requestPause(key, false);
                 DownloadControl.requestCancel(key);
                 updatePauseUi(false);
                 mExpectingQuietEnd = true;
                 Toast.makeText(getContext(), R.string.download_console_stopped, Toast.LENGTH_SHORT).show();
-                hideChromeImmediately(); // deck leaves right away; the task winds down quietly
+                // stop has a quick shrink-then-leave
+                if (mDownloadCard != null) {
+                    mDownloadCard.animate().scaleX(0.97f).scaleY(0.97f).alpha(0.7f).setDuration(120).withEndAction(() -> hideChromeImmediately()).start();
+                } else hideChromeImmediately();
             });
         }
 
-        // ── HIDE (collapse to mini pill) ────────────────────────────────
         if (mBtnHide != null) {
-            mBtnHide.setOnClickListener(v -> collapseToPill());
+            mBtnHide.setOnClickListener(v -> {
+                v.animate().scaleX(0.9f).scaleY(0.9f).setDuration(80).withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setDuration(140).start()).start();
+                collapseToPill();
+            });
         }
 
-        // ── Mini pill → expand back to full console ─────────────────────
         if (mConsolePill != null) {
             mConsolePill.setOnClickListener(v -> expandFromPill());
+            mConsolePill.setOnTouchListener((v, e) -> {
+                if (e.getAction() == android.view.MotionEvent.ACTION_DOWN) v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(80).start();
+                else if (e.getAction() == android.view.MotionEvent.ACTION_UP || e.getAction() == android.view.MotionEvent.ACTION_CANCEL) v.animate().scaleX(1f).scaleY(1f).setDuration(160).setInterpolator(SMOOTH).start();
+                return false;
+            });
         }
 
         setBackgroundColor(Color.TRANSPARENT);
         setOnClickListener(this);
     }
 
-    /** Collapse the console into the corner mini-pill (download keeps running). */
     private void collapseToPill() {
         if (mIsCollapsed || mIsFinishing || getVisibility() != VISIBLE) return;
         mIsCollapsed = true;
@@ -261,11 +285,15 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             mConsolePill.setVisibility(VISIBLE);
             mConsolePill.setAlpha(0f);
             mConsolePill.setTranslationY(dp(12f));
+            mConsolePill.setScaleX(0.92f);
+            mConsolePill.setScaleY(0.92f);
             mConsolePill.animate()
                     .alpha(1f)
                     .translationY(0f)
-                    .setDuration(280)
-                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(320)
+                    .setInterpolator(SMOOTH)
                     .start();
         }
         if (mDownloadCard != null) {
@@ -273,17 +301,20 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             mDownloadCard.animate()
                     .alpha(0f)
                     .translationY(dp(26f))
-                    .setDuration(230)
+                    .scaleX(0.98f)
+                    .scaleY(0.98f)
+                    .setDuration(240)
                     .setInterpolator(new android.view.animation.AccelerateInterpolator())
                     .withEndAction(() -> {
                         mDownloadCard.setVisibility(GONE);
                         mDownloadCard.setTranslationY(0f);
+                        mDownloadCard.setScaleX(1f);
+                        mDownloadCard.setScaleY(1f);
                     })
                     .start();
         }
     }
 
-    /** Restore the full console from the mini-pill. */
     private void expandFromPill() {
         if (!mIsCollapsed) return;
         mIsCollapsed = false;
@@ -292,11 +323,15 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             mDownloadCard.setVisibility(VISIBLE);
             mDownloadCard.setAlpha(0f);
             mDownloadCard.setTranslationY(dp(18f));
+            mDownloadCard.setScaleX(0.96f);
+            mDownloadCard.setScaleY(0.96f);
             mDownloadCard.animate()
                     .alpha(1f)
                     .translationY(0f)
-                    .setDuration(300)
-                    .setInterpolator(new android.view.animation.OvershootInterpolator(0.5f))
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(360)
+                    .setInterpolator(new android.view.animation.OvershootInterpolator(0.7f))
                     .start();
         }
         if (mConsolePill != null) {
@@ -304,28 +339,65 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             mConsolePill.animate()
                     .alpha(0f)
                     .translationY(dp(8f))
+                    .scaleX(0.9f)
+                    .scaleY(0.9f)
                     .setDuration(190)
                     .setInterpolator(new android.view.animation.AccelerateInterpolator())
                     .withEndAction(() -> {
                         mConsolePill.setVisibility(GONE);
                         mConsolePill.setAlpha(1f);
                         mConsolePill.setTranslationY(0f);
+                        mConsolePill.setScaleX(1f);
+                        mConsolePill.setScaleY(1f);
                     })
                     .start();
         }
     }
 
-    /** Reflect the paused/running state across badge, button and beam tint. */
     private void updatePauseUi(boolean paused) {
-        if (mPausedBadge != null) mPausedBadge.setVisibility(paused ? VISIBLE : GONE);
+        if (mPausedBadge != null) {
+            if (paused) {
+                mPausedBadge.setVisibility(VISIBLE);
+                mPausedBadge.setAlpha(0f);
+                mPausedBadge.setScaleX(0.85f);
+                mPausedBadge.setScaleY(0.85f);
+                mPausedBadge.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200).setInterpolator(SMOOTH).start();
+            } else {
+                mPausedBadge.animate().alpha(0f).scaleX(0.85f).scaleY(0.85f).setDuration(140).withEndAction(() -> mPausedBadge.setVisibility(GONE)).start();
+            }
+        }
         if (mBtnPauseIcon != null) mBtnPauseIcon.setImageResource(paused ? R.drawable.ic_play_arrow : R.drawable.ic_pause);
         if (mBtnPauseText != null) mBtnPauseText.setText(paused ? R.string.download_console_resume : R.string.download_console_pause);
-        if (mProgressBar != null && !mIsFinishing) {
+        if (mProgressBar instanceof DownloadAssemblyBar) {
+            ((DownloadAssemblyBar) mProgressBar).setBarState(paused ? 3 : 0);
+        } else if (mProgressBar != null && !mIsFinishing) {
             mProgressBar.setProgressTintList(paused ? ColorStateList.valueOf(COLOR_AMBER) : null);
         }
         if (paused) {
-            if (mSpeedText != null) mSpeedText.setVisibility(GONE);
-            if (mEtaText != null) mEtaText.setVisibility(GONE);
+            if (mSpeedText != null) mSpeedText.animate().alpha(0f).setDuration(140).withEndAction(() -> mSpeedText.setVisibility(GONE)).start();
+            if (mEtaText != null) mEtaText.animate().alpha(0f).setDuration(140).withEndAction(() -> mEtaText.setVisibility(GONE)).start();
+        }
+    }
+
+    /** Shake for error state — lightweight translate oscillation */
+    private void triggerErrorShake() {
+        if (mDownloadCard == null) return;
+        mDownloadCard.animate().cancel();
+        android.animation.ValueAnimator shake = android.animation.ValueAnimator.ofFloat(0, 1);
+        shake.setDuration(380);
+        shake.setInterpolator(new android.view.animation.DecelerateInterpolator());
+        shake.addUpdateListener(v -> {
+            float f = (float) v.getAnimatedValue();
+            float off = (float) (Math.sin(f * Math.PI * 6) * (1 - f) * dp(5));
+            mDownloadCard.setTranslationX(off);
+        });
+        shake.start();
+        if (mProgressBar instanceof DownloadAssemblyBar) {
+            ((DownloadAssemblyBar) mProgressBar).setBarState(2);
+        }
+        if (mStatusText != null) {
+            mStatusText.setTextColor(COLOR_ERROR);
+            mStatusText.animate().scaleX(1.02f).scaleY(1.02f).setDuration(120).withEndAction(() -> mStatusText.animate().scaleX(1f).scaleY(1f).setDuration(140).start()).start();
         }
     }
 
@@ -333,17 +405,14 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
         ProgressKeeper.submitProgress(progressKey, progress, -1, (Object)null);
     }
 
-    /** Update the text and progress content */
     public static void setProgress(String progressKey, int progress, @StringRes int resource, Object... message){
         ProgressKeeper.submitProgress(progressKey, progress, resource, message);
     }
 
-    /** Update the text and progress content */
     public static void setProgress(String progressKey, int progress, String message){
         setProgress(progressKey,progress, -1, message);
     }
 
-    /** Update the text and progress content */
     public static void clearProgress(String progressKey){
         setProgress(progressKey, -1, -1);
     }
@@ -354,18 +423,22 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             mExpectingQuietEnd = false;
             hideChromeImmediately();
         } else {
-            mLinearLayout.setVisibility(mLinearLayout.getVisibility() == GONE ? VISIBLE : GONE);
-            mFlipArrow.setRotation(mLinearLayout.getVisibility() == GONE? 0 : 180);
+            if (mLinearLayout != null) {
+                boolean show = mLinearLayout.getVisibility() == GONE;
+                mLinearLayout.setVisibility(show ? VISIBLE : GONE);
+                if (show) {
+                    mLinearLayout.setAlpha(0f);
+                    mLinearLayout.setTranslationY(-dp(6));
+                    mLinearLayout.animate().alpha(1f).translationY(0f).setDuration(220).setInterpolator(SMOOTH).start();
+                }
+                if (mFlipArrow != null) mFlipArrow.animate().rotation(show ? 180 : 0).setDuration(200).start();
+            }
         }
     }
 
     @Override
     public void onUpdateTaskCount(int tc) {
         post(()->{
-            // Launch-vs-download semantics: while the Launch sequence owns the
-            // chrome (PREPARING / VERIFYING / STARTING), the console must NOT
-            // pop up for the verification task record. It opens only for real
-            // downloads (RUNTIME / DOWNLOADING) and non-launch flows (IDLE).
             int effectiveTc = tc;
             if (effectiveTc > 0 && net.kdt.pojavlaunch.launch.LaunchTracker.suppressesDownloadConsole()) {
                 effectiveTc = 0;
@@ -377,102 +450,136 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                 mExpectingQuietEnd = false;
                 setAlpha(1f);
                 setTranslationY(0f);
-                // fresh task: console starts expanded, chrome reset
                 mIsCollapsed = false;
                 if (mConsolePill != null) {
                     mConsolePill.animate().cancel();
                     mConsolePill.setVisibility(GONE);
                     mConsolePill.setAlpha(1f);
                     mConsolePill.setTranslationY(0f);
+                    mConsolePill.setScaleX(1f);
+                    mConsolePill.setScaleY(1f);
                 }
                 if (mDownloadCard != null) {
                     mDownloadCard.animate().cancel();
                     mDownloadCard.setVisibility(VISIBLE);
                     mDownloadCard.setAlpha(1f);
                     mDownloadCard.setTranslationY(0f);
+                    mDownloadCard.setScaleX(1f);
+                    mDownloadCard.setScaleY(1f);
+                    if (mProgressBar instanceof DownloadAssemblyBar) ((DownloadAssemblyBar) mProgressBar).setBarState(0);
                 }
-                if (mProgressBar != null) {
+                if (mProgressBar != null && !(mProgressBar instanceof DownloadAssemblyBar)) {
                     mProgressBar.setProgressTintList(null);
                 }
                 if (mStatusText != null) {
                     mStatusText.setTextColor(COLOR_TEXT_PRIMARY);
+                    mStatusText.setScaleX(1f);
+                    mStatusText.setScaleY(1f);
                 }
                 if (mPercentageText != null) {
                     mPercentageText.setTextColor(COLOR_TEXT_SECONDARY);
+                    mPercentageText.setScaleX(1f);
+                    mPercentageText.setScaleY(1f);
                 }
                 if (mProgressIcon != null) {
                     mProgressIcon.setAlpha(1f);
                     mProgressIcon.setVisibility(VISIBLE);
+                    mProgressIcon.setScaleX(1f);
+                    mProgressIcon.setScaleY(1f);
                 }
                 updatePauseUi(false);
                 if (mControlsRow != null) {
                     mControlsRow.setVisibility(isCancellableKey(mLastProgressingKey) ? VISIBLE : GONE);
                 }
-                mTaskNumberDisplayer.setText(getContext().getString(R.string.progresslayout_tasks_in_progress, tc));
+                if (mTaskNumberDisplayer != null) mTaskNumberDisplayer.setText(getContext().getString(R.string.progresslayout_tasks_in_progress, tc));
                 setVisibility(VISIBLE);
-                // Premium entrance: console rises from the bottom edge with a soft land
                 if (becameVisible) {
+                    // Premium spring rise — deck lands softly
                     animate().cancel();
                     setAlpha(0f);
-                    setTranslationY(dp(120f));
-                    animate().alpha(1f).translationY(0f)
-                            .setDuration(460)
-                            .setInterpolator(new android.view.animation.OvershootInterpolator(0.65f))
+                    setTranslationY(dp(110f));
+                    setScaleX(0.98f);
+                    setScaleY(0.98f);
+                    animate().alpha(1f).translationY(0f).scaleX(1f).scaleY(1f)
+                            .setDuration(520)
+                            .setInterpolator(new android.view.animation.OvershootInterpolator(0.72f))
+                            .withLayer()
                             .start();
+                    if (mDownloadCard != null) {
+                        mDownloadCard.setAlpha(0f);
+                        mDownloadCard.setTranslationY(dp(18f));
+                        mDownloadCard.animate().alpha(1f).translationY(0f).setDuration(380).setStartDelay(80).setInterpolator(SMOOTH).start();
+                    }
                 }
             } else {
                 if (getVisibility() == VISIBLE && !mIsFinishing) {
                     if (mExpectingQuietEnd) {
-                        // User stopped this download — no success flash, just leave quietly.
                         mExpectingQuietEnd = false;
                         hideChromeImmediately();
                         return;
                     }
                     mIsFinishing = true;
-                    // Completion choreography: beam flash + success palette
                     if (mPulseOrbit != null) {
                         mPulseOrbit.showCompleted();
                     }
+                    // Success choreography
+                    if (mProgressBar instanceof DownloadAssemblyBar) {
+                        ((DownloadAssemblyBar) mProgressBar).setBarState(1);
+                    }
                     if (mProgressIcon != null) {
-                        mProgressIcon.setImageResource(R.drawable.ic_download);
-                        mProgressIcon.animate().alpha(0.35f).setDuration(280).start();
+                        mProgressIcon.animate().scaleX(0.88f).scaleY(0.88f).setDuration(120).withEndAction(() -> {
+                            mProgressIcon.setImageResource(R.drawable.ic_check);
+                            mProgressIcon.setImageTintList(ColorStateList.valueOf(COLOR_SUCCESS));
+                            mProgressIcon.setScaleX(0.6f); mProgressIcon.setScaleY(0.6f);
+                            mProgressIcon.animate().scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(new android.view.animation.OvershootInterpolator(1.8f)).start();
+                            mProgressIcon.animate().alpha(1f).setDuration(280).start();
+                        }).start();
+                    }
+                    if (mDownloadCard != null) {
+                        mDownloadCard.animate().scaleX(1.015f).scaleY(1.015f).setDuration(180).setInterpolator(SMOOTH)
+                                .withEndAction(() -> mDownloadCard.animate().scaleX(1f).scaleY(1f).setDuration(220).setInterpolator(SMOOTH).start()).start();
                     }
                     if (mStatusText != null) {
                         mStatusText.setText("✓ Download Complete");
                         mStatusText.setTextColor(COLOR_SUCCESS);
+                        mStatusText.setAlpha(0f); mStatusText.setTranslationY(-dp(4));
+                        mStatusText.animate().alpha(1f).translationY(0f).setDuration(260).setInterpolator(SMOOTH).start();
+                        mStatusText.animate().scaleX(1.03f).scaleY(1.03f).setDuration(140).withEndAction(() -> mStatusText.animate().scaleX(1f).scaleY(1f).setDuration(180).start()).start();
                     }
                     if (mPercentageText != null) {
                         mPercentageText.setText("100%");
                         mPercentageText.setTextColor(COLOR_SUCCESS);
+                        mPercentageText.setScaleX(0.9f); mPercentageText.setScaleY(0.9f);
+                        mPercentageText.animate().scaleX(1f).scaleY(1f).setDuration(340).setInterpolator(new android.view.animation.OvershootInterpolator(1.6f)).start();
                     }
                     if (mProgressBar != null) {
                         mProgressBar.setProgress(100);
-                        mProgressBar.setProgressTintList(ColorStateList.valueOf(COLOR_SUCCESS));
-                        // one-shot beam flash to signal completion
+                        if (!(mProgressBar instanceof DownloadAssemblyBar)) mProgressBar.setProgressTintList(ColorStateList.valueOf(COLOR_SUCCESS));
                         mProgressBar.animate().cancel();
-                        mProgressBar.setAlpha(0.3f);
-                        mProgressBar.animate().alpha(1f).setDuration(480)
-                                .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                                .start();
+                        mProgressBar.setAlpha(0.4f);
+                        mProgressBar.animate().alpha(1f).setDuration(460).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                        // subtle bar pop
+                        mProgressBar.setScaleY(1.25f);
+                        mProgressBar.animate().scaleY(1f).setDuration(300).setInterpolator(SMOOTH).start();
                     }
                     if (mPausedBadge != null) {
-                        mPausedBadge.setVisibility(GONE);
+                        mPausedBadge.animate().alpha(0f).scaleX(0.85f).scaleY(0.85f).setDuration(140).withEndAction(() -> mPausedBadge.setVisibility(GONE)).start();
                     }
                     if (mControlsRow != null) {
-                        mControlsRow.setVisibility(GONE);
+                        mControlsRow.animate().alpha(0f).translationY(dp(6)).setDuration(180).withEndAction(() -> mControlsRow.setVisibility(GONE)).start();
                     }
                     if (mDetailText != null) {
-                        mDetailText.setVisibility(GONE);
+                        mDetailText.animate().alpha(0f).setDuration(140).withEndAction(() -> mDetailText.setVisibility(GONE)).start();
                     }
                     if (mSpeedText != null) {
-                        mSpeedText.setVisibility(GONE);
+                        mSpeedText.animate().alpha(0f).setDuration(140).withEndAction(() -> mSpeedText.setVisibility(GONE)).start();
                     }
                     if (mEtaText != null) {
-                        mEtaText.setVisibility(GONE);
+                        mEtaText.animate().alpha(0f).setDuration(140).withEndAction(() -> mEtaText.setVisibility(GONE)).start();
                     }
-                    // The collapse pill mirrors the success moment, then leaves with the deck
                     if (mIsCollapsed && mPillPercent != null) {
                         mPillPercent.setText("✓");
+                        mPillPercent.setTextColor(COLOR_SUCCESS);
                     }
                     removeCallbacks(mFadeOutRunnable);
                     postDelayed(mFadeOutRunnable, 2600);
@@ -514,23 +621,31 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
         }
         @Override
         public void onProgressStarted() {
-            // Fresh attempt for this record: clear stale pause/stop flags & notes
             DownloadControl.reset(progressKey);
             post(()-> {
                 Log.i("ProgressLayout", "onProgressStarted");
                 mLinearLayout.addView(textView, params);
+                // selection pulse on icon
+                if (mProgressIcon != null) {
+                    mProgressIcon.animate().cancel();
+                    mProgressIcon.setScaleX(0.82f); mProgressIcon.setScaleY(0.82f);
+                    mProgressIcon.animate().scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(new android.view.animation.OvershootInterpolator(1.4f)).start();
+                }
+                // card quick highlight
+                if (mDownloadCard != null) {
+                    mDownloadCard.animate().scaleX(1.01f).scaleY(1.01f).setDuration(110).withEndAction(() -> mDownloadCard.animate().scaleX(1f).scaleY(1f).setDuration(180).setInterpolator(SMOOTH).start()).start();
+                }
             });
         }
 
         @Override
         public void onProgressUpdated(int progress, int resid, Object... va) {
             post(()-> {
-                // Update individual task bar in the expandable list
                 int current = textView.getProgress();
                 if (progress != current && progress >= 0) {
                     ObjectAnimator anim = ObjectAnimator.ofInt(textView, "progress", current, progress);
-                    anim.setDuration(200);
-                    anim.setInterpolator(new android.view.animation.DecelerateInterpolator());
+                    anim.setDuration(280);
+                    anim.setInterpolator(SMOOTH);
                     anim.start();
                 } else {
                     textView.setProgress(progress);
@@ -539,27 +654,24 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                 else if(va != null && va.length > 0 && va[0] != null)textView.setText((String)va[0]);
                 else textView.setText("");
 
-                // Drive the Pulse-Orbit dial and remember the latest value
                 if (progress >= 0 && mPulseOrbit != null) {
                     mPulseOrbit.setProgress(progress);
                     mLastProgress = progress;
                 }
                 boolean keyChanged = !this.progressKey.equals(mLastProgressingKey);
                 mLastProgressingKey = this.progressKey;
-                // Collapsed pill always mirrors the live percentage
                 if (mIsCollapsed && mPillPercent != null && progress >= 0 && !mIsFinishing) {
                     mPillPercent.setText(progress + "%");
+                    mPillPercent.setAlpha(0.6f);
+                    mPillPercent.animate().alpha(1f).setDuration(180).start();
                 }
-                // Controls only exist for transfers that honor them
                 if (mControlsRow != null && !mIsFinishing) {
                     mControlsRow.setVisibility(isCancellableKey(this.progressKey) ? VISIBLE : GONE);
                 }
                 if (keyChanged && !mIsFinishing) {
-                    // Pause UI must reflect the newly-active record, not the previous one
                     updatePauseUi(DownloadControl.isPaused(this.progressKey));
                 }
 
-                // --- NEW COMPACT VIEW UPDATES ---
                 if (mProgressBar != null && progress >= 0) {
                     int currProgress = mProgressBar.getProgress();
                     if (progress != mTargetProgress) {
@@ -569,26 +681,33 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                             mProgressAnimator.cancel();
                         }
                         mProgressAnimator = ObjectAnimator.ofInt(mProgressBar, "progress", currProgress, progress);
-                        mProgressAnimator.setDuration(250);
-                        mProgressAnimator.setInterpolator(new android.view.animation.DecelerateInterpolator());
+                        mProgressAnimator.setDuration(420);
+                        mProgressAnimator.setInterpolator(SMOOTH);
                         mProgressAnimator.start();
 
                         if (mPercentageAnimator != null && mPercentageAnimator.isRunning()) {
                             mPercentageAnimator.cancel();
                         }
                         mPercentageAnimator = ValueAnimator.ofInt(currProgress, progress);
-                        mPercentageAnimator.setDuration(250);
+                        mPercentageAnimator.setDuration(420);
+                        mPercentageAnimator.setInterpolator(SMOOTH);
                         mPercentageAnimator.addUpdateListener(animation -> {
                             if (mPercentageText != null) {
                                 mPercentageText.setText(animation.getAnimatedValue() + "%");
                             }
                         });
                         mPercentageAnimator.start();
+
+                        // percentage pop on significant jumps
+                        if (Math.abs(progress - currProgress) >= 4 && mPercentageText != null) {
+                            mPercentageText.animate().cancel();
+                            mPercentageText.setScaleX(1.06f); mPercentageText.setScaleY(1.06f);
+                            mPercentageText.animate().scaleX(1f).scaleY(1f).setDuration(260).setInterpolator(SMOOTH).start();
+                        }
                     }
 
                 }
 
-                // Determine formatted values
                 double speed = -1;
                 String detailStr = "";
                 String etaStr = "";
@@ -633,6 +752,8 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                                     mProgressIcon.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                     mProgressIcon.setImageBitmap(bitmap);
                                     mProgressIcon.setAlpha(1f);
+                                    mProgressIcon.setScaleX(0.9f); mProgressIcon.setScaleY(0.9f);
+                                    mProgressIcon.animate().scaleX(1f).scaleY(1f).setDuration(260).setInterpolator(SMOOTH).start();
                                 }
                             });
                         }, cacheTag, modIconUrl);
@@ -653,7 +774,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                         if (va != null && va.length > 0 && va[0] != null) {
                             String verStr = String.valueOf(va[0]);
                             if (verStr.toLowerCase().contains("neoforge")) {
-                                loaderName = ""; // The version string itself already contains NeoForge, e.g. "neoforge-20.4.80" or "NeoForge 20.4.80"
+                                loaderName = "";
                             }
                             verSuffix = " " + verStr;
                         }
@@ -700,7 +821,6 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                     }
                 }
 
-                // If not using new format, perform fallback legacy parsing
                 if (detailStr.isEmpty() && va != null) {
                     if (resid == R.string.newdl_downloading_game_files_size && va.length >= 3) {
                         try {
@@ -754,44 +874,71 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                 }
 
                 if (mStatusText != null) {
-                    mStatusText.setTextColor(COLOR_TEXT_PRIMARY); // Keep status bright during progress
+                    mStatusText.setTextColor(COLOR_TEXT_PRIMARY);
                     CharSequence prev = mStatusText.getText();
                     boolean titleChanged = prev == null || !prev.toString().contentEquals(statusTitle);
                     mStatusText.setText(statusTitle);
                     if (titleChanged && !statusTitle.isEmpty()) {
-                        // task swap: quick fade+slide so transitions feel intentional
                         mStatusText.animate().cancel();
                         mStatusText.setAlpha(0f);
-                        mStatusText.setTranslationX(8f);
+                        mStatusText.setTranslationX(dp(8f));
                         mStatusText.animate().alpha(1f).translationX(0f)
-                                .setDuration(220)
-                                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                                .setDuration(240)
+                                .setInterpolator(SMOOTH)
                                 .start();
                     }
                 }
                 if (mDetailText != null) {
+                    String nextDetail = detailStr;
+                    CharSequence prevDetail = mDetailText.getText();
+                    boolean detailChanged = prevDetail == null || !prevDetail.toString().equals(nextDetail);
                     if (!detailStr.isEmpty()) {
                         mDetailText.setText(detailStr);
-                        mDetailText.setVisibility(VISIBLE);
+                        if (mDetailText.getVisibility() != VISIBLE) {
+                            mDetailText.setAlpha(0f);
+                            mDetailText.setVisibility(VISIBLE);
+                            mDetailText.animate().alpha(1f).setDuration(180).start();
+                        } else if (detailChanged) {
+                            // subtle crossfade for size updates
+                            mDetailText.animate().cancel();
+                            mDetailText.animate().alpha(0.78f).setDuration(90).withEndAction(() -> mDetailText.animate().alpha(1f).setDuration(120).start()).start();
+                        }
                     } else {
-                        mDetailText.setVisibility(GONE);
+                        if (mDetailText.getVisibility() == VISIBLE) {
+                            mDetailText.animate().alpha(0f).setDuration(140).withEndAction(() -> mDetailText.setVisibility(GONE)).start();
+                        }
                     }
                 }
                 boolean isPausedNow = DownloadControl.isPaused(this.progressKey);
                 if (mSpeedText != null) {
                     if (speed >= 0 && !isPausedNow) {
-                        mSpeedText.setText(String.format(java.util.Locale.US, "%.1f MB/s", speed));
-                        mSpeedText.setVisibility(VISIBLE);
+                        String nextSpeed = String.format(java.util.Locale.US, "%.1f MB/s", speed);
+                        boolean changed = !nextSpeed.equals(mSpeedText.getText().toString());
+                        mSpeedText.setText(nextSpeed);
+                        if (mSpeedText.getVisibility() != VISIBLE) {
+                            mSpeedText.setAlpha(0f);
+                            mSpeedText.setVisibility(VISIBLE);
+                            mSpeedText.animate().alpha(1f).setDuration(160).start();
+                        } else if (changed) {
+                            mSpeedText.animate().cancel();
+                            mSpeedText.setScaleX(1.06f); mSpeedText.setScaleY(1.06f);
+                            mSpeedText.animate().scaleX(1f).scaleY(1f).setDuration(180).setInterpolator(SMOOTH).start();
+                        }
                     } else {
-                        mSpeedText.setVisibility(GONE);
+                        if (mSpeedText.getVisibility() == VISIBLE) mSpeedText.animate().alpha(0f).setDuration(120).withEndAction(() -> mSpeedText.setVisibility(GONE)).start();
                     }
                 }
                 if (mEtaText != null) {
                     if (!etaStr.isEmpty() && !isPausedNow) {
-                        mEtaText.setText("• " + etaStr);
-                        mEtaText.setVisibility(VISIBLE);
+                        String nextEta = "• " + etaStr;
+                        mEtaText.setText(nextEta);
+                        if (mEtaText.getVisibility() != VISIBLE) {
+                            mEtaText.setAlpha(0f);
+                            mEtaText.setVisibility(VISIBLE);
+                            mEtaText.animate().alpha(1f).setDuration(160).start();
+                        }
                     } else {
-                        mEtaText.setVisibility(GONE);
+                        if (mEtaText.getVisibility() == VISIBLE) mEtaText.animate().alpha(0f).setDuration(120).withEndAction(() -> mEtaText.setVisibility(GONE)).start();
                     }
                 }
             });
