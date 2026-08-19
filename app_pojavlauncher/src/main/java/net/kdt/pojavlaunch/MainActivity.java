@@ -768,6 +768,7 @@ public class MainActivity extends BaseActivity implements ControlButtonMenuListe
         // boundary. Re-reading async SharedPreferences here could select a stale
         // local account and wrongly enable the offline skin injector.
         MinecraftAccount minecraftAccount = PojavProfile.getCurrentProfileContent(this, mLaunchAccountName);
+        try { if(net.kdt.pojavlaunch.csclient.CsClientManagedFiles.ensureForProfile(this,minecraftProfile)) Log.i("CSClient","Bundled managed core verified before launch"); } catch(Exception updateError){ throw new RuntimeException("Unable to verify bundled CS Client",updateError); }
         JREUtils.redirectAndPrintJRELog();
         LauncherProfiles.load();
         int requiredJavaVersion = 8;

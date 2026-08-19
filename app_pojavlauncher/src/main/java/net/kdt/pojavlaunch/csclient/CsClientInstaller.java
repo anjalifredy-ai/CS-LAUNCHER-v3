@@ -43,13 +43,13 @@ public final class CsClientInstaller {
             status(cb,"Resolving Fabric Loader for "+blaze.minecraft+"…",10);
             FabricVersion[] loaders=FabriclikeUtils.FABRIC_UTILS.downloadLoaderVersions(blaze.minecraft);
             if(loaders==null||loaders.length==0)throw new Exception("No Fabric Loader for "+blaze.minecraft);
-            String loader=null;for(FabricVersion v:loaders)if(v.stable){loader=v.version;break;}if(loader==null)loader=loaders[0].version;
+            String loader=null;for(FabricVersion candidate:loaders)if(candidate.stable&&versionAtLeast(candidate.version,blaze.minimumLoader)){loader=candidate.version;break;}if(loader==null)throw new Exception("CS Client requires Fabric Loader "+blaze.minimumLoader+" or newer");
             String profileJson=net.kdt.pojavlaunch.utils.DownloadUtils.downloadString(FabriclikeUtils.FABRIC_UTILS.createJsonDownloadUrl(blaze.minecraft,loader));
             String versionId=new JSONObject(profileJson).getString("id");File versionDir=new File(Tools.DIR_HOME_VERSION,versionId);versionDir.mkdirs();Tools.write(new File(versionDir,versionId+".json").getAbsolutePath(),profileJson);
 
             if(pack!=null){status(cb,"Merging modpack: "+pack.title+"…",22);CsClientCatalog.FileEntry f=CsClientCatalog.latestFile(pack.id,blaze.minecraft,true);File mr=new File(Tools.DIR_CACHE,"csclient_pack.mrpack");download(f,mr);new ModrinthApi().installMrpack(mr,tmp,(current,total)->{int pct=22+(int)(18f*current/Math.max(1,total));status(cb,"Merging modpack: "+pack.title+"…",pct);});mr.delete();}
 
-            status(cb,"Installing Blaze Client…",48);download(new CsClientCatalog.FileEntry(blaze.fileUrl,blaze.fileName,blaze.sha1),new File(tmp,"mods/"+blaze.fileName));
+            status(cb,"Installing bundled CS Client…",48);CsClientManagedFiles.installCore(ctx,blaze,tmp);
             status(cb,"Installing Fabric API for "+blaze.minecraft+"…",60);removeMatching(new File(tmp,"mods"),"fabric-api");CsClientCatalog.FileEntry api=CsClientCatalog.latestFile(CsClientCatalog.FABRIC_API_PROJECT,blaze.minecraft,false);download(api,new File(tmp,"mods/"+api.name));
             int index=0;for(CsClientCatalog.ProjectEntry mod:mods){index++;status(cb,"Installing mod "+index+"/"+mods.size()+": "+mod.title,60+(int)(25f*index/Math.max(1,mods.size())));CsClientCatalog.FileEntry f=CsClientCatalog.latestFile(mod.id,blaze.minecraft,false);download(f,new File(tmp,"mods/"+f.name));}
 
@@ -61,6 +61,7 @@ public final class CsClientInstaller {
     }
     private static void download(CsClientCatalog.FileEntry f,File out)throws Exception{out.getParentFile().mkdirs();Tools.downloadFile(f.url,out.getAbsolutePath());if(f.sha1!=null&&!Tools.compareSHA1(out,f.sha1)){out.delete();throw new Exception("File verification failed: "+f.name);}}
     private static void removeMatching(File dir,String needle){File[]a=dir.listFiles();if(a!=null)for(File f:a)if(f.getName().toLowerCase().contains(needle))f.delete();}
+    private static boolean versionAtLeast(String actual,String minimum){try{String[]a=actual.split("\\."),m=minimum.split("\\.");for(int i=0;i<Math.max(a.length,m.length);i++){int x=i<a.length?Integer.parseInt(a[i].replaceAll("[^0-9].*","")):0,y=i<m.length?Integer.parseInt(m[i].replaceAll("[^0-9].*","")):0;if(x!=y)return x>y;}return true;}catch(Exception e){return actual.compareTo(minimum)>=0;}}
     private static String encodeLogo(Context c){try{Bitmap b=BitmapFactory.decodeResource(c.getResources(),R.drawable.cs_logo);ByteArrayOutputStream o=new ByteArrayOutputStream();b.compress(Bitmap.CompressFormat.PNG,100,o);b.recycle();return"data:image/png;base64,"+Base64.encodeToString(o.toByteArray(),Base64.NO_WRAP);}catch(Throwable e){return"default";}}
     private static void status(Callback cb,String s,int pct){Tools.runOnUiThread(()->cb.onStatus(s,pct));}
     private static void done(Callback cb,boolean ok,String s){Tools.runOnUiThread(()->cb.onDone(ok,s));}

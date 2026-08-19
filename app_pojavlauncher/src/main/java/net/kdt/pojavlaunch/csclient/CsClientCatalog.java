@@ -12,14 +12,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
-/** Modrinth-backed catalog for Blaze Client and optional Fabric content. */
+/** Bundled CS Client catalog; Modrinth remains the source for optional content. */
 public final class CsClientCatalog {
-    public static final String BLAZE_PROJECT = "xakOmmYI";
     public static final String FABRIC_API_PROJECT = "P7dR8mSH";
     private static final String API = "https://api.modrinth.com/v2/";
 
     public static final class VersionEntry implements Serializable {
         public String minecraft, versionId, build, name, fileUrl, fileName, sha1;
+        public String assetPath, sha256, minimumLoader;
     }
     public static final class ProjectEntry implements Serializable {
         public String id, title, description, iconUrl;
@@ -35,24 +35,14 @@ public final class CsClientCatalog {
 
     private CsClientCatalog() {}
 
-    public static List<VersionEntry> fetchLatestByMinecraft() throws Exception {
-        JSONArray versions = new JSONArray(DownloadUtils.downloadString(API+"project/"+BLAZE_PROJECT+"/version"));
-        LinkedHashMap<String,VersionEntry> grouped = new LinkedHashMap<>();
-        for(int i=0;i<versions.length();i++){
-            JSONObject v=versions.getJSONObject(i); JSONArray games=v.getJSONArray("game_versions");
-            JSONObject file=primary(v.getJSONArray("files")); if(file==null)continue;
-            for(int g=0;g<games.length();g++){
-                String mc=games.getString(g); if(grouped.containsKey(mc))continue;
-                VersionEntry e=new VersionEntry();e.minecraft=mc;e.versionId=v.getString("id");
-                e.build=v.optString("version_number","");e.name=v.optString("name",e.build);
-                e.fileUrl=file.getString("url");e.fileName=file.getString("filename");
-                e.sha1=file.optJSONObject("hashes")!=null?file.getJSONObject("hashes").optString("sha1",null):null;
-                grouped.put(mc,e);
-            }
-        }
-        List<VersionEntry> out=new ArrayList<>(grouped.values());
-        out.sort((a,b)->compareVersions(b.minecraft,a.minecraft)); return out;
+    public static List<VersionEntry> fetchLatestByMinecraft() {
+        List<VersionEntry> out=new ArrayList<>();
+        out.add(bundled("1.21.11","1.0.0+1.21.11","0.18.2","cs-client-V1+1.21.11.jar","d6e5da835a0b2fc361986e9d97edcd0236f0c6e50b150a410142d0eee73608eb"));
+        out.add(bundled("26.1","1.0.0+26.1","0.19.3","cs-client-V1+26.1.jar","cd60e36959f89f3b4f83ed5e02fa12758d3152bd7e01ca5230c66cbcc3c95ed4"));
+        out.add(bundled("26.2","1.0.0+26.2","0.19.3","cs-client-V1+26.2.jar","5bfcda6d4ca5b8ce751005711ed2dcb4ef93d12a5750ef24844fd08cb0997bea"));
+        return out;
     }
+    private static VersionEntry bundled(String mc,String build,String loader,String file,String sha){VersionEntry e=new VersionEntry();e.minecraft=mc;e.versionId="cs-client-"+build;e.build=build;e.name="CS Client V1";e.fileName=file;e.assetPath="components/cs_client/"+file;e.sha256=sha;e.minimumLoader=loader;return e;}
 
     public static List<ProjectEntry> search(String query,String mc,boolean packs) throws Exception {
         String facets="[[\"project_type:"+(packs?"modpack":"mod")+"\"],[\"versions:"+mc+"\"],[\"categories:fabric\"]]";
