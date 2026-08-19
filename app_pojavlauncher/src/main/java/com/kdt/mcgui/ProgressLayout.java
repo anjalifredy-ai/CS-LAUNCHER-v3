@@ -118,7 +118,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
             // Exit downward — the console sinks back off the bottom edge
             ProgressLayout.this.animate()
                 .alpha(0f)
-                .translationY(ProgressLayout.this.getHeight() + dp(24f))
+                .translationY(-(ProgressLayout.this.getHeight() + dp(24f)))
                 .setDuration(420)
                 .withEndAction(() -> {
                     hideChromeImmediately();
@@ -414,7 +414,7 @@ public class ProgressLayout extends ConstraintLayout implements View.OnClickList
                 if (becameVisible) {
                     animate().cancel();
                     setAlpha(0f);
-                    setTranslationY(dp(120f));
+                    setTranslationY(-dp(72f));
                     animate().alpha(1f).translationY(0f)
                             .setDuration(460)
                             .setInterpolator(new android.view.animation.OvershootInterpolator(0.65f))

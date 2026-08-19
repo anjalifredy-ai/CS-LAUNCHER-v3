@@ -67,7 +67,7 @@ public class RuntimeSetupActivity extends BaseActivity {
     private int mDoneCount = 0;
     private int mCurrentPct = 0;
 
-    private ProgressListener mProgressHook;
+    private final java.util.Map<String,ProgressListener> mProgressHooks=new java.util.HashMap<>();
 
     private static class CardState {
         int major; View root; TextView chip; boolean installed; boolean selectable;
@@ -78,8 +78,8 @@ public class RuntimeSetupActivity extends BaseActivity {
         int major; View root; TextView chip; TextView stats; TextView stepText;
         TextView bigPercent;
         ProgressBar bar; View spinner; View check;
-        NewJREUtil.ExternalRuntime runtime;
-        int state; // 0 queued, 1 downloading, 2 installing, 3 ready, 4 failed
+        NewJREUtil.ExternalRuntime runtime; String progressRecord; java.io.File archive; volatile int progress;
+        int state; // 0 queued, 1 downloading, 2 downloaded, 3 ready, 4 failed
     }
 
     @Override
@@ -276,6 +276,7 @@ public class RuntimeSetupActivity extends BaseActivity {
             InstallRow row = new InstallRow();
             row.major = c.major;
             row.runtime = c.runtime;
+            row.progressRecord=ProgressLayout.UNPACK_RUNTIME+":"+row.major;row.progress=0;
             row.state = 0;
             row.root = inflater.inflate(R.layout.item_runtime_install_row, mInstallRows, false);
             row.chip = row.root.findViewById(R.id.install_state_chip);
@@ -318,143 +319,12 @@ public class RuntimeSetupActivity extends BaseActivity {
         else bar.setProgress(pct);
     }
 
-    private void hookProgress() {
-        mProgressHook = new ProgressListener() {
-            @Override public void onProgressStarted() {}
-            @Override public void onProgressEnded() {}
-            @Override
-            public void onProgressUpdated(int progress, int resid, Object... va) {
-                runOnUiThread(() -> {
-                    if (isFinishingOrDestroyedSoft()) return;
-                    InstallRow current = currentActiveRow();
-                    if (current == null) return;
-                    Double curMb = va != null && va.length > 1 && va[1] instanceof Number ? ((Number) va[1]).doubleValue() : -1;
-                    Double totMb = va != null && va.length > 2 && va[2] instanceof Number ? ((Number) va[2]).doubleValue() : -1;
-                    Double speed = va != null && va.length > 3 && va[3] instanceof Number ? ((Number) va[3]).doubleValue() : -1;
-                    Double remain = va != null && va.length > 4 && va[4] instanceof Number ? ((Number) va[4]).doubleValue() : -1;
-                    mCurrentPct = progress;
-                    setBarProgress(current.bar, progress);
-                    if (current.bigPercent != null) current.bigPercent.setText(progress + "%");
-                    if (totMb > 0) {
-                        String s = String.format(Locale.US, "%.1f / %.0f MB", curMb, totMb);
-                        if (speed > 0) s += String.format(Locale.US, "  •  %.1f MB/s", speed);
-                        if (remain > 0) s += String.format(Locale.US, "  •  ~%ds", remain.intValue());
-                        current.stats.setText(s);
-                        mStatusLine.setText(s);
-                    }
-                    refreshAggregate();
-                });
-            }
-        };
-        ProgressKeeper.addListener(ProgressLayout.UNPACK_RUNTIME, mProgressHook);
-    }
+    private void hookProgress(){for(InstallRow row:mRows){ProgressListener hook=new ProgressListener(){@Override public void onProgressStarted(){}@Override public void onProgressEnded(){}@Override public void onProgressUpdated(int progress,int resid,Object...va){runOnUiThread(()->{if(isFinishingOrDestroyedSoft())return;row.progress=Math.max(0,Math.min(100,progress));setBarProgress(row.bar,row.progress);if(row.bigPercent!=null)row.bigPercent.setText(row.progress+"%");double cur=va!=null&&va.length>1&&va[1]instanceof Number?((Number)va[1]).doubleValue():-1,tot=va!=null&&va.length>2&&va[2]instanceof Number?((Number)va[2]).doubleValue():-1,speed=va!=null&&va.length>3&&va[3]instanceof Number?((Number)va[3]).doubleValue():-1,remain=va!=null&&va.length>4&&va[4]instanceof Number?((Number)va[4]).doubleValue():-1;if(tot>0){String text=String.format(Locale.US,"%.1f / %.0f MB",cur,tot);if(speed>0)text+=String.format(Locale.US," • %.1f MB/s",speed);if(remain>0)text+=String.format(Locale.US," • ~%ds",(int)remain);row.stats.setText(text);}refreshAggregate();});}};mProgressHooks.put(row.progressRecord,hook);ProgressKeeper.addListener(row.progressRecord,hook);}}
+    private void refreshAggregate(){if(mRows.isEmpty())return;float sum=0;for(InstallRow r:mRows)sum+=r.state==3?100:r.progress;float frac=sum/(100f*mRows.size());mRing.setProgress(frac);mOverallPercent.setText((int)(frac*100)+"%");}
 
-    private InstallRow currentActiveRow() {
-        for (InstallRow r : mRows) if (r.state == 1 || r.state == 2) return r;
-        return null;
-    }
+    private void runQueue(List<CardState> queue){java.util.concurrent.ExecutorService pool=java.util.concurrent.Executors.newFixedThreadPool(Math.min(2,Math.max(1,mRows.size())));java.util.concurrent.CountDownLatch downloads=new java.util.concurrent.CountDownLatch(mRows.size());for(InstallRow row:mRows){pool.execute(()->{runOnUiThreadSafe(()->{row.state=1;row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_active);row.spinner.setVisibility(View.VISIBLE);setRowChip(row,"DOWNLOADING",0xFFD8C79A,R.drawable.bg_runtime_chip_recommended);row.stats.setText(R.string.rs_stats_preparing);mOverallStep.setText("Downloading selected runtimes in parallel");});try{row.archive=NewJREUtil.downloadRuntimeArchive(getApplicationContext(),row.major,row.progressRecord);row.progress=100;row.state=2;runOnUiThreadSafe(()->{row.spinner.setVisibility(View.GONE);setRowChip(row,"VERIFIED",0xFF9FD6AC,R.drawable.bg_runtime_chip_installed);row.stats.setText("Archive ready • waiting for safe install");refreshAggregate();});}catch(RuntimeException e){row.state=4;runOnUiThreadSafe(()->{row.spinner.setVisibility(View.GONE);row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_failed);setRowChip(row,getString(R.string.rw_failed),0xFFE5A0A6,R.drawable.bg_runtime_chip_installed);row.stats.setText(R.string.rs_stats_failed);row.root.setOnClickListener(v->retryRow(row));});}finally{ProgressLayout.clearProgress(row.progressRecord);downloads.countDown();}});}pool.shutdown();try{downloads.await();}catch(InterruptedException e){Thread.currentThread().interrupt();}for(InstallRow row:mRows){if(row.state!=2||row.archive==null)continue;runOnUiThreadSafe(()->{row.state=2;row.spinner.setVisibility(View.VISIBLE);setRowChip(row,"INSTALLING",0xFFD8C79A,R.drawable.bg_runtime_chip_recommended);mOverallStep.setText("Installing Java "+row.major);});try{NewJREUtil.installRuntimeArchive(row.archive,row.major);row.state=3;row.progress=100;mDoneCount++;runOnUiThreadSafe(()->{row.spinner.setVisibility(View.GONE);setBarProgress(row.bar,100);if(row.bigPercent!=null)row.bigPercent.setText("100%");row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_success);setRowChip(row,getString(R.string.rw_ready),0xFF9FD6AC,R.drawable.bg_runtime_chip_installed);row.stats.setText(R.string.rs_stats_ready);row.check.setVisibility(View.VISIBLE);UiMotion.popIn(row.check);refreshAggregate();});}catch(RuntimeException e){row.state=4;runOnUiThreadSafe(()->{row.spinner.setVisibility(View.GONE);row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_failed);setRowChip(row,getString(R.string.rw_failed),0xFFE5A0A6,R.drawable.bg_runtime_chip_installed);row.stats.setText(R.string.rs_stats_failed);row.root.setOnClickListener(v->retryRow(row));});}}runOnUiThreadSafe(this::finishDeck);}
 
-    private void refreshAggregate() {
-        int total = Math.max(1, mRows.size());
-        float frac = (mDoneCount + (mCurrentPct / 100f)) / total;
-        frac = Math.min(1f, frac);
-        mRing.setProgress(frac);
-        mOverallPercent.setText((int) (frac * 100) + "%");
-    }
-
-    private void runQueue(List<CardState> queue) {
-        for (InstallRow row : mRows) {
-            runOnUiThreadSafe(() -> {
-                row.state = 1;
-                mCurrentPct = 0;
-                row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_active);
-                row.spinner.setVisibility(View.VISIBLE);
-                setRowChip(row, getString(R.string.rw_downloading), 0xFFD8C79A,
-                        R.drawable.bg_runtime_chip_recommended);
-                mOverallStep.setText(getString(R.string.rs_step_installing, row.major));
-                mStatusLine.setText(R.string.rs_stats_preparing);
-                row.stats.setText(R.string.rs_stats_preparing);
-            });
-            boolean ok = true;
-            try {
-                row.runtime.downloadRuntime(getApplicationContext());
-            } catch (RuntimeException e) {
-                ok = false;
-                runOnUiThreadSafe(() -> Toast.makeText(this,
-                        getString(R.string.rs_failed_toast, row.major), Toast.LENGTH_LONG).show());
-            }
-            final boolean success = ok;
-            mDoneCount++;
-            mCurrentPct = success ? 100 : mCurrentPct;
-            runOnUiThreadSafe(() -> {
-                row.spinner.setVisibility(View.GONE);
-                if (success) {
-                    row.state = 3;
-                    setBarProgress(row.bar, 100);
-                    if (row.bigPercent != null) row.bigPercent.setText("100%");
-                    row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_success);
-                    setRowChip(row, getString(R.string.rw_ready), 0xFF9FD6AC,
-                            R.drawable.bg_runtime_chip_installed);
-                    row.stats.setText(R.string.rs_stats_ready);
-                    row.check.setVisibility(View.VISIBLE);
-                    // A3: jelly-bounce success pop (Zalith concept recreated via UiMotion)
-                    UiMotion.popIn(row.check);
-                } else {
-                    row.state = 4;
-                    row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_failed);
-                    setRowChip(row, getString(R.string.rw_failed), 0xFFE5A0A6,
-                            R.drawable.bg_runtime_chip_installed);
-                    row.stats.setText(R.string.rs_stats_failed);
-                    row.root.setOnClickListener(v -> retryRow(row));
-                }
-                refreshAggregate();
-            });
-        }
-        runOnUiThreadSafe(this::finishDeck);
-    }
-
-    private void retryRow(InstallRow row) {
-        if (row.state != 4) return;
-        row.state = 1;
-        row.root.setOnClickListener(null);
-        runOnUiThreadSafe(() -> {
-            row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_active);
-            row.spinner.setVisibility(View.VISIBLE);
-            setRowChip(row, getString(R.string.rw_downloading), 0xFFD8C79A,
-                    R.drawable.bg_runtime_chip_recommended);
-            row.stats.setText(R.string.rs_stats_preparing);
-        });
-        PojavApplication.sExecutorService.execute(() -> {
-            boolean ok = true;
-            try {
-                row.runtime.downloadRuntime(getApplicationContext());
-            } catch (RuntimeException e) { ok = false; }
-            final boolean success = ok;
-            runOnUiThreadSafe(() -> {
-                row.spinner.setVisibility(View.GONE);
-                if (success) {
-                    row.state = 3;
-                    setBarProgress(row.bar, 100);
-                    if (row.bigPercent != null) row.bigPercent.setText("100%");
-                    row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_success);
-                    setRowChip(row, getString(R.string.rw_ready), 0xFF9FD6AC,
-                            R.drawable.bg_runtime_chip_installed);
-                    row.stats.setText(R.string.rs_stats_ready);
-                    row.check.setVisibility(View.VISIBLE);
-                    // A3: jelly-bounce success pop (Zalith concept recreated via UiMotion)
-                    UiMotion.popIn(row.check);
-                } else {
-                    row.state = 4;
-                    row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_failed);
-                    setRowChip(row, getString(R.string.rw_failed), 0xFFE5A0A6,
-                            R.drawable.bg_runtime_chip_installed);
-                    row.stats.setText(R.string.rs_stats_failed);
-                    row.root.setOnClickListener(v -> retryRow(row));
-                }
-                finishDeck();
-            });
-        });
-    }
+    private void retryRow(InstallRow row){if(row.state!=4)return;row.state=1;row.progress=0;row.root.setOnClickListener(null);PojavApplication.sExecutorService.execute(()->{runOnUiThreadSafe(()->{row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_active);row.spinner.setVisibility(View.VISIBLE);setRowChip(row,"DOWNLOADING",0xFFD8C79A,R.drawable.bg_runtime_chip_recommended);});try{row.archive=NewJREUtil.downloadRuntimeArchive(getApplicationContext(),row.major,row.progressRecord);ProgressLayout.clearProgress(row.progressRecord);runOnUiThreadSafe(()->{setRowChip(row,"INSTALLING",0xFFD8C79A,R.drawable.bg_runtime_chip_recommended);});NewJREUtil.installRuntimeArchive(row.archive,row.major);row.state=3;row.progress=100;runOnUiThreadSafe(()->{row.spinner.setVisibility(View.GONE);setBarProgress(row.bar,100);if(row.bigPercent!=null)row.bigPercent.setText("100%");row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_success);setRowChip(row,getString(R.string.rw_ready),0xFF9FD6AC,R.drawable.bg_runtime_chip_installed);row.stats.setText(R.string.rs_stats_ready);row.check.setVisibility(View.VISIBLE);refreshAggregate();finishDeck();});}catch(RuntimeException e){row.state=4;ProgressLayout.clearProgress(row.progressRecord);runOnUiThreadSafe(()->{row.spinner.setVisibility(View.GONE);row.root.setBackgroundResource(R.drawable.bg_rs_stage_card_failed);setRowChip(row,getString(R.string.rw_failed),0xFFE5A0A6,R.drawable.bg_runtime_chip_installed);row.stats.setText(R.string.rs_stats_failed);row.root.setOnClickListener(v->retryRow(row));});}});}
 
     private void finishDeck() {
         if (isFinishingOrDestroyedSoft()) return;
@@ -503,11 +373,7 @@ public class RuntimeSetupActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        if (mProgressHook != null) {
-            try { ProgressKeeper.removeListener(ProgressLayout.UNPACK_RUNTIME, mProgressHook); }
-            catch (Throwable ignored) {}
-            mProgressHook = null;
-        }
+        for(java.util.Map.Entry<String,ProgressListener> e:mProgressHooks.entrySet())try{ProgressKeeper.removeListener(e.getKey(),e.getValue());}catch(Throwable ignored){}mProgressHooks.clear();
         super.onDestroy();
     }
 }

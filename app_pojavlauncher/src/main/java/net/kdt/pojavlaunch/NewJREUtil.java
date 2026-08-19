@@ -181,36 +181,10 @@ public class NewJREUtil {
     /**
      * @return whether installation was successful or not
      */
-    private static void tryDownloadRuntime(Context activity, int javaVersion){
-        if (!isOnline(activity)) {
-            net.kdt.pojavlaunch.launch.LaunchTracker.fail();
-            throw new RuntimeException(activity.getString(R.string.multirt_no_internet));
-        }
-        // A real runtime download is beginning — console takes the chrome.
-        net.kdt.pojavlaunch.launch.LaunchTracker.runtime();
-        String arch = archAsString(getDeviceArchitecture());
-        // Checks for using this method
-        if (!isJavaVersionAvailableForDownload(javaVersion)) throw new RuntimeException("This is not an available JRE version");
-        if ((getDeviceArchitecture() == Architecture.ARCH_X86 && javaVersion >= 21)) throw new RuntimeException("x86 is not supported on Java"+javaVersion);
-        try {
-            File outputFile = new File(Tools.DIR_CACHE, String.format("jre%s-android-%s.tar.xz", javaVersion, arch));
-            DownloaderProgressWrapper monitor = new DownloaderProgressWrapper(R.string.newdl_downloading_jre_runtime,
-                    ProgressLayout.UNPACK_RUNTIME);
-            monitor.extraString = Integer.toString(javaVersion);
-            DownloadUtils.downloadFileMonitored(
-                    getJreSource(javaVersion, arch),
-                    outputFile,
-                    null,
-                    monitor
-            );
-            String jreName = "External-" + javaVersion;
-            MultiRTUtils.installRuntimeNamed(NATIVE_LIB_DIR, new FileInputStream(outputFile), jreName);
-            MultiRTUtils.postPrepare(jreName);
-            outputFile.delete();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to download Java "+javaVersion+" for "+arch, e);
-        }
-    }
+    private static void validateRuntimeDownload(Context context,int javaVersion){if(!isOnline(context)){net.kdt.pojavlaunch.launch.LaunchTracker.fail();throw new RuntimeException(context.getString(R.string.multirt_no_internet));}if(!isJavaVersionAvailableForDownload(javaVersion))throw new RuntimeException("This is not an available JRE version");if(getDeviceArchitecture()==Architecture.ARCH_X86&&javaVersion>=21)throw new RuntimeException("x86 is not supported on Java"+javaVersion);}
+    public static File downloadRuntimeArchive(Context context,int javaVersion,String progressRecord){validateRuntimeDownload(context,javaVersion);net.kdt.pojavlaunch.launch.LaunchTracker.runtime();String arch=archAsString(getDeviceArchitecture());File output=new File(Tools.DIR_CACHE,String.format("jre%s-android-%s.tar.xz",javaVersion,arch));DownloaderProgressWrapper monitor=new DownloaderProgressWrapper(R.string.newdl_downloading_jre_runtime,progressRecord);monitor.extraString=Integer.toString(javaVersion);try{DownloadUtils.downloadFileMonitored(getJreSource(javaVersion,arch),output,null,monitor);return output;}catch(IOException e){throw new RuntimeException("Failed to download Java "+javaVersion+" for "+arch,e);}}
+    public static void installRuntimeArchive(File archive,int javaVersion){try{String name="External-"+javaVersion;MultiRTUtils.installRuntimeNamed(NATIVE_LIB_DIR,new FileInputStream(archive),name);MultiRTUtils.postPrepare(name);archive.delete();}catch(IOException e){throw new RuntimeException("Failed to install Java "+javaVersion,e);}}
+    private static void tryDownloadRuntime(Context activity,int javaVersion){File archive=downloadRuntimeArchive(activity,javaVersion,ProgressLayout.UNPACK_RUNTIME);installRuntimeArchive(archive,javaVersion);}
 
     private enum InternalRuntime {
         JRE_17(17, "Internal-17", "components/jre-new"),

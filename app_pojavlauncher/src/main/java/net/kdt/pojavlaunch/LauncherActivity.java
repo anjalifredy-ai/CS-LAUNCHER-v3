@@ -540,8 +540,8 @@ public class LauncherActivity extends BaseActivity {
             );
         }
 
-        // Apply saved colour theme before layout inflation
-        setTheme(net.kdt.pojavlaunch.theme.ThemeManager.getSavedTheme());
+        setTheme(R.style.AppTheme);
+        LauncherPreferences.DEFAULT_PREF.edit().remove("launcher_theme").remove("enable_bg_gradient").apply();
         
         // The launcher UI is designed as a wide dashboard: keep every flow in
         // landscape instead of allowing a partial portrait layout to appear.
@@ -649,9 +649,8 @@ public class LauncherActivity extends BaseActivity {
         // home UI never flashes; onboarding dialogs stay out of the way.
         if (shortcutLaunchRequested) {
             showBootOverlayInstant();
-        } else if (!maybeShowRuntimeWizard()) {
-            // Official partner welcome — shown exactly once, after first launch settles
-            maybeShowInfrawireWelcome();
+        } else {
+            maybeShowRuntimeWizard();
         }
     }
 

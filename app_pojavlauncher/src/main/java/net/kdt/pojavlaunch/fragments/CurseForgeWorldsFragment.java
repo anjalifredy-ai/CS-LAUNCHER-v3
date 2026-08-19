@@ -58,13 +58,7 @@ public class CurseForgeWorldsFragment extends Fragment {
         });
         mRecyclerView.setAdapter(mAdapter);
 
-        // Infrawire "Powered by" badge → Official Partners page
-        View poweredBadge = view.findViewById(R.id.infrawire_powered_badge);
-        if (poweredBadge != null) {
-            net.kdt.pojavlaunch.sponsor.InfrawirePartner.applyPressAnimation(poweredBadge);
-            poweredBadge.setOnClickListener(v ->
-                    net.kdt.pojavlaunch.sponsor.InfrawirePartner.openPartnerPage(requireActivity()));
-        }
+        View poweredBadge=view.findViewById(R.id.infrawire_powered_badge);if(poweredBadge!=null)poweredBadge.setVisibility(View.GONE);
 
         loadWorlds();
     }

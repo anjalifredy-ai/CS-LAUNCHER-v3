@@ -377,9 +377,6 @@ public class LauncherPreferenceFragment extends Fragment {
         // User req: Account category hidden from the settings deck (redundant — login flow owns it; page code stays dormant).
         rootItems.add(new SettingItem("cat_experimental", SettingItem.TYPE_CATEGORY_LINK, "Experimental", "Test launcher orientations, wall-papers, and colors", "Experimental"));
         rootItems.add(new SettingItem("cat_misc", SettingItem.TYPE_CATEGORY_LINK, "Miscellaneous", "Library verifications, system drivers, and in-game capes", "Miscellaneous"));
-        if (net.kdt.pojavlaunch.remote.FirebaseSyncManager.isSponsorshipEnabled()) {
-            rootItems.add(new SettingItem("cat_sponsors", SettingItem.TYPE_CATEGORY_LINK, "Sponsors", "Official partners backing CS Launcher with cloud power", "Sponsors"));
-        }
         rootItems.add(new SettingItem("cat_performance", SettingItem.TYPE_CATEGORY_LINK, "Performance", "FPS overlay, live memory, and next-gen engine dials", "Performance"));
         return rootItems;
     }
@@ -453,19 +450,6 @@ public class LauncherPreferenceFragment extends Fragment {
                                         getString(R.string.preference_custom_bg_removed));
                             }));
                     // Launch GIF import retired; the launch stage uses the lightweight static color.
-                    custItems.add(new SettingItem("launch_stage_color_action", SettingItem.TYPE_ACTION,
-                            "Launch Screen Color",
-                            "Pick the loading screen background color", null)
-                            .setAction(this::pickLaunchStageColor));
-                    custItems.add(new SettingItem("launch_stage_color_reset", SettingItem.TYPE_ACTION,
-                            "Reset Launch Color",
-                            "Back to pure black", null)
-                            .setAction(() -> {
-                                LauncherPreferences.DEFAULT_PREF.edit()
-                                        .putInt("launch_stage_color", 0xFF000000).apply();
-                                net.kdt.pojavlaunch.utils.CsPopup.show(requireActivity(),
-                                        getString(R.string.cs_launch_color_reset));
-                            }));
                     // ── Launcher theme ──
                     // ── Launcher animations (user req: pick Full or Off) ──
                     custItems.add(new SettingItem("launcher_animations", SettingItem.TYPE_DROPDOWN,
@@ -604,7 +588,6 @@ public class LauncherPreferenceFragment extends Fragment {
                     expItems.add(new SettingItem("thermalTelemetry", SettingItem.TYPE_SWITCH,
                             "Thermal benchmark telemetry", "Opt-in measurement only; never changes Minecraft settings", false));
                     expItems.add(new SettingItem("force_landscape", SettingItem.TYPE_SWITCH, getString(R.string.preference_force_landscape_title), getString(R.string.preference_force_landscape_summary), false));
-                    expItems.add(new SettingItem("enable_bg_gradient", SettingItem.TYPE_SWITCH, getString(R.string.preference_bg_gradient_title), getString(R.string.preference_bg_gradient_summary), false));
                     categories.add(new SettingCategory("Experimental Settings", expItems));
                     break;
 
