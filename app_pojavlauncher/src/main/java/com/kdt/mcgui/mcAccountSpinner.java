@@ -20,7 +20,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,6 +72,7 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
 
     private final List<String> mAccountList = new ArrayList<>(2);
     private MinecraftAccount mSelectecAccount = null;
+    private android.app.Dialog mAccountDialog;
 
     /* Display the head of the current profile, here just to allow bitmap recycling */
     private BitmapDrawable mHeadDrawable;
@@ -191,6 +195,19 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
         if(mSelectecAccount != null)
             performLogin(mSelectecAccount);
     }
+
+    @Override public boolean performClick(){
+        if(mAccountList.size()<=1){ExtraCore.setValue(ExtraConstants.SELECT_AUTH_METHOD,true);return true;}
+        if(mAccountDialog!=null&&mAccountDialog.isShowing())return true;
+        final AccountAdapter source=getAdapter() instanceof AccountAdapter?(AccountAdapter)getAdapter():null;if(source==null)return super.performClick();
+        android.app.Dialog dialog=new android.app.Dialog(getContext());mAccountDialog=dialog;
+        LinearLayout panel=new LinearLayout(getContext());panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(14),dp(12),dp(14),dp(14));panel.setBackgroundResource(R.drawable.bg_account_popup);
+        LinearLayout bar=new LinearLayout(getContext());bar.setGravity(android.view.Gravity.CENTER_VERTICAL);TextView title=new TextView(getContext());title.setText("SELECT ACCOUNT");title.setTextColor(0xfff2f3f5);title.setTextSize(15);title.setTypeface(null,1);TextView close=new TextView(getContext());close.setText("×");close.setTextColor(0xffbcc3cc);close.setTextSize(24);close.setGravity(android.view.Gravity.CENTER);bar.addView(title,new LinearLayout.LayoutParams(0,dp(40),1));bar.addView(close,new LinearLayout.LayoutParams(dp(42),dp(40)));panel.addView(bar);
+        ListView list=new ListView(getContext());list.setDivider(null);list.setSelector(android.R.color.transparent);list.setAdapter(new BaseAdapter(){public int getCount(){return source.getCount();}public Object getItem(int p){return source.getItem(p);}public long getItemId(int p){return p;}public View getView(int p,View v,ViewGroup parent){return source.getDropDownView(p,v,parent);}});panel.addView(list,new LinearLayout.LayoutParams(-1,Math.min(dp(360),dp(70)*source.getCount())));
+        dialog.setContentView(panel);close.setOnClickListener(v->dialog.dismiss());list.setOnItemClickListener((p,v,pos,id)->{dialog.dismiss();if(pos==0){ExtraCore.setValue(ExtraConstants.SELECT_AUTH_METHOD,true);}else{pickAccount(pos);if(mSelectecAccount!=null)performLogin(mSelectecAccount);}});
+        dialog.setOnDismissListener(d->mAccountDialog=null);android.view.Window w=dialog.getWindow();if(w!=null){w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));w.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND);android.view.WindowManager.LayoutParams lp=w.getAttributes();lp.gravity=android.view.Gravity.CENTER;lp.dimAmount=.58f;w.setAttributes(lp);}dialog.show();if(w!=null){int screen=getResources().getDisplayMetrics().widthPixels;w.setLayout(Math.min(dp(430),screen-dp(32)),android.view.WindowManager.LayoutParams.WRAP_CONTENT);}return true;
+    }
+    private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
 
     @Override
     public final void onNothingSelected(AdapterView<?> parent) {}

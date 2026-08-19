@@ -828,6 +828,7 @@ public class ModInstallFragment extends Fragment {
             if (created) Log.d("CS_LAUNCHER", "Created directory: " + targetDir.getAbsolutePath());
         }
 
+        String installProfileKey=mProfileKey;if(installProfileKey==null||installProfileKey.isEmpty())installProfileKey=net.kdt.pojavlaunch.prefs.LauncherPreferences.DEFAULT_PREF.getString(net.kdt.pojavlaunch.prefs.LauncherPreferences.PREF_KEY_CURRENT_PROFILE,null);final String progressProfileKey=installProfileKey;if(progressProfileKey!=null)net.kdt.pojavlaunch.profiles.ProfileInstallProgress.begin(progressProfileKey,ProgressLayout.INSTALL_MODPACK,false,"PREPARING DOWNLOAD");
         ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.global_waiting);
         mInstallButton.setEnabled(false);
         mInstallButton.setText("Downloading...");
@@ -884,6 +885,7 @@ public class ModInstallFragment extends Fragment {
                     );
                 });
             } catch (Exception e) {
+                if(progressProfileKey!=null)net.kdt.pojavlaunch.profiles.ProfileInstallProgress.fail(progressProfileKey,net.kdt.pojavlaunch.utils.DownloadControl.isCancellation(e)?"DOWNLOAD STOPPED":"DOWNLOAD FAILED");
                 ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
                 Tools.runOnUiThread(() -> {
                     if (!isAdded()) return;

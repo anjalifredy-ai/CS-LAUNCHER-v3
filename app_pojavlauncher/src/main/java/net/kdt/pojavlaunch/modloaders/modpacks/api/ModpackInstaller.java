@@ -40,7 +40,9 @@ public class ModpackInstaller {
             modpackName = modpackName.substring(0,255);
         }
 
-        // Build a new minecraft instance, folder first
+        // Create a locked placeholder immediately; the home card mirrors the
+        // existing INSTALL_MODPACK record until verified completion.
+        LauncherProfiles.load();MinecraftProfile placeholder=MinecraftProfile.createTemplate();placeholder.name=modDetail.title;placeholder.lastVersionId="Installing";placeholder.gameDir="./custom_instances/"+modpackName;placeholder.icon=ModIconCache.getBase64Image(modDetail.getIconCacheTag());placeholder.installing=true;placeholder.installRecord=ProgressLayout.INSTALL_MODPACK;placeholder.installStatus="QUEUED";LauncherProfiles.mainProfileJson.profiles.put(modpackName,placeholder);LauncherProfiles.write();net.kdt.pojavlaunch.profiles.ProfileInstallProgress.begin(modpackName,ProgressLayout.INSTALL_MODPACK,true,"QUEUED");
 
         // Get the modpack file
         File modpackFile = new File(Tools.DIR_CACHE, modpackName + ".cf"); // Cache File
@@ -57,6 +59,7 @@ public class ModpackInstaller {
             // Install the modpack
             modLoaderInfo = installFunction.installModpack(modpackFile, new File(Tools.DIR_GAME_HOME, "custom_instances/"+modpackName));
 
+        } catch(IOException|RuntimeException error){net.kdt.pojavlaunch.profiles.ProfileInstallProgress.fail(modpackName,"INSTALLATION FAILED");throw error;
         } finally {
             modpackFile.delete();
             ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
@@ -66,11 +69,13 @@ public class ModpackInstaller {
         }
 
         // Create the instance
-        MinecraftProfile profile = new MinecraftProfile();
+        MinecraftProfile profile = LauncherProfiles.mainProfileJson.profiles.get(modpackName);
+        if(profile==null)profile=MinecraftProfile.createTemplate();
         profile.gameDir = "./custom_instances/" + modpackName;
         profile.name = modDetail.title;
         profile.lastVersionId = modLoaderInfo.getVersionId();
         profile.icon = ModIconCache.getBase64Image(modDetail.getIconCacheTag());
+        profile.installing=false;profile.installProgress=100;profile.installStatus="PROFILE READY";
 
 
         LauncherProfiles.mainProfileJson.profiles.put(modpackName, profile);

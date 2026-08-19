@@ -34,12 +34,14 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
     private static final String TAG = "HomeProfileAdapter";
 
     private static final int PAYLOAD_MOD_COUNT = 1;
+    private static final int PAYLOAD_INSTALL = 2;
 
     private final List<MinecraftProfile> mProfileList;
     private final List<String> mProfileKeys;
     private final OnProfileActionListener mListener;
     private final Map<String, Integer> mModCountCache = new ConcurrentHashMap<>();
     private OnStartDragListener mDragStartListener;
+    private final net.kdt.pojavlaunch.profiles.ProfileInstallProgress.Listener mInstallListener=key->{int p=mProfileKeys.indexOf(key);if(p>=0){notifyItemChanged(p,PAYLOAD_INSTALL);return;}MinecraftProfile profile=net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles.mainProfileJson==null?null:net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles.mainProfileJson.profiles.get(key);if(profile!=null&&profile.installing){mProfileKeys.add(key);mProfileList.add(profile);notifyItemInserted(mProfileList.size()-1);}};
     private boolean mModCountsReady;
     private int mBoundCount = 0;
 
@@ -146,6 +148,10 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
                     holder.tvModCount.setText("Installed Mods: " + modCount);
                     return;
                 }
+                if (payload instanceof Integer && (Integer) payload == PAYLOAD_INSTALL) {
+                    String key=mProfileKeys.get(position);bindInstall(holder,key,mProfileList.get(position));
+                    return;
+                }
             }
         }
 
@@ -183,6 +189,7 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
 
         bindIcon(holder.imgIcon, profileKey, profile);
         bindBackground(holder.imgBackground, profileKey, profile);
+        bindInstall(holder, profileKey, profile);
 
         holder.cardRoot.setOnClickListener(v -> {
             if (mListener != null) mListener.onProfileEdit(profileKey, profile);
@@ -254,11 +261,13 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         // Rebind when a remotely-cached asset (e.g. the default animated GIF)
         // finishes downloading so it fades in without user action.
         net.kdt.pojavlaunch.profiles.ProfileGifSupport.addAssetReadyListener(mAssetReadyListener);
+        net.kdt.pojavlaunch.profiles.ProfileInstallProgress.addListener(mInstallListener);
     }
 
     @Override
     public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         net.kdt.pojavlaunch.profiles.ProfileGifSupport.removeAssetReadyListener(mAssetReadyListener);
+        net.kdt.pojavlaunch.profiles.ProfileInstallProgress.removeListener(mInstallListener);
         super.onDetachedFromRecyclerView(recyclerView);
     }
 
@@ -268,6 +277,8 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
     private final net.kdt.pojavlaunch.profiles.ProfileGifSupport.OnAssetReadyListener mAssetReadyListener =
             assetKey -> Tools.runOnUiThread(() ->
                     notifyItemRangeChanged(0, getItemCount()));
+
+    private void bindInstall(ViewHolder h,String key,MinecraftProfile profile){net.kdt.pojavlaunch.profiles.ProfileInstallProgress.State s=net.kdt.pojavlaunch.profiles.ProfileInstallProgress.get(key);if(s==null){h.installOverlay.setVisibility(View.GONE);return;}h.installOverlay.setVisibility(View.VISIBLE);h.installPercent.setText(s.percent+"%");h.installStatus.setText(s.status);String detail=s.detail==null?"":s.detail;if(s.totalMb>0)detail=detail+String.format(java.util.Locale.US,"   %.1f / %.1f MB",s.currentMb,s.totalMb);h.installDetail.setText(detail.trim());h.installCount.setText(s.totalFiles>0?s.currentFile+" / "+s.totalFiles+" FILES":s.failed?"INCOMPLETE":"ACTIVE");h.installPause.setText(s.paused?"RESUME":"PAUSE");h.installPause.setVisibility(s.record!=null&&!s.failed?View.VISIBLE:View.INVISIBLE);h.installStop.setVisibility(s.percent>=100?View.GONE:View.VISIBLE);h.installPause.setOnClickListener(v->net.kdt.pojavlaunch.profiles.ProfileInstallProgress.togglePause(key));h.installStop.setOnClickListener(v->net.kdt.pojavlaunch.profiles.ProfileInstallProgress.stop(key));h.installOverlay.post(()->{int width=h.installOverlay.getWidth();int fill=Math.round(width*Math.max(0,Math.min(100,s.percent))/100f);ViewGroup.LayoutParams lp=h.installFill.getLayoutParams();lp.width=fill;h.installFill.setLayoutParams(lp);h.installEdge.setTranslationX(Math.max(0,fill-h.installEdge.getWidth()));});}
 
     private void bindIcon(ImageView target, String profileKey, MinecraftProfile profile) {
         String icon = profile.icon;
@@ -422,7 +433,8 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
         final PremiumPlayButtonView btnPlay;
         final FrameLayout btnBrowse;
         final View btnShortcut;
-        final View dragHandle;
+        final View dragHandle,installOverlay,installFill,installEdge;
+        final TextView installPercent,installCount,installStatus,installDetail,installPause,installStop;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -439,6 +451,7 @@ public class HomeProfileAdapter extends RecyclerView.Adapter<HomeProfileAdapter.
             btnBrowse = itemView.findViewById(R.id.btn_profile_browse);
             btnShortcut = itemView.findViewById(R.id.btn_profile_shortcut);
             dragHandle = itemView.findViewById(R.id.btn_profile_drag);
+            installOverlay=itemView.findViewById(R.id.profile_install_overlay);installFill=itemView.findViewById(R.id.profile_install_fill);installEdge=itemView.findViewById(R.id.profile_install_edge);installPercent=itemView.findViewById(R.id.profile_install_percent);installCount=itemView.findViewById(R.id.profile_install_count);installStatus=itemView.findViewById(R.id.profile_install_status);installDetail=itemView.findViewById(R.id.profile_install_detail);installPause=itemView.findViewById(R.id.profile_install_pause);installStop=itemView.findViewById(R.id.profile_install_stop);
         }
     }
 }
