@@ -6,8 +6,8 @@ plugins {
 static def getDate() { return new Date().format('yyyyMMdd') }
 
 def getVersionName = {
-    // Show clean "CS Launcher V3" style version names.
-    String semVer = "3.0.0"
+    // Show clean "CS Launcher V3.1" style version names.
+    String semVer = "3.1.0"
     
     // Try to get a git tag for the full version
     ByteArrayOutputStream TAG = new ByteArrayOutputStream()
@@ -85,7 +85,7 @@ android {
         applicationId "com.craftstudio.cslauncherv3"
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 10000000
+        versionCode 10010000
         versionName getVersionName()
         multiDexEnabled true //important
         resValue 'string', 'curseforge_api_key', getCFApiKey()
@@ -104,8 +104,8 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.customDebug
-            resValue "string", "app_name", "CS Launcher V3"
-            resValue "string", "app_short_name", "CS Launcher V3"
+            resValue "string", "app_name", "CS Launcher V3.1"
+            resValue "string", "app_short_name", "CS Launcher V3.1"
             resValue 'string', 'application_package', 'com.craftstudio.cslauncherv3.debug'
             resValue 'string', 'storageProviderAuthorities', 'com.craftstudio.cslauncherv3.scoped.gamefolder.debug'
             resValue 'string', 'shareProviderAuthority', 'com.craftstudio.cslauncherv3.scoped.controlfolder.debug'
@@ -128,8 +128,8 @@ android {
             // defaultConfig already set
             // multiDexEnabled = true
             signingConfig signingConfigs.release
-            resValue "string", "app_name", "CS Launcher V3"
-            resValue "string", "app_short_name", "CS Launcher V3"
+            resValue "string", "app_name", "CS Launcher V3.1"
+            resValue "string", "app_short_name", "CS Launcher V3.1"
             resValue 'string', 'storageProviderAuthorities', 'com.craftstudio.cslauncherv3.gamefolder'
             resValue 'string', 'application_package', 'com.craftstudio.cslauncherv3'
         }

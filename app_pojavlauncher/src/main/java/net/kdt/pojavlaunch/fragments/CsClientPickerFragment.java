@@ -106,7 +106,7 @@ public class CsClientPickerFragment extends Fragment {
         final LinearLayout root;final TextView title,check;final CsClientCatalog.ProjectEntry entry;
         RowBinding(LinearLayout root,TextView title,TextView check,CsClientCatalog.ProjectEntry entry){this.root=root;this.title=title;this.check=check;this.entry=entry;}
         void render(boolean animate){boolean yes=selected(entry);root.setBackgroundResource(yes?R.drawable.bg_csc_manifest_selected:R.drawable.bg_csc_manifest_row);
-            title.setText(entry.title);check.setText(yes?"✓":"+");check.setTextColor(yes?0xff22c9cb:0xffa0a2aa);
+            title.setText(entry.title);check.setText(yes?"✓":"+");check.setTextColor(yes?0xffffffff:0xffa0a2aa);
             if(animate){check.setScaleX(.75f);check.setScaleY(.75f);check.setAlpha(.4f);check.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(150).start();}}
     }
 

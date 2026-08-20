@@ -39,6 +39,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.kdt.pojavlaunch.PojavApplication;
+import net.kdt.pojavlaunch.servers.ServerAdapter;
+import net.kdt.pojavlaunch.servers.ServerEntry;
+import net.kdt.pojavlaunch.servers.ServerPinger;
+import net.kdt.pojavlaunch.servers.ServerStore;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
@@ -99,14 +103,22 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private TextView mProfileLogStatus, mProfileLogDetails;
     private boolean mDeleteArmed = false;
     private final Runnable mDeleteDisarm = () -> disarmDelete();
+
+    // ── V3.1 Server Hub — Zalith-inspired live ping + 1-click --server ──
+    private RecyclerView mServersList;
+    private EditText mServersInput;
+    private TextView mServersAddStatus, mServersEmpty;
+    private View mServersAddBtn, mServersRefresh;
+    private ServerAdapter mServersAdapter;
+    private final List<ServerEntry> mServers = new ArrayList<>();
     private final int[] mNavIds = {
             R.id.vprof_nav_general, R.id.vprof_nav_java, R.id.vprof_nav_memory,
             R.id.vprof_nav_graphics, R.id.vprof_nav_mods, R.id.vprof_nav_rpacks,
             R.id.vprof_nav_shaders, R.id.vprof_nav_skin, R.id.vprof_nav_cape,
-            R.id.vprof_nav_runtime, R.id.vprof_nav_logs, R.id.vprof_nav_advanced,
-            R.id.vprof_nav_worlds };
+            R.id.vprof_nav_runtime, R.id.vprof_nav_servers, R.id.vprof_nav_advanced,
+            R.id.vprof_nav_logs, R.id.vprof_nav_worlds };
     /** The last rail item opens the World Manager instead of scrolling. */
-    private static final int NAV_WORLDS_INDEX = 12;
+    private static final int NAV_WORLDS_INDEX = 13;
 
     // ── Phase 2/3: TRUE full-screen collapsing hero (space reclaim) ──
     private View mHeroContainer;
@@ -116,7 +128,8 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
             R.id.vprof_section_general, R.id.vprof_section_java, R.id.vprof_section_memory,
             R.id.vprof_section_graphics, R.id.vprof_section_mods, R.id.vprof_section_rpacks,
             R.id.vprof_section_shaders, R.id.vprof_section_skin, R.id.vprof_section_cape,
-            R.id.vprof_section_runtime, R.id.vprof_section_logs, R.id.vprof_section_advanced };
+            R.id.vprof_section_runtime, R.id.vprof_section_servers, R.id.vprof_section_logs,
+            R.id.vprof_section_advanced };
     private final CropperUtils.CropperListener mBackgroundCropperListener = new CropperUtils.CropperListener() {
         @Override
         public void onCropped(Bitmap contentBitmap) {
@@ -858,6 +871,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
                 .setOnClickListener(v -> mBackgroundImagePicker.launch(new String[]{"image/*"}));
 
         setupStudioNav(view);
+        setupServersHub(view);
         setupStudioButtons(view);
         setupRamSlider();
         setupHeaderWatchers();
@@ -1033,6 +1047,187 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
             }
         }
     }
+
+    // ── V3.1 Server Hub — Zalith-inspired live ping + 1-click --server ──
+    private void setupServersHub(@NonNull View root) {
+        mServersList = root.findViewById(R.id.vprof_servers_list);
+        mServersInput = root.findViewById(R.id.vprof_servers_input);
+        mServersAddStatus = root.findViewById(R.id.vprof_servers_add_status);
+        mServersEmpty = root.findViewById(R.id.vprof_servers_empty);
+        mServersAddBtn = root.findViewById(R.id.vprof_servers_add_btn);
+        mServersRefresh = root.findViewById(R.id.vprof_servers_refresh);
+        View addCard = root.findViewById(R.id.vprof_servers_add_card);
+        if (mServersList == null || mServersInput == null) return;
+
+        // mast animation for add card
+        if (addCard != null) {
+            addCard.setAlpha(0f); addCard.setTranslationY(dp(10));
+            addCard.animate().alpha(1f).translationY(0f).setDuration(320).setInterpolator(new DecelerateInterpolator()).start();
+        }
+
+        mServersList.setLayoutManager(new LinearLayoutManager(getContext()));
+        mServersList.setNestedScrollingEnabled(false);
+        mServersAdapter = new ServerAdapter(mServers, new ServerAdapter.Listener() {
+            @Override public void onJoin(ServerEntry e) {
+                if (getContext() == null || mProfileKey == null) return;
+                ServerStore.setPending(requireContext(), mProfileKey, e.address);
+                Toast.makeText(requireContext(), "➤ " + e.address + " — next PLAY will auto-join (V3.1)  --server " + e.getHost() + " --port " + e.getPort(), Toast.LENGTH_LONG).show();
+                // subtle pulse on PLAY
+                View section = root.findViewById(R.id.vprof_section_servers);
+                if (section != null) {
+                    section.animate().scaleX(0.99f).scaleY(0.99f).setDuration(90).withEndAction(() -> section.animate().scaleX(1f).scaleY(1f).setDuration(180).start()).start();
+                }
+                // optionally trigger launch directly: ExtraCore LAUNCH_GAME
+                // We store pending and user can press top PLAY; also offer instant launch
+                android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(requireContext());
+                b.setTitle("Join " + e.address + "?");
+                b.setMessage("Launch directly into this server? This will start Minecraft with --server " + e.getHost() + " --port " + e.getPort() + "\n\nTip: You can also just press PLAY in the launcher — V3.1 will auto-inject the same flags.");
+                b.setPositiveButton("LAUNCH NOW", (d,w) -> {
+                    // set pending and fire launch
+                    ServerStore.setPending(requireContext(), mProfileKey, e.address);
+                    // switch to this profile if needed
+                    try { LauncherProfiles.load(); String cur = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+                          if (!mProfileKey.equals(cur)) LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, mProfileKey).apply();
+                    } catch (Exception ignored) {}
+                    ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
+                });
+                b.setNegativeButton("JUST SAVE", null);
+                b.show();
+            }
+            @Override public void onRemove(ServerEntry e) {
+                if (getContext() == null) return;
+                ServerStore.remove(requireContext(), e.address);
+                refreshServersHub();
+                if (mProfileKey != null) {
+                    String pending = ServerStore.getPending(requireContext(), mProfileKey);
+                    if (pending != null && pending.equalsIgnoreCase(e.address)) ServerStore.clearPending(requireContext(), mProfileKey);
+                }
+            }
+            @Override public void onEdit(ServerEntry e) {
+                mServersInput.setText(e.address);
+                mServersInput.requestFocus();
+                // ping again
+                if (mServersAddStatus != null) { mServersAddStatus.setVisibility(View.VISIBLE); mServersAddStatus.setText("Re-pinging " + e.address + "…"); }
+                ServerPinger.pingAsync(e, new ServerPinger.Callback() {
+                    @Override public void onResult(ServerEntry entry) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            ServerStore.update(requireContext(), entry);
+                            refreshServersHub();
+                            if (mServersAddStatus != null) mServersAddStatus.setText("✓ " + entry.motd + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs + "ms");
+                        });
+                    }
+                    @Override public void onError(ServerEntry entry, Exception ex) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            ServerStore.update(requireContext(), entry);
+                            refreshServersHub();
+                            if (mServersAddStatus != null) mServersAddStatus.setText("✗ Offline — " + ex.getMessage());
+                        });
+                    }
+                });
+            }
+        });
+        mServersList.setAdapter(mServersAdapter);
+
+        if (mServersAddBtn != null) mServersAddBtn.setOnClickListener(v -> {
+            v.animate().scaleX(0.92f).scaleY(0.92f).setDuration(70).withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
+            addServerFromInput();
+        });
+        if (mServersRefresh != null) mServersRefresh.setOnClickListener(v -> {
+            v.animate().rotationBy(360).setDuration(600).start();
+            pingAllServers();
+        });
+        View checkBtn = root.findViewById(R.id.vprof_servers_add_card) != null ? root.findViewById(R.id.vprof_servers_add_card).findViewById(R.id.vprof_servers_add_status) : null;
+        // CHECK button for live preview without adding
+        View check = root.findViewById(R.id.vprof_servers_add_card);
+        // actually id is inside add_card: use root find
+        View checkBtn2 = root.findViewById(R.id.vprof_servers_add_card);
+        // find CHECK view
+        TextView checkTv = root.findViewById(R.id.vprof_servers_add_btn) != null ? null : null;
+        // The CHECK button is R.id.vprof_servers_add_card's child with id btn_add_server_check (dialog) but here we have no dialog — we have inline. Add CHECK handling via long press?
+        // For hub, CHECK is done automatically on ADD; we also allow tapping status to re-ping
+        if (mServersAddStatus != null) mServersAddStatus.setOnClickListener(v -> pingAllServers());
+
+        // Enter key on input
+        mServersInput.setOnEditorActionListener((v, actionId, event) -> { addServerFromInput(); return true; });
+
+        refreshServersHub();
+        pingAllServers();
+    }
+
+    private void addServerFromInput() {
+        if (getContext() == null || mServersInput == null) return;
+        String raw = mServersInput.getText().toString().trim();
+        if (raw.isEmpty()) { Toast.makeText(requireContext(), "Enter IP like mc.hypixel.net or 1.2.3.4:25565", Toast.LENGTH_SHORT).show(); return; }
+        // basic sanitize
+        if (raw.contains(" ")) raw = raw.split("\\s+")[0];
+        if (raw.startsWith("http://")) raw = raw.substring(7);
+        if (raw.startsWith("https://")) raw = raw.substring(8);
+        if (raw.endsWith("/")) raw = raw.substring(0, raw.length()-1);
+        ServerEntry e = new ServerEntry(raw);
+        if (mServersAddStatus != null) { mServersAddStatus.setVisibility(View.VISIBLE); mServersAddStatus.setText("Pinging " + raw + "…"); mServersAddStatus.setAlpha(0f); mServersAddStatus.animate().alpha(1f).setDuration(180).start(); }
+        // quick local duplicate check
+        for (ServerEntry s : mServers) if (s.address.equalsIgnoreCase(e.address)) { if (mServersAddStatus != null) mServersAddStatus.setText("Already added"); return; }
+        ServerPinger.pingAsync(e, new ServerPinger.Callback() {
+            @Override public void onResult(ServerEntry entry) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    ServerStore.add(requireContext(), entry);
+                    mServersInput.setText("");
+                    refreshServersHub();
+                    if (mServersAddStatus != null) mServersAddStatus.setText("✓ Added: " + (entry.motd!=null?entry.motd:"") + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs + "ms • " + entry.versionName);
+                    // animate new card
+                    if (mServersList != null) mServersList.smoothScrollToPosition(0);
+                });
+            }
+            @Override public void onError(ServerEntry entry, Exception ex) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    // still add as offline entry so user can retry
+                    ServerStore.add(requireContext(), entry);
+                    refreshServersHub();
+                    if (mServersAddStatus != null) mServersAddStatus.setText("Added offline: " + raw + " (" + ex.getMessage() + ") — will retry on refresh");
+                });
+            }
+        });
+    }
+
+    private void refreshServersHub() {
+        if (getContext() == null || mServersList == null) return;
+        List<ServerEntry> stored = ServerStore.load(requireContext());
+        mServers.clear(); mServers.addAll(stored);
+        if (mServersAdapter != null) mServersAdapter.notifyDataSetChanged();
+        if (mServersEmpty != null) mServersEmpty.setVisibility(mServers.isEmpty() ? View.VISIBLE : View.GONE);
+        // show pending
+        if (mProfileKey != null) {
+            String pending = ServerStore.getPending(requireContext(), mProfileKey);
+            if (pending != null && mServersAddStatus != null) {
+                // hint
+                mServersAddStatus.setVisibility(View.VISIBLE);
+                mServersAddStatus.setText("Pending join: " + pending + " — next PLAY will auto-join");
+            }
+        }
+    }
+
+    private void pingAllServers() {
+        if (getContext() == null || mServers.isEmpty()) return;
+        if (mServersAddStatus != null) { mServersAddStatus.setVisibility(View.VISIBLE); mServersAddStatus.setText("Pinging " + mServers.size() + " servers…"); }
+        for (ServerEntry e : new ArrayList<>(mServers)) {
+            ServerPinger.pingAsync(e, new ServerPinger.Callback() {
+                @Override public void onResult(ServerEntry entry) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> { ServerStore.update(requireContext(), entry); refreshServersHub(); });
+                }
+                @Override public void onError(ServerEntry entry, Exception ex) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> { ServerStore.update(requireContext(), entry); refreshServersHub(); });
+                }
+            });
+        }
+    }
+
+    private int dp(int v){ return Math.round(v * getResources().getDisplayMetrics().density); }
 
     /** Global RAM slider: wired to LauncherPreferences "allocation" (MB). */
     private void setupRamSlider() {

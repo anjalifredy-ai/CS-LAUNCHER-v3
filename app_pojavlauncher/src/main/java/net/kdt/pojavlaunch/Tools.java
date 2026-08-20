@@ -65,6 +65,8 @@ import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.plugins.FFmpegPlugin;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
+import net.kdt.pojavlaunch.servers.ServerEntry;
+import net.kdt.pojavlaunch.servers.ServerStore;
 import net.kdt.pojavlaunch.tasks.AsyncAssetManager;
 import net.kdt.pojavlaunch.utils.DateUtils;
 import net.kdt.pojavlaunch.utils.DownloadUtils;
@@ -421,6 +423,23 @@ public final class Tools {
         // Pre-process specific files
         disableSplash(gamedir);
         String[] launchArgs = getMinecraftClientArgs(minecraftAccount, versionInfo, gamedir);
+        // ── V3.1 Server Hub: 1-click --server --port injection (Zalith-style) ──
+        try {
+            String curProfile = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+            if (curProfile != null) {
+                String pending = ServerStore.getPending(activity, curProfile);
+                if (pending != null && !pending.isEmpty()) {
+                    ServerEntry se = new ServerEntry(pending);
+                    String host = se.getHost().replace("[","").replace("]","");
+                    String port = String.valueOf(se.getPort());
+                    List<String> tmp = new ArrayList<>(Arrays.asList(launchArgs));
+                    tmp.add("--server"); tmp.add(host);
+                    tmp.add("--port"); tmp.add(port);
+                    launchArgs = tmp.toArray(new String[0]);
+                    Log.i("ServerHub", "Injecting 1-click join: --server " + host + " --port " + port);
+                }
+            }
+        } catch (Exception e) { Log.w("ServerHub", "inject failed", e); }
 
         // Select the appropriate openGL version
         OldVersionsUtils.selectOpenGlVersion(versionInfo);

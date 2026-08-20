@@ -1,16 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/bg_csc_screen" android:orientation="horizontal" android:padding="16dp">
- <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.32" android:background="@drawable/bg_csc_panel" android:orientation="vertical" android:padding="16dp">
-  <LinearLayout android:layout_width="match_parent" android:layout_height="44dp" android:orientation="horizontal"><TextView android:includeFontPadding="false" android:id="@+id/csc_picker_back" android:layout_width="42dp" android:layout_height="42dp" android:background="@drawable/bg_csc_outline_button" android:gravity="center" android:text="‹" android:textColor="#F2F3F5" android:textSize="28sp"/><ImageView android:layout_width="42dp" android:layout_height="42dp" android:layout_marginStart="10dp" android:src="@drawable/cs_logo"/></LinearLayout>
-  <TextView android:includeFontPadding="false" android:id="@+id/csc_picker_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:textColor="#F2F3F5" android:textSize="19sp" android:textStyle="bold"/>
-  <TextView android:includeFontPadding="false" android:id="@+id/csc_picker_subtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="#7F8994" android:textSize="7sp"/>
-  <LinearLayout android:layout_width="match_parent" android:layout_height="46dp" android:layout_marginTop="18dp" android:background="@drawable/bg_csc_manifest_row" android:orientation="horizontal"><EditText android:id="@+id/csc_picker_search" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@null" android:hint="Search Modrinth" android:paddingHorizontal="12dp" android:singleLine="true" android:textColor="#F2F3F5" android:textColorHint="#67717C" android:textSize="10sp"/><TextView android:includeFontPadding="false" android:id="@+id/csc_picker_search_go" android:layout_width="72dp" android:layout_height="match_parent" android:gravity="center" android:text="SEARCH" android:textColor="#BCC3CC" android:textSize="8sp" android:textStyle="bold"/></LinearLayout>
-  <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1"/>
-  <TextView android:includeFontPadding="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:text="MODRINTH VERIFIED • FABRIC FILTERED" android:textColor="#68737E" android:textSize="6sp"/>
-  <TextView android:includeFontPadding="false" android:id="@+id/csc_picker_done" android:layout_width="match_parent" android:layout_height="46dp" android:layout_marginTop="12dp" android:background="@drawable/bg_csc_primary_button" android:gravity="center" android:text="ADD SELECTED MODULES" android:textColor="#101419" android:textSize="9sp" android:textStyle="bold"/>
- </LinearLayout>
- <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginStart="14dp" android:layout_weight="0.68" android:background="@drawable/bg_csc_panel">
-  <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="14dp"><TextView android:includeFontPadding="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CS MODULES" android:textColor="#F2F3F5" android:textSize="17sp" android:textStyle="bold"/><TextView android:includeFontPadding="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="TAP A CARD TO SELECT • COMPATIBILITY CHECKED" android:textColor="#7F8994" android:textSize="7sp"/><ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_marginTop="10dp" android:layout_weight="1" android:overScrollMode="never" android:scrollbars="none"><LinearLayout android:id="@+id/csc_picker_list" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/></ScrollView></LinearLayout>
-  <ProgressBar android:id="@+id/csc_picker_loading" android:layout_width="30dp" android:layout_height="30dp" android:layout_gravity="center" android:indeterminateTint="#BCC3CC"/>
- </FrameLayout>
+<!-- V3.1 — CS CLIENT PICKER — new vertical header + white pills, dark white black -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0D11"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Top bar — back + title V3.1 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_csc_panel"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="10dp">
+
+        <TextView
+            android:id="@+id/csc_picker_back"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="#FFFFFF"
+            android:gravity="center"
+            android:text="‹"
+            android:textColor="#0B0D11"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/csc_picker_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="Choose mods" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_stat_chip"
+                    android:gravity="center"
+                    android:paddingHorizontal="6dp"
+                    android:text="V3.1"
+                    android:textColor="#FFFFFF"
+                    android:textSize="7sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/csc_picker_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#7F8894"
+                android:textSize="9sp"
+                tools:text="Minecraft 1.21.1 • Fabric compatible only" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/csc_picker_done"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_csc_primary_button"
+            android:gravity="center"
+            android:minWidth="110dp"
+            android:paddingHorizontal="14dp"
+            android:text="ADD SELECTED"
+            android:textColor="#0B0D11"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Search pill — new position, white pill on dark -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_search_pill"
+        android:backgroundTint="#FFFFFF"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_search"
+            android:tint="#0B0D11" />
+
+        <EditText
+            android:id="@+id/csc_picker_search"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="Search Modrinth — V3.1 Verified"
+            android:paddingHorizontal="10dp"
+            android:singleLine="true"
+            android:textColor="#0B0D11"
+            android:textColorHint="#6B7280"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/csc_picker_search_go"
+            android:layout_width="72dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_circle"
+            android:backgroundTint="#0B0D11"
+            android:gravity="center"
+            android:text="SEARCH"
+            android:textColor="#FFFFFF"
+            android:textSize="9sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- List header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_csc_panel"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="3dp"
+                android:layout_height="12dp"
+                android:background="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:letterSpacing="0.08"
+                android:text="CS MODULES — V3.1"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="16dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_badge_compat_ok"
+                android:gravity="center"
+                android:paddingHorizontal="6dp"
+                android:text="VERIFIED"
+                android:textColor="#FFFFFF"
+                android:textSize="7sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="TAP CARD TO SELECT • WHITE CHECK = SELECTED"
+            android:textColor="#5A636E"
+            android:textSize="7sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_csc_panel"
+        android:padding="10dp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/csc_picker_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <ProgressBar
+            android:id="@+id/csc_picker_loading"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="#FFFFFF" />
+    </FrameLayout>
 </LinearLayout>
