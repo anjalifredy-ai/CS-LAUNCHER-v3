@@ -112,11 +112,11 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private ServerAdapter mServersAdapter;
     private final List<ServerEntry> mServers = new ArrayList<>();
     private final int[] mNavIds = {
-            R.id.vprof_nav_general, R.id.vprof_nav_java, R.id.vprof_nav_memory,
+            R.id.vprof_nav_general, R.id.vprof_nav_servers, R.id.vprof_nav_java, R.id.vprof_nav_memory,
             R.id.vprof_nav_graphics, R.id.vprof_nav_mods, R.id.vprof_nav_rpacks,
             R.id.vprof_nav_shaders, R.id.vprof_nav_skin, R.id.vprof_nav_cape,
-            R.id.vprof_nav_runtime, R.id.vprof_nav_servers, R.id.vprof_nav_advanced,
-            R.id.vprof_nav_logs, R.id.vprof_nav_worlds };
+            R.id.vprof_nav_runtime, R.id.vprof_nav_advanced, R.id.vprof_nav_logs,
+            R.id.vprof_nav_worlds };
     /** The last rail item opens the World Manager instead of scrolling. */
     private static final int NAV_WORLDS_INDEX = 13;
 
@@ -125,11 +125,10 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
     private int mHeroFullHeight = 0;
     private int mLastHeroHeight = -1;
     private final int[] mSectionIds = {
-            R.id.vprof_section_general, R.id.vprof_section_java, R.id.vprof_section_memory,
+            R.id.vprof_section_general, R.id.vprof_section_servers, R.id.vprof_section_java, R.id.vprof_section_memory,
             R.id.vprof_section_graphics, R.id.vprof_section_mods, R.id.vprof_section_rpacks,
             R.id.vprof_section_shaders, R.id.vprof_section_skin, R.id.vprof_section_cape,
-            R.id.vprof_section_runtime, R.id.vprof_section_servers, R.id.vprof_section_logs,
-            R.id.vprof_section_advanced };
+            R.id.vprof_section_runtime, R.id.vprof_section_logs, R.id.vprof_section_advanced };
     private final CropperUtils.CropperListener mBackgroundCropperListener = new CropperUtils.CropperListener() {
         @Override
         public void onCropped(Bitmap contentBitmap) {
