@@ -98,8 +98,8 @@
                 android:layout_marginTop="3dp"
                 android:ellipsize="end"
                 android:maxLines="2"
-                android:textColor="#9AA3B0"
-                android:textSize="11sp"
+                android:textColor="#EDEEF2"
+                android:textSize="11.5sp"
                 tools:text="§aHypixel Network §7[1.8-1.21] §eNEW GAME!" />
         </LinearLayout>
 
