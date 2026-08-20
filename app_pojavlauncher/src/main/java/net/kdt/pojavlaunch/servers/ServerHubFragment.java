@@ -15,7 +15,7 @@ import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
-import net.kdt.pojavlaunch.profiles.LauncherProfiles;
+import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
