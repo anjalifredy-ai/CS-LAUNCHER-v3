@@ -207,102 +207,70 @@
                 android:paddingHorizontal="7dp"
                 android:paddingTop="12dp">
 
-                
-
-                
-
-                
-
                 <LinearLayout android:id="@+id/vprof_nav_general" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_general" android:contentDescription="@string/cs_section_general" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_general" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_java" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_java" android:contentDescription="@string/cs_section_java" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_java" />
                 </LinearLayout>
 
-
-
                 <LinearLayout android:id="@+id/vprof_nav_memory" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_memory" android:contentDescription="@string/cs_section_memory" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_memory" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_graphics" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_graphics" android:contentDescription="@string/cs_section_graphics" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_graphics" />
                 </LinearLayout>
 
-
-
                 <LinearLayout android:id="@+id/vprof_nav_mods" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_mods" android:contentDescription="@string/cs_section_mods" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_mods" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_rpacks" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_rpacks" android:contentDescription="@string/cs_section_rpacks" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_rpacks" />
                 </LinearLayout>
 
-
-
                 <LinearLayout android:id="@+id/vprof_nav_shaders" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_shaders" android:contentDescription="@string/cs_section_shaders" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_shaders" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_skin" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_skin" android:contentDescription="@string/cs_section_skin" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_skin" />
                 </LinearLayout>
 
-
-
                 <LinearLayout android:id="@+id/vprof_nav_cape" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_cape" android:contentDescription="@string/cs_section_cape" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_cape" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_runtime" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_runtime" android:contentDescription="@string/cs_section_runtime" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_runtime" />
                 </LinearLayout>
 
-
-
                 <LinearLayout android:id="@+id/vprof_nav_advanced" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_advanced" android:contentDescription="@string/cs_section_advanced" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_advanced" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_logs" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_logs" android:contentDescription="Logs" />
                     <TextView style="@style/CsRailLabel" android:text="Logs" />
                 </LinearLayout>
 
-
-
                 <LinearLayout android:id="@+id/vprof_nav_worlds" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_nav_worlds" android:contentDescription="@string/cs_section_worlds" />
                     <TextView style="@style/CsRailLabel" android:text="@string/cs_section_worlds" />
                 </LinearLayout>
-
-
 
                 <LinearLayout android:id="@+id/vprof_nav_servers" style="@style/CsRailItem">
                     <ImageView style="@style/CsRailIcon" android:src="@drawable/ic_globe" android:contentDescription="Servers" />
@@ -923,196 +891,7 @@
     </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
-    <!-- ══ SERVERS — Zalith-inspired Server Hub V3.1 — full page screen ══ -->
-            <LinearLayout
-                android:id="@+id/vprof_section_servers"
-                style="@style/CsSectionCard">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="3dp"
-                        android:layout_height="14dp"
-                        android:background="#FFFFFF" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:letterSpacing="0.08"
-                        android:text="SERVERS"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_stat_chip"
-                        android:gravity="center"
-                        android:paddingHorizontal="7dp"
-                        android:text="V3.1 • LIVE PING"
-                        android:textColor="#FFFFFF"
-                        android:textSize="7sp"
-                        android:textStyle="bold" />
-
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/vprof_servers_refresh"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="@drawable/bg_csc_outline_button"
-                        android:gravity="center"
-                        android:text="↻"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Zero-friction multiplayer — add IP, see live ping, MOTD &amp; players, 1-tap join with --server. Partner servers pinned here."
-                    android:textColor="#7F8894"
-                    android:textSize="10sp"
-                    android:lineSpacingExtra="2dp" />
-
-                <!-- Add Server Card — mast animation on appear -->
-                <LinearLayout
-                    android:id="@+id/vprof_servers_add_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_server_card"
-                    android:elevation="1dp"
-                    android:orientation="vertical"
-                    android:padding="14dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:layout_width="2dp"
-                            android:layout_height="10dp"
-                            android:background="#FFFFFF" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:letterSpacing="0.08"
-                            android:text="ADD SERVER"
-                            android:textColor="#FFFFFF"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="10dp"
-                        android:background="@drawable/bg_auth_input_box"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="4dp">
-
-                        <EditText
-                            android:id="@+id/vprof_servers_input"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:hint="mc.hypixel.net  or  play.example.com:25565"
-                            android:imeOptions="actionDone"
-                            android:inputType="textUri"
-                            android:paddingHorizontal="10dp"
-                            android:singleLine="true"
-                            android:textColor="#FFFFFF"
-                            android:textColorHint="#5A636E"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/vprof_servers_add_btn"
-                            android:layout_width="76dp"
-                            android:layout_height="36dp"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_csc_primary_button"
-                            android:elevation="1dp"
-                            android:gravity="center"
-                            android:text="ADD"
-                            android:textColor="#0B0D11"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/vprof_servers_add_status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:textColor="#9AA3B0"
-                        android:textSize="10sp"
-                        android:visibility="gone"
-                        tools:text="Pinging…"
-                        tools:visibility="visible" />
-                </LinearLayout>
-
-                <!-- Live Server List -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:letterSpacing="0.06"
-                    android:text="YOUR SERVERS"
-                    android:textColor="#9AA3B0"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/vprof_servers_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never" />
-
-                <TextView
-                    android:id="@+id/vprof_servers_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_empty_state"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="No servers yet — add an IP above to see live MOTD, players &amp; ping. 1-tap PLAY will launch directly into that server with --server."
-                    android:textColor="#6B7280"
-                    android:textSize="11sp"
-                    android:visibility="visible" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:gravity="center"
-                    android:text="V3.1 Server Hub • Live ping • Auto favicon • 1-Click --server --port"
-                    android:textColor="#3E4552"
-                    android:textSize="7sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <!-- ── BOTTOM ACTION BAR — Cancel | Save | Delete ───────────────── -->
+    <!-- ── BOTTOM ACTION BAR — Cancel | Save | Delete ───────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
