@@ -79,7 +79,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Zero-friction • --server"
+                android:text="Partner server • live ping • 1-tap join"
                 android:textColor="#6B7280"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -236,7 +236,7 @@
                 android:background="@drawable/bg_empty_state"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="No servers yet — add an IP above to see live MOTD, players &amp; ping. 1-tap PLAY will launch directly into that server with --server."
+                android:text="Add your own servers above — live MOTD, players and ping appear instantly. Tap PLAY on any card to jump straight in."
                 android:textColor="#6B7280"
                 android:textSize="11sp"
                 android:visibility="visible" />

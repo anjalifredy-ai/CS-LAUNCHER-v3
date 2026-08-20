@@ -12,22 +12,106 @@ import androidx.recyclerview.widget.RecyclerView;
 import net.kdt.pojavlaunch.R;
 import java.util.List;
 
-public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
+/**
+ * Server Hub list adapter.
+ *
+ * <p>Two view types: the built-in partner card (banner artwork, Discord button, no delete) and
+ * the regular server card.
+ */
+public class ServerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_NORMAL = 0;
+    private static final int TYPE_FEATURED = 1;
+
     public interface Listener {
         void onJoin(ServerEntry e);
         void onRemove(ServerEntry e);
         void onEdit(ServerEntry e);
     }
+
     private final List<ServerEntry> data;
     private final Listener listener;
     public ServerAdapter(List<ServerEntry> data, Listener l){ this.data=data; this.listener=l; }
 
-    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int v){
-        View view = LayoutInflater.from(p.getContext()).inflate(R.layout.item_server_card, p, false);
-        return new VH(view);
+    @Override public int getItemViewType(int position) {
+        ServerEntry e = data.get(position);
+        return (e.pinned || PartnerServer.is(e.address)) ? TYPE_FEATURED : TYPE_NORMAL;
     }
-    @Override public void onBindViewHolder(@NonNull VH h, int pos){
+
+    @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int viewType){
+        LayoutInflater inflater = LayoutInflater.from(p.getContext());
+        if (viewType == TYPE_FEATURED) {
+            return new FeaturedVH(inflater.inflate(R.layout.item_server_featured, p, false));
+        }
+        return new VH(inflater.inflate(R.layout.item_server_card, p, false));
+    }
+
+    @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int pos){
         ServerEntry e = data.get(pos);
+        if (holder instanceof FeaturedVH) bindFeatured((FeaturedVH) holder, e, pos);
+        else bindNormal((VH) holder, e, pos);
+    }
+
+    // ─────────────────────────── featured partner card ───────────────────────────
+
+    private void bindFeatured(FeaturedVH h, ServerEntry e, int pos) {
+        h.name.setText(e.name != null && !e.name.isEmpty() ? e.name : PartnerServer.NAME);
+        h.address.setText(e.getJoinAddress());
+        h.motd.setText(e.online || (e.motdRaw != null && !e.motdRaw.isEmpty())
+                ? MotdRenderer.render(e)
+                : PartnerServer.TAGLINE);
+
+        if (e.online && e.playersOnline >= 0) {
+            h.players.setVisibility(View.VISIBLE);
+            h.players.setText(e.playersOnline + " online");
+        } else h.players.setVisibility(View.GONE);
+
+        if (e.online && e.pingMs >= 0) {
+            h.ping.setText(e.pingMs + " ms");
+            h.ping.setTextColor(0xFFB6F5C6);
+        } else {
+            h.ping.setText("connecting…");
+            h.ping.setTextColor(0xFFFFD166);
+        }
+
+        if (e.versionName != null && !e.versionName.isEmpty()) {
+            h.version.setVisibility(View.VISIBLE);
+            h.version.setText(e.versionName);
+        } else h.version.setVisibility(View.GONE);
+
+        h.btnPlay.setOnClickListener(v -> {
+            ServerPlayDialog.press(v);
+            if (listener != null) listener.onJoin(e);
+        });
+        h.btnDiscord.setOnClickListener(v -> {
+            ServerPlayDialog.press(v);
+            ServerPlayDialog.openDiscord(v.getContext());
+        });
+        // Tapping the artwork itself also opens the play popup — nothing here is destructive.
+        h.itemView.setOnClickListener(v -> { if (listener != null) listener.onJoin(e); });
+
+        // Entrance + a slow breathing rim so the partner card stands out without being noisy.
+        h.itemView.setAlpha(0f);
+        h.itemView.setTranslationY(10f);
+        h.itemView.animate().alpha(1f).translationY(0f).setDuration(280).start();
+        if (h.glow != null) {
+            h.glow.animate().cancel();
+            h.glow.setAlpha(0.35f);
+            pulse(h.glow);
+        }
+    }
+
+    private void pulse(View glow) {
+        if (!glow.isAttachedToWindow()) return;
+        glow.animate().alpha(0.95f).setStartDelay(0).setDuration(1400)
+                .withEndAction(() -> glow.animate().alpha(0.3f).setDuration(1400)
+                        .withEndAction(() -> pulse(glow)).start())
+                .start();
+    }
+
+    // ─────────────────────────── regular card ───────────────────────────
+
+    private void bindNormal(@NonNull VH h, ServerEntry e, int pos){
         h.name.setText(e.name != null && !e.name.isEmpty() ? e.name : e.address);
         h.address.setText(e.address);
 
@@ -87,16 +171,18 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
         if (icon != null) { h.icon.setImageBitmap(icon); h.icon.setPadding(0,0,0,0); }
         else h.icon.setImageResource(R.drawable.ic_globe);
         h.btnJoin.setOnClickListener(v -> {
-            v.animate().scaleX(0.94f).scaleY(0.94f).setDuration(70).withEndAction(()->v.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
-            if (!e.online) Toast.makeText(v.getContext(), "Server did not answer the ping \u2014 queueing the join anyway", Toast.LENGTH_SHORT).show();
+            ServerPlayDialog.press(v);
+            if (!e.online) Toast.makeText(v.getContext(), "Server did not answer the ping \u2014 you can still join", Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onJoin(e);
         });
+        h.btnRemove.setVisibility(View.VISIBLE);
         h.btnRemove.setOnClickListener(v -> { if(listener!=null) listener.onRemove(e); });
         h.itemView.setOnClickListener(v -> { if(listener!=null) listener.onEdit(e); });
         // entrance
         h.itemView.setAlpha(0f); h.itemView.setTranslationY(8f);
         h.itemView.animate().alpha(1f).translationY(0f).setStartDelay(pos*35L).setDuration(220).start();
     }
+
     private int getBars(long ping) {
         if (ping < 0) return 0;
         if (ping < 80) return 5;
@@ -117,6 +203,18 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
             offlineText=v.findViewById(R.id.server_offline_text);
             pingContainer=v.findViewById(R.id.server_ping_container);
             btnJoin=v.findViewById(R.id.server_btn_join); btnRemove=v.findViewById(R.id.server_btn_remove);
+        }
+    }
+
+    static class FeaturedVH extends RecyclerView.ViewHolder {
+        TextView name, address, motd, ping, players, version, btnPlay, btnDiscord;
+        View glow;
+        FeaturedVH(View v){ super(v);
+            name=v.findViewById(R.id.fs_name); address=v.findViewById(R.id.fs_address);
+            motd=v.findViewById(R.id.fs_motd); ping=v.findViewById(R.id.fs_ping);
+            players=v.findViewById(R.id.fs_players); version=v.findViewById(R.id.fs_version);
+            btnPlay=v.findViewById(R.id.fs_btn_play); btnDiscord=v.findViewById(R.id.fs_btn_discord);
+            glow=v.findViewById(R.id.fs_glow);
         }
     }
 }

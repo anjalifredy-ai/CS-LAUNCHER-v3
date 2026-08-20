@@ -65,30 +65,29 @@ public class ServerHubFragment extends Fragment {
             list.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter = new ServerAdapter(data, new ServerAdapter.Listener() {
                 @Override public void onJoin(ServerEntry e){
-                    if (getContext()==null||profileKey==null) return;
-                    // Set pending for both edited profile and current profile (for 1-click)
-                    ServerStore.setPending(requireContext(), profileKey, e.address);
-                    try { String cur = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey); ServerStore.setPending(requireContext(), cur, e.address); } catch (Exception ignored){}
-                    ServerListSync.syncToGameDir(requireContext(), profileKey);
-                    Toast.makeText(requireContext(), "\u27a4 " + e.getJoinAddress() + " \u2014 queued, the next PLAY joins automatically", Toast.LENGTH_LONG).show();
-                    View card = root.findViewById(R.id.server_hub_card);
-                    if (card!=null) card.animate().scaleX(0.99f).scaleY(0.99f).setDuration(80).withEndAction(()->card.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
-                    new android.app.AlertDialog.Builder(requireContext())
-                        .setTitle("Join " + e.address + "?")
-                        .setMessage("Launch straight into this server?\n\nAddress: " + e.getJoinAddress()
-                                + "\nThe launcher picks the right flag for the version it starts:"
-                                + "\n  \u2022 1.20+  \u2192  --quickPlayMultiplayer"
-                                + "\n  \u2022 older  \u2192  --server / --port"
-                                + "\n\nIt is also added to the in-game Multiplayer list.")
-                        .setPositiveButton("LAUNCH NOW", (d,w)->{
-                            ServerStore.setPending(requireContext(), profileKey, e.address);
-                            try{ LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey).apply(); }catch(Exception ignored){}
+                    if (getContext()==null) return;
+                    // Simple two-choice popup: save it, or play it right now.
+                    ServerPlayDialog.show(requireContext(), e, new ServerPlayDialog.Action() {
+                        @Override public void onPlayNow(ServerEntry entry) {
+                            queue(entry);
+                            try{ if (profileKey != null) LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey).apply(); }catch(Exception ignored){}
                             ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
-                        })
-                        .setNegativeButton("JUST SAVE", null).show();
+                        }
+                        @Override public void onSaveOnly(ServerEntry entry) {
+                            queue(entry);
+                            if (getContext()==null) return;
+                            ServerStore.add(requireContext(), entry);
+                            refresh();
+                            Toast.makeText(requireContext(), "Saved \u2014 the next PLAY joins " + entry.getJoinAddress(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
                 @Override public void onRemove(ServerEntry e){
                     if (getContext()==null) return;
+                    if (e.pinned || PartnerServer.is(e.address)) {
+                        Toast.makeText(requireContext(), PartnerServer.NAME + " is a partner server and stays in the list", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     ServerStore.remove(requireContext(), e.address);
                     ServerListSync.syncToGameDir(requireContext(), profileKey);
                     refresh();
@@ -96,6 +95,7 @@ public class ServerHubFragment extends Fragment {
                     if (pending!=null && pending.equalsIgnoreCase(e.address)) ServerStore.clearPending(requireContext(), profileKey);
                 }
                 @Override public void onEdit(ServerEntry e){
+                    if (e.pinned || PartnerServer.is(e.address)) { onJoin(e); return; }
                     if (input!=null){ input.setText(e.address); input.requestFocus(); }
                     if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Re-pinging " + e.address + "…"); }
                     ServerPinger.pingAsync(e, new ServerPinger.Callback(){
@@ -134,6 +134,17 @@ public class ServerHubFragment extends Fragment {
         pingAll();
     }
 
+    /** Queues the server so the next launch auto-joins it (per-profile + global fallback). */
+    private void queue(ServerEntry e){
+        if (getContext()==null) return;
+        ServerStore.setPending(requireContext(), profileKey, e.address);
+        try {
+            String cur = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey);
+            ServerStore.setPending(requireContext(), cur, e.address);
+        } catch (Exception ignored){}
+        ServerListSync.syncToGameDir(requireContext(), profileKey);
+    }
+
     private void addFromInput(){
         if (getContext()==null||input==null) return;
         String raw = input.getText().toString().trim();
@@ -142,6 +153,11 @@ public class ServerHubFragment extends Fragment {
         if (raw.startsWith("http://")) raw=raw.substring(7);
         if (raw.startsWith("https://")) raw=raw.substring(8);
         if (raw.endsWith("/")) raw=raw.substring(0,raw.length()-1);
+        if (PartnerServer.is(raw)) {
+            Toast.makeText(requireContext(), PartnerServer.NAME + " is already built in \u2014 it is always at the top", Toast.LENGTH_SHORT).show();
+            input.setText("");
+            return;
+        }
         ServerEntry e = new ServerEntry(raw);
         final String finalRaw = raw;
         if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + raw + "…"); status.setAlpha(0f); status.animate().alpha(1f).setDuration(180).start(); }
@@ -156,7 +172,7 @@ public class ServerHubFragment extends Fragment {
         List<ServerEntry> stored = ServerStore.load(requireContext());
         data.clear(); data.addAll(stored);
         if(adapter!=null) adapter.notifyDataSetChanged();
-        if(empty!=null) empty.setVisibility(data.isEmpty()?View.VISIBLE:View.GONE);
+        if(empty!=null) empty.setVisibility(data.size()<=1?View.VISIBLE:View.GONE);
         if(profileKey!=null && status!=null){
             String pending = ServerStore.getPending(requireContext(), profileKey);
             if(pending!=null){ status.setVisibility(View.VISIBLE); status.setText("Queued join: " + pending + " \u2014 the next PLAY auto-joins it"); }

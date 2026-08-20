@@ -15,44 +15,93 @@ import java.util.List;
 public class ServerStore {
     private static final String PREFS = "cs_servers_v31";
     private static final String KEY_LIST = "servers";
+    private static final String KEY_PARTNER = "partner_cache";
     private static final String KEY_PENDING = "pending_server_"; // + profileKey
     private static final String KEY_PENDING_GLOBAL = "pending_server_global";
     private static final String KEY_PENDING_TIME = "pending_server_time";
     private static final Gson GSON = new Gson();
 
+    /**
+     * Returns the partner server first, followed by the user's own servers.
+     * The partner entry lives in its own preference slot, so it can never be lost, duplicated
+     * or deleted by list operations.
+     */
     public static List<ServerEntry> load(Context ctx) {
+        List<ServerEntry> out = new ArrayList<>();
+        out.add(loadPartner(ctx));
+        out.addAll(loadUserServers(ctx));
+        return out;
+    }
+
+    public static List<ServerEntry> loadUserServers(Context ctx) {
         SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String json = p.getString(KEY_LIST, null);
         if (json == null || json.isEmpty()) return new ArrayList<>();
         try {
             Type t = new TypeToken<List<ServerEntry>>(){}.getType();
             List<ServerEntry> l = GSON.fromJson(json, t);
-            return l != null ? l : new ArrayList<>();
+            if (l == null) return new ArrayList<>();
+            // Defensive: an old build may have persisted the partner into the user list.
+            l.removeIf(s -> s == null || s.address == null || PartnerServer.is(s.address));
+            return l;
         } catch (Exception e) { return new ArrayList<>(); }
     }
 
-    public static void save(Context ctx, List<ServerEntry> list) {
+    /** Partner entry with its last known ping/MOTD cache. */
+    public static ServerEntry loadPartner(Context ctx) {
         SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String json = GSON.toJson(list);
-        p.edit().putString(KEY_LIST, json).apply();
+        String json = p.getString(KEY_PARTNER, null);
+        ServerEntry e = null;
+        if (json != null && !json.isEmpty()) {
+            try { e = GSON.fromJson(json, ServerEntry.class); } catch (Exception ignored) {}
+        }
+        if (e == null || e.address == null) e = PartnerServer.create();
+        // The address, the name and the pinned flag are owned by the launcher, not by the cache.
+        e.address = PartnerServer.ADDRESS;
+        e.pinned = true;
+        if (e.name == null || e.name.isEmpty() || e.name.equals(e.address)) e.name = PartnerServer.NAME;
+        return e;
+    }
+
+    private static void savePartner(Context ctx, ServerEntry e) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+           .edit().putString(KEY_PARTNER, GSON.toJson(e)).apply();
+    }
+
+    /** Persists the user list only — the partner entry is filtered out on purpose. */
+    public static void save(Context ctx, List<ServerEntry> list) {
+        List<ServerEntry> userOnly = new ArrayList<>();
+        for (ServerEntry s : list) {
+            if (s == null || s.address == null) continue;
+            if (s.pinned || PartnerServer.is(s.address)) { savePartner(ctx, s); continue; }
+            userOnly.add(s);
+        }
+        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        p.edit().putString(KEY_LIST, GSON.toJson(userOnly)).apply();
     }
 
     public static void add(Context ctx, ServerEntry e) {
-        List<ServerEntry> l = load(ctx);
-        // avoid duplicates by address (case-insensitive)
+        if (e == null || e.address == null) return;
+        if (PartnerServer.is(e.address)) { savePartner(ctx, e); return; } // already built in
+        List<ServerEntry> l = loadUserServers(ctx);
         for (ServerEntry s : l) if (s.address.equalsIgnoreCase(e.address)) return;
         l.add(0, e);
         save(ctx, l);
     }
 
-    public static void remove(Context ctx, String address) {
-        List<ServerEntry> l = load(ctx);
+    /** @return false when the address is the partner server, which cannot be removed. */
+    public static boolean remove(Context ctx, String address) {
+        if (PartnerServer.is(address)) return false;
+        List<ServerEntry> l = loadUserServers(ctx);
         l.removeIf(s -> s.address.equalsIgnoreCase(address));
         save(ctx, l);
+        return true;
     }
 
     public static void update(Context ctx, ServerEntry updated) {
-        List<ServerEntry> l = load(ctx);
+        if (updated == null || updated.address == null) return;
+        if (updated.pinned || PartnerServer.is(updated.address)) { savePartner(ctx, updated); return; }
+        List<ServerEntry> l = loadUserServers(ctx);
         for (int i=0;i<l.size();i++) if (l.get(i).address.equalsIgnoreCase(updated.address)) { l.set(i, updated); break; }
         save(ctx, l);
     }

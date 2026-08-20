@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Featured partner card (PlantMC).
+  The banner artwork fills the whole card; a two-sided scrim keeps every text readable while
+  still letting the artwork breathe. The card is drawn by ServerAdapter's FEATURED view type and
+  cannot be removed by the user, so there is no delete button here.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/fs_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        app:cardBackgroundColor="#0E1116"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="6dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="188dp">
+
+            <!-- Banner artwork -->
+            <ImageView
+                android:id="@+id/fs_banner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="false"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                android:src="@drawable/bg_plantmc_banner" />
+
+            <!-- Bottom-up scrim: text area -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_featured_scrim" />
+
+            <!-- Top scrim: badges -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:background="@drawable/bg_featured_scrim_top" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- Row 1 — badges -->
+                <LinearLayout
+                    android:id="@+id/fs_badge_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/fs_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:background="@drawable/bg_partner_badge"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:text="★ PARTNER"
+                        android:textColor="#08130B"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/fs_version"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_featured_chip"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:textColor="#EDEEF2"
+                        android:textSize="8sp"
+                        android:visibility="gone"
+                        tools:text="1.21"
+                        tools:visibility="visible" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/fs_players"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:background="@drawable/bg_featured_chip"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:textColor="#B6F5C6"
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="128 online"
+                        tools:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/fs_ping"
+                        android:layout_width="wrap_content"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_featured_chip"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:textColor="#EDEEF2"
+                        android:textSize="8sp"
+                        tools:text="42 ms" />
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:minHeight="58dp" />
+
+                <!-- Row 2 — identity -->
+                <TextView
+                    android:id="@+id/fs_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="2"
+                    android:shadowRadius="6"
+                    android:text="PlantMC"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/fs_motd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    android:textColor="#E7EAF0"
+                    android:textSize="11.5sp"
+                    tools:text="Survival • Farming • Economy" />
+
+                <TextView
+                    android:id="@+id/fs_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="4"
+                    android:text="play.plantmc.fun:25627"
+                    android:textColor="#A8B3C0"
+                    android:textSize="10sp" />
+
+                <!-- Row 3 — actions -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/fs_btn_play"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_featured_play"
+                        android:elevation="2dp"
+                        android:gravity="center"
+                        android:text="PLAY NOW"
+                        android:textColor="#07130B"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/fs_btn_discord"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_featured_discord"
+                        android:elevation="2dp"
+                        android:gravity="center"
+                        android:paddingHorizontal="16dp"
+                        android:text="DISCORD"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Pulsing partner rim, animated from the adapter -->
+            <View
+                android:id="@+id/fs_glow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_featured_glow" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

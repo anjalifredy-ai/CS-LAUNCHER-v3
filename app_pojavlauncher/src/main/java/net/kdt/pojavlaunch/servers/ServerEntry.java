@@ -24,6 +24,8 @@ public class ServerEntry {
     /** Filled by the SRV lookup (null when the domain has no _minecraft._tcp record). */
     public String resolvedHost;
     public int resolvedPort = -1;
+    /** Built-in partner entry: always shown first, never removable, drawn as a featured card. */
+    public boolean pinned = false;
 
     public ServerEntry() {}
     public ServerEntry(String address) {
