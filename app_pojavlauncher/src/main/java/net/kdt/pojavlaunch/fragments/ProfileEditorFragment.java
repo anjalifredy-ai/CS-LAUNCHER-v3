@@ -1166,6 +1166,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
         if (raw.startsWith("https://")) raw = raw.substring(8);
         if (raw.endsWith("/")) raw = raw.substring(0, raw.length()-1);
         ServerEntry e = new ServerEntry(raw);
+        final String finalRaw = raw;
         if (mServersAddStatus != null) { mServersAddStatus.setVisibility(View.VISIBLE); mServersAddStatus.setText("Pinging " + raw + "…"); mServersAddStatus.setAlpha(0f); mServersAddStatus.animate().alpha(1f).setDuration(180).start(); }
         // quick local duplicate check
         for (ServerEntry s : mServers) if (s.address.equalsIgnoreCase(e.address)) { if (mServersAddStatus != null) mServersAddStatus.setText("Already added"); return; }
@@ -1187,7 +1188,7 @@ public class ProfileEditorFragment extends Fragment implements CropperUtils.Crop
                     // still add as offline entry so user can retry
                     ServerStore.add(requireContext(), entry);
                     refreshServersHub();
-                    if (mServersAddStatus != null) mServersAddStatus.setText("Added offline: " + raw + " (" + ex.getMessage() + ") — will retry on refresh");
+                    if (mServersAddStatus != null) mServersAddStatus.setText("Added offline: " + finalRaw + " (" + ex.getMessage() + ") — will retry on refresh");
                 });
             }
         });
