@@ -66,7 +66,10 @@ public class ServerHubFragment extends Fragment {
             adapter = new ServerAdapter(data, new ServerAdapter.Listener() {
                 @Override public void onJoin(ServerEntry e){
                     if (getContext()==null||profileKey==null) return;
+                    // Set pending for both edited profile and current profile (for 1-click)
                     ServerStore.setPending(requireContext(), profileKey, e.address);
+                    try { String cur = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey); ServerStore.setPending(requireContext(), cur, e.address); } catch (Exception ignored){}
+                    ServerListSync.syncToGameDir(requireContext(), profileKey);
                     Toast.makeText(requireContext(), "➤ " + e.address + " — next PLAY will auto-join V3.1  --server " + e.getHost() + " --port " + e.getPort(), Toast.LENGTH_LONG).show();
                     View card = root.findViewById(R.id.server_hub_card);
                     if (card!=null) card.animate().scaleX(0.99f).scaleY(0.99f).setDuration(80).withEndAction(()->card.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
@@ -83,6 +86,7 @@ public class ServerHubFragment extends Fragment {
                 @Override public void onRemove(ServerEntry e){
                     if (getContext()==null) return;
                     ServerStore.remove(requireContext(), e.address);
+                    ServerListSync.syncToGameDir(requireContext(), profileKey);
                     refresh();
                     String pending = ServerStore.getPending(requireContext(), profileKey);
                     if (pending!=null && pending.equalsIgnoreCase(e.address)) ServerStore.clearPending(requireContext(), profileKey);
@@ -132,8 +136,8 @@ public class ServerHubFragment extends Fragment {
         if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + raw + "…"); status.setAlpha(0f); status.animate().alpha(1f).setDuration(180).start(); }
         for(ServerEntry s: data) if(s.address.equalsIgnoreCase(e.address)){ if(status!=null) status.setText("Already added"); return; }
         ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-            @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), entry); if(input!=null) input.setText(""); refresh(); if(status!=null) status.setText("✓ Added: " + (entry.motd!=null?entry.motd:"") + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); if(list!=null) list.smoothScrollToPosition(0); });}
-            @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), entry); refresh(); if(status!=null) status.setText("Added offline: " + finalRaw + " ("+ex.getMessage()+") — will retry"); });}
+            @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), entry); ServerListSync.syncToGameDir(requireContext(), profileKey); if(input!=null) input.setText(""); refresh(); if(status!=null) status.setText("✓ Added: " + (entry.motd!=null?entry.motd:"") + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); if(list!=null) list.smoothScrollToPosition(0); });}
+            @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); if(status!=null) status.setText("Added offline: " + finalRaw + " ("+ex.getMessage()+") — will retry"); });}
         });
     }
     private void refresh(){
