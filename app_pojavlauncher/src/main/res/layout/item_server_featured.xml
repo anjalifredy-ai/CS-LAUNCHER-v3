@@ -30,7 +30,7 @@
             <!-- ── Artwork header ─────────────────────────────────────── -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="92dp">
+                android:layout_height="84dp">
 
                 <ImageView
                     android:id="@+id/fs_banner"
@@ -40,7 +40,7 @@
                     android:scaleType="centerCrop"
                     android:src="@drawable/bg_plantmc_banner" />
 
-                <!-- keeps the artwork from fighting the chips / icon -->
+                <!-- keeps the artwork from fighting the chips and the icon that overlaps it -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -101,8 +101,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="-22dp"
-                    android:gravity="bottom"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <!-- Server icon (live favicon, falls back to the leaf mark) -->
@@ -110,6 +110,7 @@
                         android:id="@+id/fs_icon_card"
                         android:layout_width="46dp"
                         android:layout_height="46dp"
+                        android:layout_marginTop="-30dp"
                         app:cardBackgroundColor="#0C0F16"
                         app:cardCornerRadius="12dp"
                         app:cardElevation="4dp">
@@ -138,10 +139,6 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:shadowColor="#CC000000"
-                            android:shadowDx="0"
-                            android:shadowDy="2"
-                            android:shadowRadius="6"
                             android:text="PlantMC"
                             android:textColor="#FFFFFF"
                             android:textSize="16.5sp"
@@ -153,10 +150,6 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:shadowColor="#B3000000"
-                            android:shadowDx="0"
-                            android:shadowDy="1"
-                            android:shadowRadius="4"
                             android:text="play.plantmc.fun:25627"
                             android:textColor="#9FAAB8"
                             android:textSize="9.5sp" />

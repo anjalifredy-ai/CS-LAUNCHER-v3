@@ -95,6 +95,16 @@ android {
                 arguments "APP_SHORT_COMMANDS=true"
             }
         }
+
+        // ── APK slimming ────────────────────────────────────────────────
+        // x86 / x86_64 only exist for emulators and a handful of Chromebooks, yet they cost
+        // ~60 MB of the release APK (native libs + LWJGL natives + the x86 JRE tarballs).
+        // Build with -PkeepX86=true to put them back.
+        if (!(project.findProperty("keepX86") ?: "false").toBoolean()) {
+            ndk {
+                abiFilters "arm64-v8a", "armeabi-v7a"
+            }
+        }
     }
 
     buildTypes {
@@ -229,4 +239,44 @@ dependencies {
 
     implementation "net.java.dev.jna:jna:5.13.0@aar"
     implementation 'com.google.android.material:material:1.12.0'
+}
+
+
+// ── APK slimming: drop emulator-only assets ────────────────────────────────
+// The LWJGL native bundles and the JRE tarballs ship one copy per ABI inside assets/.
+// abiFilters only trims lib/, so the asset copies are removed from the merged asset
+// folder here. Build with -PkeepX86=true to keep them.
+def csKeepX86 = (project.findProperty("keepX86") ?: "false").toBoolean()
+def csDroppedAssetDirs = ["x86", "x86_64"] as Set
+def csDroppedAssetFiles = ["bin-x86.tar.xz", "bin-x86_64.tar.xz"] as Set
+
+tasks.configureEach { task ->
+    if (csKeepX86) return
+    if (!(task.name ==~ /^merge[A-Za-z0-9]*Assets$/)) return
+    task.doLast {
+        def roots = []
+        try {
+            def out = task.outputDir
+            if (out != null) roots << out.get().asFile
+        } catch (Throwable ignored) { }
+        if (roots.isEmpty()) roots.addAll(task.outputs.files.files)
+
+        long freed = 0
+        def victims = []
+        roots.findAll { it != null && it.isDirectory() }.each { root ->
+            root.traverse(type: groovy.io.FileType.ANY) { f ->
+                if (f.isDirectory() && csDroppedAssetDirs.contains(f.name)) victims << f
+                else if (f.isFile() && csDroppedAssetFiles.contains(f.name)) victims << f
+            }
+        }
+        victims.each { f ->
+            if (!f.exists()) return
+            if (f.isDirectory()) { freed += f.directorySize(); f.deleteDir() }
+            else { freed += f.length(); f.delete() }
+        }
+
+        if (freed > 0) {
+            logger.lifecycle("APK slimming: removed ${(freed / 1048576) as long} MB of x86/x86_64 assets")
+        }
+    }
 }
