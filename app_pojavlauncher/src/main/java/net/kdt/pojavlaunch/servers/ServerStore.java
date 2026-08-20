@@ -16,6 +16,8 @@ public class ServerStore {
     private static final String PREFS = "cs_servers_v31";
     private static final String KEY_LIST = "servers";
     private static final String KEY_PENDING = "pending_server_"; // + profileKey
+    private static final String KEY_PENDING_GLOBAL = "pending_server_global";
+    private static final String KEY_PENDING_TIME = "pending_server_time";
     private static final Gson GSON = new Gson();
 
     public static List<ServerEntry> load(Context ctx) {
@@ -55,14 +57,43 @@ public class ServerStore {
         save(ctx, l);
     }
 
-    /** Pending 1-click launch for profile */
+    /**
+     * Pending 1-click launch.
+     *
+     * <p>A global copy is always written next to the per-profile one. The launch path only knows
+     * the "current profile" preference, and that key can differ from the profile the hub was
+     * opened from (shortcuts, quick-launch, profile switch after queueing) — which is exactly
+     * why auto-join used to silently do nothing. The global key is the fallback that makes the
+     * hand-off reliable, and it is cleared as soon as the game is launched.
+     */
     public static void setPending(Context ctx, String profileKey, String address) {
-        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_PENDING + profileKey, address).apply();
+        SharedPreferences.Editor ed = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
+        if (profileKey != null) ed.putString(KEY_PENDING + profileKey, address);
+        ed.putString(KEY_PENDING_GLOBAL, address);
+        ed.putLong(KEY_PENDING_TIME, System.currentTimeMillis());
+        ed.apply();
     }
+
     public static String getPending(Context ctx, String profileKey) {
-        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_PENDING + profileKey, null);
+        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String perProfile = profileKey != null ? p.getString(KEY_PENDING + profileKey, null) : null;
+        if (perProfile != null && !perProfile.isEmpty()) return perProfile;
+        return p.getString(KEY_PENDING_GLOBAL, null);
     }
+
     public static void clearPending(Context ctx, String profileKey) {
-        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_PENDING + profileKey).apply();
+        SharedPreferences.Editor ed = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit();
+        if (profileKey != null) ed.remove(KEY_PENDING + profileKey);
+        ed.remove(KEY_PENDING_GLOBAL).remove(KEY_PENDING_TIME);
+        ed.apply();
+    }
+
+    /** Clears the queued join for every profile — used once the game has actually been started. */
+    public static void clearAllPending(Context ctx) {
+        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor ed = p.edit();
+        for (String key : p.getAll().keySet()) if (key.startsWith(KEY_PENDING)) ed.remove(key);
+        ed.remove(KEY_PENDING_GLOBAL).remove(KEY_PENDING_TIME);
+        ed.apply();
     }
 }

@@ -30,34 +30,30 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
         ServerEntry e = data.get(pos);
         h.name.setText(e.name != null && !e.name.isEmpty() ? e.name : e.address);
         h.address.setText(e.address);
-        // MOTD - clean, no JSON, max 2 lines
-        String motd = e.motd;
-        if (motd == null || motd.isEmpty() || motd.contains("{\"extra\"") || motd.contains("\"text\"")) {
-            motd = "No server description available";
-        }
-        // Ensure MOTD is not raw JSON
-        if (motd.trim().startsWith("{") && motd.contains("extra")) motd = "No server description available";
-        h.motd.setText(motd);
+
+        // ── Coloured MOTD, rendered exactly like the vanilla multiplayer screen ──
+        h.motd.setText(MotdRenderer.render(e));
         h.motd.setMaxLines(2);
         h.motd.setEllipsize(android.text.TextUtils.TruncateAt.END);
 
         if (e.online && e.playersOnline >= 0) {
             h.players.setVisibility(View.VISIBLE);
-            h.players.setText(e.playersOnline + "/" + (e.playersMax>=0?String.valueOf(e.playersMax):"∞"));
+            h.players.setText(e.playersOnline + "/" + (e.playersMax>=0?String.valueOf(e.playersMax):"\u221e"));
         } else h.players.setVisibility(View.GONE);
 
-        // Ping bars - Minecraft style 5 bars
+        int[] barIds = {R.id.ping_bar_1, R.id.ping_bar_2, R.id.ping_bar_3, R.id.ping_bar_4, R.id.ping_bar_5};
+        h.pingContainer.setVisibility(View.VISIBLE);
+
         if (e.online && e.pingMs >= 0) {
-            h.pingContainer.setVisibility(View.VISIBLE);
+            // Views are recycled: every property set in the offline branch must be undone here.
             h.ping.setText(e.pingMs + " ms");
+            h.ping.setTextColor(0xFF9AA3B2);
             h.offlineText.setVisibility(View.GONE);
             int bars = getBars(e.pingMs);
             int filledColor = 0xFF62D99B;
             int emptyColor = 0xFF3A404C;
-            // For poor ping, use yellow/red
             if (bars <= 2) filledColor = 0xFFFF6B6B;
             else if (bars <= 3) filledColor = 0xFFFFD166;
-            int[] barIds = {R.id.ping_bar_1, R.id.ping_bar_2, R.id.ping_bar_3, R.id.ping_bar_4, R.id.ping_bar_5};
             for (int i=0;i<5;i++) {
                 View bar = h.itemView.findViewById(barIds[i]);
                 if (bar != null) bar.setBackgroundColor(i < bars ? filledColor : emptyColor);
@@ -65,36 +61,34 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
             h.btnJoin.setAlpha(1f); h.btnJoin.setEnabled(true);
             h.btnJoin.setText("PLAY");
         } else {
-            // Offline
-            h.pingContainer.setVisibility(View.VISIBLE);
             h.ping.setText("Offline");
             h.ping.setTextColor(0xFFFF6B6B);
-            for (int id : new int[]{R.id.ping_bar_1,R.id.ping_bar_2,R.id.ping_bar_3,R.id.ping_bar_4,R.id.ping_bar_5}) {
+            for (int id : barIds) {
                 View bar = h.itemView.findViewById(id);
                 if (bar != null) bar.setBackgroundColor(0xFF3A404C);
             }
             h.offlineText.setVisibility(View.VISIBLE);
             h.offlineText.setText("Offline");
-            // Keep ping container visible but bars empty, disable PLAY
-            h.btnJoin.setAlpha(0.45f); h.btnJoin.setEnabled(false);
-            h.btnJoin.setText("OFFLINE");
-            if (!e.online) {
-                h.motd.setText("Server Offline");
-                h.players.setVisibility(View.GONE);
-            }
+            h.motd.setText(e.motdRaw != null && !e.motdRaw.isEmpty()
+                    ? MotdRenderer.render(e)
+                    : "Server offline \u2014 tap refresh to retry");
+            h.players.setVisibility(View.GONE);
+            // Offline servers can still be queued: Minecraft may reach a host the phone cannot.
+            h.btnJoin.setAlpha(0.75f); h.btnJoin.setEnabled(true);
+            h.btnJoin.setText("JOIN");
         }
+
         if (e.versionName != null && !e.versionName.isEmpty()) {
             h.version.setVisibility(View.VISIBLE); h.version.setText(e.versionName);
         } else h.version.setVisibility(View.GONE);
         h.dot.setVisibility(e.online ? View.VISIBLE : View.GONE);
-        if (e.online) h.dot.setBackgroundResource(R.drawable.bg_server_online_dot);
-        else h.dot.setBackgroundResource(R.drawable.bg_server_online_dot); // will be hidden anyway
+        h.dot.setBackgroundResource(R.drawable.bg_server_online_dot);
         Bitmap icon = e.decodeIcon();
         if (icon != null) { h.icon.setImageBitmap(icon); h.icon.setPadding(0,0,0,0); }
         else h.icon.setImageResource(R.drawable.ic_globe);
         h.btnJoin.setOnClickListener(v -> {
-            if (!e.online) { Toast.makeText(v.getContext(), "Server is offline", Toast.LENGTH_SHORT).show(); return; }
             v.animate().scaleX(0.94f).scaleY(0.94f).setDuration(70).withEndAction(()->v.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
+            if (!e.online) Toast.makeText(v.getContext(), "Server did not answer the ping \u2014 queueing the join anyway", Toast.LENGTH_SHORT).show();
             if (listener != null) listener.onJoin(e);
         });
         h.btnRemove.setOnClickListener(v -> { if(listener!=null) listener.onRemove(e); });

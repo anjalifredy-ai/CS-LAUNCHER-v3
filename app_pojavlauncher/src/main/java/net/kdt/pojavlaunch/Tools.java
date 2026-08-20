@@ -66,6 +66,7 @@ import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.plugins.FFmpegPlugin;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.servers.ServerEntry;
+import net.kdt.pojavlaunch.servers.ServerListSync;
 import net.kdt.pojavlaunch.servers.ServerStore;
 import net.kdt.pojavlaunch.tasks.AsyncAssetManager;
 import net.kdt.pojavlaunch.utils.DateUtils;
@@ -423,23 +424,44 @@ public final class Tools {
         // Pre-process specific files
         disableSplash(gamedir);
         String[] launchArgs = getMinecraftClientArgs(minecraftAccount, versionInfo, gamedir);
-        // ── V3.1 Server Hub: 1-click --server --port injection (Zalith-style) ──
+        // ── V3.1 Server Hub: 1-click auto-join injection ──
+        // Two things happen here, and both used to be missing:
+        //  1. servers.dat is re-synced right before the game starts, so hub servers really do
+        //     appear in the in-game Multiplayer list (the game dir may not have existed when
+        //     the server was added).
+        //  2. the join flag is chosen per game version. --server/--port were REMOVED in 23w14a
+        //     (1.20); modern versions only understand --quickPlayMultiplayer <host:port>.
+        //     Sending the old flags to 1.20+ is silently ignored, which is exactly why
+        //     auto-join "did nothing" on modern versions.
         try {
             String curProfile = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
-            if (curProfile != null) {
-                String pending = ServerStore.getPending(activity, curProfile);
-                if (pending != null && !pending.isEmpty()) {
-                    ServerEntry se = new ServerEntry(pending);
-                    String host = se.getHost().replace("[","").replace("]","");
-                    String port = String.valueOf(se.getPort());
-                    List<String> tmp = new ArrayList<>(Arrays.asList(launchArgs));
-                    tmp.add("--server"); tmp.add(host);
-                    tmp.add("--port"); tmp.add(port);
-                    launchArgs = tmp.toArray(new String[0]);
-                    Log.i("ServerHub", "Injecting 1-click join: --server " + host + " --port " + port);
+            ServerListSync.syncToGameDir(activity, gamedir);
+            String pending = ServerStore.getPending(activity, curProfile);
+            if (pending != null && !pending.isEmpty()) {
+                ServerEntry se = new ServerEntry(pending);
+                String host = se.getHost().replace("[", "").replace("]", "");
+                int port = se.getPort();
+                List<String> tmp = new ArrayList<>(Arrays.asList(launchArgs));
+                if (supportsQuickPlay(versionInfo)) {
+                    String target = port == 25565 ? host : host + ":" + port;
+                    // Never inject twice if the profile already carries the flag.
+                    if (!tmp.contains("--quickPlayMultiplayer")) {
+                        tmp.add("--quickPlayMultiplayer");
+                        tmp.add(target);
+                    }
+                    Log.i("ServerHub", "Auto-join (Quick Play): --quickPlayMultiplayer " + target);
+                } else {
+                    if (!tmp.contains("--server")) {
+                        tmp.add("--server"); tmp.add(host);
+                        tmp.add("--port"); tmp.add(String.valueOf(port));
+                    }
+                    Log.i("ServerHub", "Auto-join (legacy): --server " + host + " --port " + port);
                 }
+                launchArgs = tmp.toArray(new String[0]);
+                // One-shot: the next manual PLAY must not silently drag the player back in.
+                ServerStore.clearAllPending(activity);
             }
-        } catch (Exception e) { Log.w("ServerHub", "inject failed", e); }
+        } catch (Exception e) { Log.w("ServerHub", "auto-join injection failed", e); }
 
         // Select the appropriate openGL version
         OldVersionsUtils.selectOpenGlVersion(versionInfo);
@@ -812,6 +834,29 @@ public final class Tools {
             } //TODO: implement (?maybe?)
         }
         return JSONUtils.insertJSONValueList(minecraftArgs.toArray(new String[0]), varArgMap);
+    }
+
+    /**
+     * Quick Play (--quickPlayMultiplayer) replaced --server/--port in snapshot 23w14a, released
+     * 2023-04-05 and shipped with 1.20. Detection is done twice for safety:
+     * first by looking for the quick-play entries the version JSON itself declares (this also
+     * covers Forge/Fabric/Quilt profiles that inherit a 1.20+ client.json), then by the original
+     * release date of the inherited vanilla version.
+     */
+    public static boolean supportsQuickPlay(JMinecraftVersionList.Version versionInfo) {
+        try {
+            if (versionInfo.arguments != null && versionInfo.arguments.game != null) {
+                for (Object arg : versionInfo.arguments.game) {
+                    if (arg != null && arg.toString().contains("quickPlay")) return true;
+                }
+            }
+        } catch (Exception ignored) {}
+        try {
+            Date released = DateUtils.getOriginalReleaseDate(versionInfo);
+            // dateBefore() takes a zero-based month: 3 == April.
+            if (released != null) return !DateUtils.dateBefore(released, 2023, 3, 5);
+        } catch (Exception ignored) {}
+        return false;
     }
 
     public static String[] getMinecraftClientArgs(MinecraftAccount profile, JMinecraftVersionList.Version versionInfo, File gameDir) {

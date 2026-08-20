@@ -21,6 +21,9 @@ public class ServerEntry {
     public long lastPingEpoch = 0;
     public String versionName = "";
     public int protocol = -1;
+    /** Filled by the SRV lookup (null when the domain has no _minecraft._tcp record). */
+    public String resolvedHost;
+    public int resolvedPort = -1;
 
     public ServerEntry() {}
     public ServerEntry(String address) {
@@ -62,6 +65,29 @@ public class ServerEntry {
             try { return Integer.parseInt(after); } catch (NumberFormatException ignored) {}
         }
         return 25565;
+    }
+
+    /**
+     * True when the user typed "host:port" themselves. Vanilla skips the SRV lookup in that
+     * case, and so do we — otherwise a custom port would silently be replaced by the SRV one.
+     */
+    public boolean hasExplicitPort() {
+        if (address == null) return false;
+        if (address.contains("]")) {
+            int close = address.lastIndexOf(']');
+            return close != -1 && close + 1 < address.length() && address.charAt(close + 1) == ':';
+        }
+        int colon = address.lastIndexOf(':');
+        if (colon <= 0 || address.indexOf(':') != colon) return false;
+        try { Integer.parseInt(address.substring(colon + 1)); return true; }
+        catch (NumberFormatException e) { return false; }
+    }
+
+    /** Address string handed to Minecraft (--server / --quickPlayMultiplayer). */
+    public String getJoinAddress() {
+        String host = getHost().replace("[", "").replace("]", "");
+        int port = getPort();
+        return port == 25565 ? host : host + ":" + port;
     }
 
     public Bitmap decodeIcon() {

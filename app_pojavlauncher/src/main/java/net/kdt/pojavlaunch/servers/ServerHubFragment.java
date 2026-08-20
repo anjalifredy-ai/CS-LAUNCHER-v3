@@ -70,12 +70,16 @@ public class ServerHubFragment extends Fragment {
                     ServerStore.setPending(requireContext(), profileKey, e.address);
                     try { String cur = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey); ServerStore.setPending(requireContext(), cur, e.address); } catch (Exception ignored){}
                     ServerListSync.syncToGameDir(requireContext(), profileKey);
-                    Toast.makeText(requireContext(), "➤ " + e.address + " — next PLAY will auto-join V3.1  --server " + e.getHost() + " --port " + e.getPort(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireContext(), "\u27a4 " + e.getJoinAddress() + " \u2014 queued, the next PLAY joins automatically", Toast.LENGTH_LONG).show();
                     View card = root.findViewById(R.id.server_hub_card);
                     if (card!=null) card.animate().scaleX(0.99f).scaleY(0.99f).setDuration(80).withEndAction(()->card.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
                     new android.app.AlertDialog.Builder(requireContext())
                         .setTitle("Join " + e.address + "?")
-                        .setMessage("Launch directly into this server?\n--server " + e.getHost() + " --port " + e.getPort() + "\n\nTip: Just press PLAY — V3.1 will auto-inject the same flags.")
+                        .setMessage("Launch straight into this server?\n\nAddress: " + e.getJoinAddress()
+                                + "\nThe launcher picks the right flag for the version it starts:"
+                                + "\n  \u2022 1.20+  \u2192  --quickPlayMultiplayer"
+                                + "\n  \u2022 older  \u2192  --server / --port"
+                                + "\n\nIt is also added to the in-game Multiplayer list.")
                         .setPositiveButton("LAUNCH NOW", (d,w)->{
                             ServerStore.setPending(requireContext(), profileKey, e.address);
                             try{ LauncherPreferences.DEFAULT_PREF.edit().putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey).apply(); }catch(Exception ignored){}
@@ -119,6 +123,13 @@ public class ServerHubFragment extends Fragment {
         if (header!=null){ header.setAlpha(0f); header.setTranslationY(-12f); header.animate().alpha(1f).translationY(0f).setDuration(320).start(); }
         if (card!=null){ card.setAlpha(0f); card.setTranslationY(12f); card.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(320).start(); }
 
+        // Pull in servers the player added inside the game, then push ours back out,
+        // so the hub and the Multiplayer screen always show the same list.
+        try {
+            ServerListSync.importFromGameDir(requireContext(), profileKey);
+            ServerListSync.syncToGameDir(requireContext(), profileKey);
+        } catch (Exception ignored) {}
+
         refresh();
         pingAll();
     }
@@ -148,7 +159,7 @@ public class ServerHubFragment extends Fragment {
         if(empty!=null) empty.setVisibility(data.isEmpty()?View.VISIBLE:View.GONE);
         if(profileKey!=null && status!=null){
             String pending = ServerStore.getPending(requireContext(), profileKey);
-            if(pending!=null){ status.setVisibility(View.VISIBLE); status.setText("Pending join: " + pending + " — next PLAY will auto-join"); }
+            if(pending!=null){ status.setVisibility(View.VISIBLE); status.setText("Queued join: " + pending + " \u2014 the next PLAY auto-joins it"); }
         }
     }
     private void pingAll(){
@@ -156,7 +167,7 @@ public class ServerHubFragment extends Fragment {
         if(status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + data.size() + " servers…"); }
         for(ServerEntry e: new ArrayList<>(data)){
             ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); refresh(); });}
+                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); });}
                 @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); refresh(); });}
             });
         }
