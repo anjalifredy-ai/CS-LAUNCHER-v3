@@ -3,7 +3,7 @@ package net.kdt.pojavlaunch.utils.animation;
 import android.animation.TimeInterpolator;
 
 /**
- * Jelly bounce easing — ported CONCEPT from Zalith Launcher 2's
+ * Jelly bounce easing — modelled on modern launcher
  * `_Easing.kt` (JellyBounce), recreated here as a plain Android
  * TimeInterpolator (no UI copied, R4).
  *

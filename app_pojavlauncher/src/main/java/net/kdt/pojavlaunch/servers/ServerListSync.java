@@ -35,17 +35,17 @@ public class ServerListSync {
     private static final String TAG = "ServerListSync";
 
     public static void syncToGameDir(Context ctx, String profileKey) {
-        syncToGameDir(ctx, resolveGameDir(profileKey));
+        syncToGameDir(ctx, profileKey, resolveGameDir(profileKey));
     }
 
-    public static void syncToGameDir(Context ctx, File gameDir) {
+    public static void syncToGameDir(Context ctx, String profileKey, File gameDir) {
         try {
             if (gameDir == null) gameDir = new File(Tools.DIR_GAME_NEW);
             if (!gameDir.exists() && !gameDir.mkdirs()) {
                 Log.w(TAG, "cannot create game dir " + gameDir);
                 return;
             }
-            List<ServerEntry> hubServers = ServerStore.load(ctx);
+            List<ServerEntry> hubServers = ServerStore.load(ctx, profileKey);
             File dat = new File(gameDir, "servers.dat");
 
             // ── 1. read whatever the game already has, so nothing is lost ──
@@ -115,7 +115,7 @@ public class ServerListSync {
             Object serversTag = root.get("servers");
             if (!(serversTag instanceof NbtIO.NbtList)) return;
 
-            List<ServerEntry> current = ServerStore.load(ctx);
+            List<ServerEntry> current = ServerStore.load(ctx, profileKey);
             Set<String> known = new LinkedHashSet<>();
             for (ServerEntry e : current) if (e.address != null) known.add(e.address.toLowerCase());
 
@@ -136,7 +136,7 @@ public class ServerListSync {
             }
             if (imported.isEmpty()) return;
             current.addAll(imported);
-            ServerStore.save(ctx, current);
+            ServerStore.save(ctx, profileKey, current);
             Log.i(TAG, "imported " + imported.size() + " server(s) from servers.dat");
         } catch (Exception ex) {
             Log.w(TAG, "import failed", ex);

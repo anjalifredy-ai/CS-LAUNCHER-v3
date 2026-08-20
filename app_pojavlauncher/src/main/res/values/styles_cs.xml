@@ -168,6 +168,21 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <!-- Highlighted rail entry (Servers) — gold outline, always visible icon. -->
+    <style name="CsRailItemGold" parent="CsRailItem">
+        <item name="android:background">@drawable/bg_cs_sidebar_item_gold</item>
+    </style>
+
+    <style name="CsRailIconGold" parent="CsRailIcon">
+        <item name="android:layout_width">21dp</item>
+        <item name="android:layout_height">21dp</item>
+        <item name="android:tint">@color/cs_rail_icon_gold</item>
+    </style>
+
+    <style name="CsRailLabelGold" parent="CsRailLabel">
+        <item name="android:textColor">@color/cs_rail_text_gold</item>
+    </style>
+
     <!-- ══ World Manager ══ -->
     <style name="CsWorldActionRow">
         <item name="android:layout_width">match_parent</item>

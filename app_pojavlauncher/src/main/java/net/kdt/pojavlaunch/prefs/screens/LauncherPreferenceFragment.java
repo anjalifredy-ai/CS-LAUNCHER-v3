@@ -488,7 +488,7 @@ public class LauncherPreferenceFragment extends Fragment {
                             .setDropdownOptions(
                                     new String[]{"Animated Smart Logs (Default)", "Full Raw Logs"},
                                     new String[]{"animated_smart", "full_raw"}));
-                    // A9: global animation speed (concept port from Zalith). One
+                    // A9: global animation speed (in-house concept). One
                     // slider retimes every UiMotion animation via MotionSpeed.
                     launcherItems.add(new SettingItem("launcher_animate_speed", SettingItem.TYPE_SLIDER,
                             "Animation Speed", "Global animation duration multiplier for the launcher UI",

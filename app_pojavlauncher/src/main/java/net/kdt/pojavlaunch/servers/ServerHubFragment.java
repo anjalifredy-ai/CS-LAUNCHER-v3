@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * V3.1 Server Hub — Zalith-inspired full-screen dedicated Servers page.
- * Opened from Profile → Servers (below Worlds). Dark white black, mast animation.
+ * V3.1 Server Hub — full-screen dedicated Servers page.
+ * Opened from Profile → Servers. Each profile keeps its own list; the built-in server is shared.
  */
 public class ServerHubFragment extends Fragment {
     public static final String TAG = "ServerHubFragment";
@@ -76,7 +76,7 @@ public class ServerHubFragment extends Fragment {
                         @Override public void onSaveOnly(ServerEntry entry) {
                             queue(entry);
                             if (getContext()==null) return;
-                            ServerStore.add(requireContext(), entry);
+                            ServerStore.add(requireContext(), profileKey, entry);
                             refresh();
                             Toast.makeText(requireContext(), "Saved \u2014 the next PLAY joins " + entry.getJoinAddress(), Toast.LENGTH_SHORT).show();
                         }
@@ -85,10 +85,10 @@ public class ServerHubFragment extends Fragment {
                 @Override public void onRemove(ServerEntry e){
                     if (getContext()==null) return;
                     if (e.pinned || PartnerServer.is(e.address)) {
-                        Toast.makeText(requireContext(), PartnerServer.NAME + " is a partner server and stays in the list", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), PartnerServer.NAME + " is built into the launcher and stays in every profile", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    ServerStore.remove(requireContext(), e.address);
+                    ServerStore.remove(requireContext(), profileKey, e.address);
                     ServerListSync.syncToGameDir(requireContext(), profileKey);
                     refresh();
                     String pending = ServerStore.getPending(requireContext(), profileKey);
@@ -99,8 +99,8 @@ public class ServerHubFragment extends Fragment {
                     if (input!=null){ input.setText(e.address); input.requestFocus(); }
                     if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Re-pinging " + e.address + "…"); }
                     ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-                        @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); refresh(); if(status!=null) status.setText("✓ " + entry.motd + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); }); }
-                        @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); refresh(); if(status!=null) status.setText("✗ Offline — " + ex.getMessage()); }); }
+                        @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); if(status!=null) status.setText("✓ " + entry.motd + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); }); }
+                        @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); if(status!=null) status.setText("✗ Offline — " + ex.getMessage()); }); }
                     });
                 }
             });
@@ -163,13 +163,13 @@ public class ServerHubFragment extends Fragment {
         if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + raw + "…"); status.setAlpha(0f); status.animate().alpha(1f).setDuration(180).start(); }
         for(ServerEntry s: data) if(s.address.equalsIgnoreCase(e.address)){ if(status!=null) status.setText("Already added"); return; }
         ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-            @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), entry); ServerListSync.syncToGameDir(requireContext(), profileKey); if(input!=null) input.setText(""); refresh(); if(status!=null) status.setText("✓ Added: " + (entry.motd!=null?entry.motd:"") + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); if(list!=null) list.smoothScrollToPosition(0); });}
-            @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); if(status!=null) status.setText("Added offline: " + finalRaw + " ("+ex.getMessage()+") — will retry"); });}
+            @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), profileKey, entry); ServerListSync.syncToGameDir(requireContext(), profileKey); if(input!=null) input.setText(""); refresh(); if(status!=null) status.setText("✓ Added: " + (entry.motd!=null?entry.motd:"") + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); if(list!=null) list.smoothScrollToPosition(0); });}
+            @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), profileKey, entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); if(status!=null) status.setText("Added offline: " + finalRaw + " ("+ex.getMessage()+") — will retry"); });}
         });
     }
     private void refresh(){
         if (getContext()==null||list==null) return;
-        List<ServerEntry> stored = ServerStore.load(requireContext());
+        List<ServerEntry> stored = ServerStore.load(requireContext(), profileKey);
         data.clear(); data.addAll(stored);
         if(adapter!=null) adapter.notifyDataSetChanged();
         if(empty!=null) empty.setVisibility(data.size()<=1?View.VISIBLE:View.GONE);
@@ -183,8 +183,8 @@ public class ServerHubFragment extends Fragment {
         if(status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + data.size() + " servers…"); }
         for(ServerEntry e: new ArrayList<>(data)){
             ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); });}
-                @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), entry); refresh(); });}
+                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); });}
+                @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); });}
             });
         }
     }

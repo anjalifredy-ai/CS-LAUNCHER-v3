@@ -704,7 +704,7 @@ public class JREUtils {
             case "opengles3_desktopgl_zink_kopper": renderLibrary = "libglxshim.so"; break;
             case "opengles3_ltw" : renderLibrary = "libltw.so"; break;
             case "opengles3_KW" : renderLibrary = "libng_gl4es.so"; break;
-            // CS Task 5: OSMesa gallium renderers (Zalith port, arm64-only builds).
+            // CS Task 5: OSMesa gallium renderers (arm64-only builds).
             // Freedreno targets Adreno, Panfrost targets Mali. Both are
             // self-contained gallium OSMesa builds driven through the existing
             // osm_bridge path (same mechanism as vulkan_zink).

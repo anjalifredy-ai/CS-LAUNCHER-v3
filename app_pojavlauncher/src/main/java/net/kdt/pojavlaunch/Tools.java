@@ -435,7 +435,7 @@ public final class Tools {
         //     auto-join "did nothing" on modern versions.
         try {
             String curProfile = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
-            ServerListSync.syncToGameDir(activity, gamedir);
+            ServerListSync.syncToGameDir(activity, curProfile, gamedir);
             String pending = ServerStore.getPending(activity, curProfile);
             if (pending != null && !pending.isEmpty()) {
                 ServerEntry se = new ServerEntry(pending);

@@ -2,6 +2,9 @@ package net.kdt.pojavlaunch.servers;
 
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -15,8 +18,8 @@ import java.util.List;
 /**
  * Server Hub list adapter.
  *
- * <p>Two view types: the built-in partner card (banner artwork, Discord button, no delete) and
- * the regular server card.
+ * <p>Two view types: the highlighted built-in card (artwork header, server icon, Discord
+ * button, no delete) and the regular server card.
  */
 public class ServerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -52,7 +55,7 @@ public class ServerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         else bindNormal((VH) holder, e, pos);
     }
 
-    // ─────────────────────────── featured partner card ───────────────────────────
+    // ─────────────────────────── highlighted card ───────────────────────────
 
     private void bindFeatured(FeaturedVH h, ServerEntry e, int pos) {
         h.name.setText(e.name != null && !e.name.isEmpty() ? e.name : PartnerServer.NAME);
@@ -61,16 +64,21 @@ public class ServerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 ? MotdRenderer.render(e)
                 : PartnerServer.TAGLINE);
 
+        // Live favicon when the ping brought one, otherwise the built-in mark.
+        Bitmap icon = e.decodeIcon();
+        if (icon != null) h.icon.setImageBitmap(icon);
+        else h.icon.setImageResource(R.drawable.ic_server_leaf);
+
         if (e.online && e.playersOnline >= 0) {
             h.players.setVisibility(View.VISIBLE);
-            h.players.setText(e.playersOnline + " online");
+            h.players.setText("\u25cf " + e.playersOnline + " online");
         } else h.players.setVisibility(View.GONE);
 
         if (e.online && e.pingMs >= 0) {
             h.ping.setText(e.pingMs + " ms");
-            h.ping.setTextColor(0xFFB6F5C6);
+            h.ping.setTextColor(pingColor(e.pingMs));
         } else {
-            h.ping.setText("connecting…");
+            h.ping.setText("connecting\u2026");
             h.ping.setTextColor(0xFFFFD166);
         }
 
@@ -87,24 +95,82 @@ public class ServerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             ServerPlayDialog.press(v);
             ServerPlayDialog.openDiscord(v.getContext());
         });
-        // Tapping the artwork itself also opens the play popup — nothing here is destructive.
         h.itemView.setOnClickListener(v -> { if (listener != null) listener.onJoin(e); });
 
-        // Entrance + a slow breathing rim so the partner card stands out without being noisy.
+        // ── entrance: card lifts in, icon pops, body fades up ──
         h.itemView.setAlpha(0f);
-        h.itemView.setTranslationY(10f);
-        h.itemView.animate().alpha(1f).translationY(0f).setDuration(280).start();
-        if (h.glow != null) {
-            h.glow.animate().cancel();
-            h.glow.setAlpha(0.35f);
-            pulse(h.glow);
+        h.itemView.setTranslationY(14f);
+        h.itemView.setScaleX(0.985f);
+        h.itemView.setScaleY(0.985f);
+        h.itemView.animate().alpha(1f).translationY(0f).scaleX(1f).scaleY(1f)
+                .setInterpolator(new DecelerateInterpolator()).setDuration(340).start();
+        if (h.iconCard != null) {
+            h.iconCard.setScaleX(0.6f); h.iconCard.setScaleY(0.6f); h.iconCard.setAlpha(0f);
+            h.iconCard.animate().scaleX(1f).scaleY(1f).alpha(1f)
+                    .setStartDelay(120).setDuration(420)
+                    .setInterpolator(new OvershootInterpolator(2.2f)).start();
         }
+        fadeUp(h.name, 160);
+        fadeUp(h.address, 190);
+        fadeUp(h.motd, 220);
+        fadeUp(h.btnPlay, 260);
+        fadeUp(h.btnDiscord, 290);
+
+        startShine(h.shine);
+        startGlow(h.glow);
+    }
+
+    private static void fadeUp(View v, long delay) {
+        if (v == null || v.getVisibility() != View.VISIBLE) return;
+        v.setAlpha(0f);
+        v.setTranslationY(10f);
+        v.animate().alpha(1f).translationY(0f).setStartDelay(delay)
+                .setInterpolator(new DecelerateInterpolator()).setDuration(300).start();
+    }
+
+    private static int pingColor(long ping) {
+        if (ping < 120) return 0xFFB6F5C6;
+        if (ping < 260) return 0xFFFFE28A;
+        return 0xFFFFB3B3;
+    }
+
+    /** Light sweep travelling across the artwork, restarted every few seconds. */
+    private void startShine(View shine) {
+        if (shine == null) return;
+        shine.animate().cancel();
+        shine.post(() -> {
+            int width = ((View) shine.getParent()).getWidth();
+            if (width <= 0) return;
+            sweep(shine, width);
+        });
+    }
+
+    private void sweep(View shine, int width) {
+        if (!shine.isAttachedToWindow()) return;
+        shine.setTranslationX(-shine.getWidth() - 20f);
+        shine.setAlpha(0f);
+        shine.animate().alpha(1f).setDuration(220).start();
+        shine.animate().translationX(width + shine.getWidth())
+                .setStartDelay(120).setDuration(1500)
+                .setInterpolator(new AccelerateDecelerateInterpolator())
+                .withEndAction(() -> {
+                    shine.setAlpha(0f);
+                    shine.postDelayed(() -> sweep(shine, width), 2600);
+                }).start();
+    }
+
+    /** Slow breathing gold rim. */
+    private void startGlow(View glow) {
+        if (glow == null) return;
+        glow.animate().cancel();
+        glow.setAlpha(0.35f);
+        pulse(glow);
     }
 
     private void pulse(View glow) {
         if (!glow.isAttachedToWindow()) return;
-        glow.animate().alpha(0.95f).setStartDelay(0).setDuration(1400)
-                .withEndAction(() -> glow.animate().alpha(0.3f).setDuration(1400)
+        glow.animate().alpha(0.95f).setStartDelay(0).setDuration(1500)
+                .withEndAction(() -> glow.animate().alpha(0.3f).setDuration(1500)
                         .withEndAction(() -> pulse(glow)).start())
                 .start();
     }
@@ -208,13 +274,16 @@ public class ServerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     static class FeaturedVH extends RecyclerView.ViewHolder {
         TextView name, address, motd, ping, players, version, btnPlay, btnDiscord;
-        View glow;
+        ImageView icon, banner;
+        View glow, shine, iconCard;
         FeaturedVH(View v){ super(v);
             name=v.findViewById(R.id.fs_name); address=v.findViewById(R.id.fs_address);
             motd=v.findViewById(R.id.fs_motd); ping=v.findViewById(R.id.fs_ping);
             players=v.findViewById(R.id.fs_players); version=v.findViewById(R.id.fs_version);
             btnPlay=v.findViewById(R.id.fs_btn_play); btnDiscord=v.findViewById(R.id.fs_btn_discord);
-            glow=v.findViewById(R.id.fs_glow);
+            icon=v.findViewById(R.id.fs_icon); banner=v.findViewById(R.id.fs_banner);
+            iconCard=v.findViewById(R.id.fs_icon_card);
+            glow=v.findViewById(R.id.fs_glow); shine=v.findViewById(R.id.fs_shine);
         }
     }
 }

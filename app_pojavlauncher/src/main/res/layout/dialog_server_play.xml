@@ -17,7 +17,7 @@
         android:background="@drawable/bg_dialog_plantmc"
         android:orientation="vertical">
 
-        <!-- Banner head (partner servers only) -->
+        <!-- Artwork head (built-in server only) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/spd_banner_card"
             android:layout_width="match_parent"
@@ -43,19 +43,6 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_featured_scrim" />
 
-                <TextView
-                    android:id="@+id/spd_badge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="18dp"
-                    android:layout_gravity="top|start"
-                    android:layout_margin="8dp"
-                    android:background="@drawable/bg_partner_badge"
-                    android:gravity="center"
-                    android:paddingHorizontal="8dp"
-                    android:text="★ PARTNER"
-                    android:textColor="#08130B"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
             </FrameLayout>
         </androidx.cardview.widget.CardView>
 

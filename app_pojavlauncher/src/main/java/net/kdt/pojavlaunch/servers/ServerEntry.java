@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 
 /**
- * Zalith-inspired Server Entry — stores address, cached ping data, icon.
+ * Server list entry — address, cached ping data, MOTD and icon.
  * Persisted in servers.json via ServerStore.
  */
 public class ServerEntry {

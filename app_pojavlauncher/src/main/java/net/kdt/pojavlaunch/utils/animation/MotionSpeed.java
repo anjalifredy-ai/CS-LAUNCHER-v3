@@ -3,7 +3,7 @@ package net.kdt.pojavlaunch.utils.animation;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 
 /**
- * Global animation-speed multiplier (A9) — concept ported from Zalith
+ * Global animation-speed multiplier (A9) — in-house concept
  * Launcher 2's `getAnimateSpeed()`/`launcherAnimateSpeed`, recreated
  * against CSL's own preference system (R4).
  *

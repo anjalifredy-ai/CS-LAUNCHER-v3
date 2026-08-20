@@ -3,7 +3,7 @@ package net.kdt.pojavlaunch.utils.animation;
 import android.animation.TimeInterpolator;
 
 /**
- * Four-phase bounce easing — ported CONCEPT from Zalith Launcher 2's
+ * Four-phase bounce easing — modelled on modern launcher
  * `_Easing.kt` (BounceEasing), recreated in plain Android (R4).
  *
  * Phase-stretched quadratic bounce (mirrors the classic Android

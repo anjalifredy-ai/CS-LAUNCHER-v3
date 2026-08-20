@@ -9,101 +9,126 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Persists servers globally (and per-profile selected). Dark theme uses same store.
- * Backed by SharedPreferences for light weight; servers.json style but via prefs.
+ * Server storage.
+ *
+ * <p>Two rules shape this class:
+ * <ul>
+ *   <li><b>Per profile.</b> Every launcher profile owns its own server list, keyed by the profile
+ *       key, so a server added while editing "1.21 Fabric" never shows up under "1.8.9 PvP".</li>
+ *   <li><b>The built-in server is global.</b> It lives in its own slot, is returned first for
+ *       every profile, and cannot be removed, edited or duplicated by list operations.</li>
+ * </ul>
  */
 public class ServerStore {
     private static final String PREFS = "cs_servers_v31";
+    /** Legacy single global list (pre per-profile builds); migrated on first read. */
     private static final String KEY_LIST = "servers";
-    private static final String KEY_PARTNER = "partner_cache";
+    private static final String KEY_LIST_PROFILE = "servers_profile_"; // + profileKey
+    private static final String KEY_MIGRATED = "servers_migrated_"; // + profileKey
+    private static final String KEY_BUILTIN = "builtin_cache";
     private static final String KEY_PENDING = "pending_server_"; // + profileKey
     private static final String KEY_PENDING_GLOBAL = "pending_server_global";
     private static final String KEY_PENDING_TIME = "pending_server_time";
     private static final Gson GSON = new Gson();
 
+    private static String listKey(String profileKey) {
+        return KEY_LIST_PROFILE + (profileKey == null || profileKey.isEmpty() ? "default" : profileKey);
+    }
+
     /**
-     * Returns the partner server first, followed by the user's own servers.
-     * The partner entry lives in its own preference slot, so it can never be lost, duplicated
-     * or deleted by list operations.
+     * Built-in server first, then this profile's own servers.
      */
-    public static List<ServerEntry> load(Context ctx) {
+    public static List<ServerEntry> load(Context ctx, String profileKey) {
         List<ServerEntry> out = new ArrayList<>();
-        out.add(loadPartner(ctx));
-        out.addAll(loadUserServers(ctx));
+        out.add(loadBuiltIn(ctx));
+        out.addAll(loadUserServers(ctx, profileKey));
         return out;
     }
 
-    public static List<ServerEntry> loadUserServers(Context ctx) {
+    public static List<ServerEntry> loadUserServers(Context ctx, String profileKey) {
         SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String json = p.getString(KEY_LIST, null);
+        String key = listKey(profileKey);
+        String json = p.getString(key, null);
+
+        // One-time migration: the old builds kept a single shared list. Copy it into the first
+        // profile that asks for it so nobody loses the servers they already added.
+        if (json == null) {
+            String legacy = p.getString(KEY_LIST, null);
+            boolean migrated = p.getBoolean(KEY_MIGRATED + key, false);
+            if (legacy != null && !legacy.isEmpty() && !migrated) {
+                p.edit().putString(key, legacy).putBoolean(KEY_MIGRATED + key, true).apply();
+                json = legacy;
+            }
+        }
         if (json == null || json.isEmpty()) return new ArrayList<>();
         try {
             Type t = new TypeToken<List<ServerEntry>>(){}.getType();
             List<ServerEntry> l = GSON.fromJson(json, t);
             if (l == null) return new ArrayList<>();
-            // Defensive: an old build may have persisted the partner into the user list.
             l.removeIf(s -> s == null || s.address == null || PartnerServer.is(s.address));
             return l;
         } catch (Exception e) { return new ArrayList<>(); }
     }
 
-    /** Partner entry with its last known ping/MOTD cache. */
-    public static ServerEntry loadPartner(Context ctx) {
+    /** The built-in entry plus its last known ping / MOTD / icon cache. */
+    public static ServerEntry loadBuiltIn(Context ctx) {
         SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String json = p.getString(KEY_PARTNER, null);
+        String json = p.getString(KEY_BUILTIN, null);
         ServerEntry e = null;
         if (json != null && !json.isEmpty()) {
             try { e = GSON.fromJson(json, ServerEntry.class); } catch (Exception ignored) {}
         }
         if (e == null || e.address == null) e = PartnerServer.create();
-        // The address, the name and the pinned flag are owned by the launcher, not by the cache.
+        // Address and pinned state are owned by the launcher, never by the cache.
         e.address = PartnerServer.ADDRESS;
         e.pinned = true;
         if (e.name == null || e.name.isEmpty() || e.name.equals(e.address)) e.name = PartnerServer.NAME;
         return e;
     }
 
-    private static void savePartner(Context ctx, ServerEntry e) {
+    private static void saveBuiltIn(Context ctx, ServerEntry e) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-           .edit().putString(KEY_PARTNER, GSON.toJson(e)).apply();
+           .edit().putString(KEY_BUILTIN, GSON.toJson(e)).apply();
     }
 
-    /** Persists the user list only — the partner entry is filtered out on purpose. */
-    public static void save(Context ctx, List<ServerEntry> list) {
+    /** Persists this profile's own servers; the built-in entry is routed to its own slot. */
+    public static void save(Context ctx, String profileKey, List<ServerEntry> list) {
         List<ServerEntry> userOnly = new ArrayList<>();
         for (ServerEntry s : list) {
             if (s == null || s.address == null) continue;
-            if (s.pinned || PartnerServer.is(s.address)) { savePartner(ctx, s); continue; }
+            if (s.pinned || PartnerServer.is(s.address)) { saveBuiltIn(ctx, s); continue; }
             userOnly.add(s);
         }
-        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        p.edit().putString(KEY_LIST, GSON.toJson(userOnly)).apply();
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+           .edit().putString(listKey(profileKey), GSON.toJson(userOnly)).apply();
     }
 
-    public static void add(Context ctx, ServerEntry e) {
+    public static void add(Context ctx, String profileKey, ServerEntry e) {
         if (e == null || e.address == null) return;
-        if (PartnerServer.is(e.address)) { savePartner(ctx, e); return; } // already built in
-        List<ServerEntry> l = loadUserServers(ctx);
+        if (PartnerServer.is(e.address)) { saveBuiltIn(ctx, e); return; } // already built in
+        List<ServerEntry> l = loadUserServers(ctx, profileKey);
         for (ServerEntry s : l) if (s.address.equalsIgnoreCase(e.address)) return;
         l.add(0, e);
-        save(ctx, l);
+        save(ctx, profileKey, l);
     }
 
-    /** @return false when the address is the partner server, which cannot be removed. */
-    public static boolean remove(Context ctx, String address) {
+    /** @return false when the address is the built-in server, which cannot be removed. */
+    public static boolean remove(Context ctx, String profileKey, String address) {
         if (PartnerServer.is(address)) return false;
-        List<ServerEntry> l = loadUserServers(ctx);
+        List<ServerEntry> l = loadUserServers(ctx, profileKey);
         l.removeIf(s -> s.address.equalsIgnoreCase(address));
-        save(ctx, l);
+        save(ctx, profileKey, l);
         return true;
     }
 
-    public static void update(Context ctx, ServerEntry updated) {
+    public static void update(Context ctx, String profileKey, ServerEntry updated) {
         if (updated == null || updated.address == null) return;
-        if (updated.pinned || PartnerServer.is(updated.address)) { savePartner(ctx, updated); return; }
-        List<ServerEntry> l = loadUserServers(ctx);
-        for (int i=0;i<l.size();i++) if (l.get(i).address.equalsIgnoreCase(updated.address)) { l.set(i, updated); break; }
-        save(ctx, l);
+        if (updated.pinned || PartnerServer.is(updated.address)) { saveBuiltIn(ctx, updated); return; }
+        List<ServerEntry> l = loadUserServers(ctx, profileKey);
+        for (int i = 0; i < l.size(); i++) {
+            if (l.get(i).address.equalsIgnoreCase(updated.address)) { l.set(i, updated); break; }
+        }
+        save(ctx, profileKey, l);
     }
 
     /**

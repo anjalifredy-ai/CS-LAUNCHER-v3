@@ -79,7 +79,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Partner server • live ping • 1-tap join"
+                android:text="Live ping • per-profile lists • 1-tap join"
                 android:textColor="#6B7280"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -156,7 +156,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Enter IP, see MOTD, players, ping &amp; icon before launch — Zalith style"
+                    android:text="Enter an IP to see its MOTD, players, ping and icon before you launch"
                     android:textColor="#7F8894"
                     android:textSize="10sp" />
 
@@ -246,7 +246,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:gravity="center"
-                android:text="V3.1 Server Hub • Live ping • Auto favicon • 1-Click --server --port • Zalith research"
+                android:text="Live ping • Auto favicon • 1-tap join • Per-profile lists"
                 android:textColor="#3E4552"
                 android:textSize="7sp"
                 android:textStyle="bold" />
