@@ -64,20 +64,41 @@
                     android:textStyle="bold"
                     tools:text="Hypixel • 1.21" />
 
-                <TextView
-                    android:id="@+id/server_ping"
+                <!-- Minecraft-style ping with 5 bars + ms -->
+                <LinearLayout
+                    android:id="@+id/server_ping_container"
                     android:layout_width="wrap_content"
                     android:layout_height="16dp"
                     android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_stat_chip"
-                    android:gravity="center"
-                    android:paddingHorizontal="6dp"
-                    android:textColor="#FFFFFF"
-                    android:textSize="8sp"
-                    android:textStyle="bold"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:visibility="gone"
-                    tools:text="42ms"
-                    tools:visibility="visible" />
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:id="@+id/server_ping_bars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="12dp"
+                        android:gravity="bottom"
+                        android:orientation="horizontal">
+
+                        <View android:id="@+id/ping_bar_1" android:layout_width="3dp" android:layout_height="3dp" android:layout_marginEnd="1dp" android:background="#5A636E" />
+                        <View android:id="@+id/ping_bar_2" android:layout_width="3dp" android:layout_height="5dp" android:layout_marginEnd="1dp" android:background="#5A636E" />
+                        <View android:id="@+id/ping_bar_3" android:layout_width="3dp" android:layout_height="7dp" android:layout_marginEnd="1dp" android:background="#5A636E" />
+                        <View android:id="@+id/ping_bar_4" android:layout_width="3dp" android:layout_height="9dp" android:layout_marginEnd="1dp" android:background="#5A636E" />
+                        <View android:id="@+id/ping_bar_5" android:layout_width="3dp" android:layout_height="12dp" android:background="#5A636E" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/server_ping"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:textColor="#9AA3B0"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        tools:text="42 ms" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView
@@ -100,7 +121,7 @@
                 android:maxLines="2"
                 android:textColor="#EDEEF2"
                 android:textSize="11.5sp"
-                tools:text="§aHypixel Network §7[1.8-1.21] §eNEW GAME!" />
+                tools:text="Hypixel Network [1.8-1.21] NEW GAME!" />
         </LinearLayout>
 
         <TextView
@@ -117,8 +138,7 @@
             android:textSize="10sp"
             android:textStyle="bold"
             android:visibility="gone"
-            tools:text="142/500"
-            tools:visibility="visible" />
+            tools:text="142/500" />
     </LinearLayout>
 
     <View
@@ -144,7 +164,18 @@
             android:textColor="#FFFFFF"
             android:textSize="8sp"
             android:visibility="gone"
-            tools:text="1.21.1"
+            tools:text="1.21.1" />
+
+        <TextView
+            android:id="@+id/server_offline_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="Offline"
+            android:textColor="#FF6B6B"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:visibility="gone"
             tools:visibility="visible" />
 
         <Space

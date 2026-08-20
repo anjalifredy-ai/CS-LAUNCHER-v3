@@ -80,60 +80,20 @@ public class ServerPinger {
             JSONObject players = root.optJSONObject("players");
             if (players != null) { e.playersOnline = players.optInt("online",-1); e.playersMax = players.optInt("max",-1); }
             Object desc = root.opt("description");
-            String motd = "";
-            String raw = "";
-            if (desc instanceof String) {
-                motd = (String)desc; raw = motd;
-            } else if (desc instanceof JSONObject) {
-                JSONObject jo = (JSONObject)desc;
-                motd = jo.optString("text","");
-                if (motd.isEmpty() && jo.has("extra")) {
-                    JSONArray extra = jo.optJSONArray("extra");
-                    if (extra != null) {
-                        StringBuilder sb=new StringBuilder();
-                        for(int i=0;i<extra.length();i++){
-                            JSONObject o = extra.optJSONObject(i);
-                            if(o!=null) sb.append(o.optString("text",""));
-                        }
-                        motd = sb.toString();
-                    }
-                }
-                // Handle translate with with
-                if (motd.isEmpty() && jo.has("translate")) {
-                    motd = jo.optString("translate","");
-                    JSONArray with = jo.optJSONArray("with");
-                    if (with!=null && with.length()>0) {
-                        StringBuilder sb=new StringBuilder(motd);
-                        for(int i=0;i<with.length();i++){
-                            Object w = with.opt(i);
-                            if(w instanceof JSONObject) sb.append(" ").append(((JSONObject)w).optString("text",""));
-                            else if(w instanceof String) sb.append(" ").append((String)w);
-                        }
-                        motd = sb.toString();
-                    }
-                }
-                raw = jo.toString();
-            } else if (desc instanceof JSONArray) {
-                JSONArray arr = (JSONArray)desc;
-                StringBuilder sb=new StringBuilder();
-                for(int i=0;i<arr.length();i++){
-                    Object o=arr.opt(i);
-                    if(o instanceof JSONObject) sb.append(((JSONObject)o).optString("text",""));
-                    else if(o instanceof String) sb.append((String)o);
-                }
-                motd = sb.toString();
-                raw = arr.toString();
-            }
-            if (motd==null) motd="";
-            // Strip section codes and trim, keep newlines for 2-line MOTD
+            String motd = extractMotd(desc);
+            String raw = desc != null ? desc.toString() : "";
+            if (motd == null) motd = "";
             motd = motd.replaceAll("§.", "").trim();
-            // Minecraft MOTD often has two lines separated by \n — keep as is
             if (motd.isEmpty() && raw != null && !raw.isEmpty()) motd = raw.replaceAll("§.", "").trim();
             if (motd.isEmpty()) motd = "A Minecraft Server";
+            // Minecraft MOTD often has two lines - keep first two
+            String[] lines = motd.split("\n");
+            if (lines.length > 2) {
+                motd = lines[0].trim() + "\n" + lines[1].trim();
+            }
             e.motd = motd;
             e.motdRaw = raw != null && !raw.isEmpty() ? raw : motd;
             if (e.name == null || e.name.equals(e.address) || e.name.isEmpty()) {
-                String[] lines = motd.split("\n");
                 String first = lines.length>0 ? lines[0].trim() : "";
                 if (!first.isEmpty() && first.length() < 48) e.name = first;
                 else if (!e.versionName.isEmpty()) e.name = e.versionName;
@@ -151,6 +111,54 @@ public class ServerPinger {
         if (e.motd==null||e.motd.isEmpty()) e.motd = "A Minecraft Server";
         if (e.pingMs < 0) e.pingMs = fallbackPing;
     }
+
+    /** Recursively extracts plain text from Minecraft JSON chat components, handling nested extra/with */
+    private static String extractMotd(Object obj) {
+        if (obj == null) return "";
+        if (obj instanceof String) {
+            return (String)obj;
+        } else if (obj instanceof JSONArray) {
+            JSONArray arr = (JSONArray)obj;
+            StringBuilder sb = new StringBuilder();
+            for (int i=0;i<arr.length();i++) {
+                Object o = arr.opt(i);
+                sb.append(extractMotd(o));
+            }
+            return sb.toString();
+        } else if (obj instanceof JSONObject) {
+            JSONObject jo = (JSONObject)obj;
+            StringBuilder sb = new StringBuilder();
+            // Direct text
+            String text = jo.optString("text", "");
+            // Handle translate with with
+            String translate = jo.optString("translate", "");
+            if (!translate.isEmpty()) {
+                // For translate, we just append translate key and with args
+                sb.append(translate);
+                JSONArray with = jo.optJSONArray("with");
+                if (with != null) {
+                    for (int i=0;i<with.length();i++) {
+                        Object w = with.opt(i);
+                        String wText = extractMotd(w);
+                        if (!wText.isEmpty()) sb.append(" ").append(wText);
+                    }
+                }
+            } else {
+                sb.append(text);
+            }
+            // Recursively process extra
+            JSONArray extra = jo.optJSONArray("extra");
+            if (extra != null) {
+                for (int i=0;i<extra.length();i++) {
+                    Object o = extra.opt(i);
+                    sb.append(extractMotd(o));
+                }
+            }
+            return sb.toString();
+        }
+        return obj.toString();
+    }
+
     private static void writeVarInt(DataOutputStream out, int v) throws Exception { while ((v & 0xFFFFFF80) != 0) { out.writeByte((v & 0x7F) | 0x80); v >>>=7; } out.writeByte(v); }
     private static int readVarInt(DataInputStream in) throws Exception { int numRead=0,result=0; byte read; do{ read=in.readByte(); int val=(read & 0x7F); result|=val<<(7*numRead); numRead++; if(numRead>5) throw new RuntimeException("VarInt too big"); }while((read & 0x80)!=0); return result; }
     private static void writeString(DataOutputStream out, String s) throws Exception { byte[] b=s.getBytes(StandardCharsets.UTF_8); writeVarInt(out,b.length); out.write(b); }
