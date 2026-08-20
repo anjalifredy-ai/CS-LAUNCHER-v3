@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import net.kdt.pojavlaunch.R;
@@ -92,7 +93,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
         if (icon != null) { h.icon.setImageBitmap(icon); h.icon.setPadding(0,0,0,0); }
         else h.icon.setImageResource(R.drawable.ic_globe);
         h.btnJoin.setOnClickListener(v -> {
-            if (!e.online) { android.widget.Toast.makeText(v.getContext(), "Server is offline", Toast.LENGTH_SHORT).show(); return; }
+            if (!e.online) { Toast.makeText(v.getContext(), "Server is offline", Toast.LENGTH_SHORT).show(); return; }
             v.animate().scaleX(0.94f).scaleY(0.94f).setDuration(70).withEndAction(()->v.animate().scaleX(1f).scaleY(1f).setDuration(160).start()).start();
             if (listener != null) listener.onJoin(e);
         });
@@ -113,7 +114,7 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.VH> {
     @Override public int getItemCount(){ return data.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        ImageView icon; View dot; TextView name, address, motd, ping, players, version, offlineText; View btnJoin, btnRemove; View pingContainer;
+        ImageView icon; View dot; TextView name, address, motd, ping, players, version, offlineText, btnJoin; View btnRemove; View pingContainer;
         VH(View v){ super(v);
             icon=v.findViewById(R.id.server_icon); dot=v.findViewById(R.id.server_online_dot);
             name=v.findViewById(R.id.server_name); address=v.findViewById(R.id.server_address);
