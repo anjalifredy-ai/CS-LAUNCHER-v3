@@ -23,7 +23,7 @@ import net.kdt.pojavlaunch.R;
 public final class CsClientInstallView extends View {
     private final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);private final Path path=new Path();private final RectF rect=new RectF();
     private final Bitmap logo;private ValueAnimator motion;private float phase,shown,target;private String status="PREPARING CLIENT";private String detail="Atomic profile installation";private boolean done,failed;
-    private final String[] stages={"LOADER","PACK","BLAZE","MODS","FINALIZE"};
+    private final String[] stages={"LOADER","PACK","CS CLIENT","MODS","FINALIZE"};
 
     public CsClientInstallView(Context c){this(c,null);}public CsClientInstallView(Context c,@Nullable AttributeSet a){this(c,a,0);}public CsClientInstallView(Context c,@Nullable AttributeSet a,int s){super(c,a,s);logo=BitmapFactory.decodeResource(getResources(),R.drawable.cs_logo);init();}
     private void init(){setLayerType(LAYER_TYPE_HARDWARE,null);motion=ValueAnimator.ofFloat(0,1);motion.setDuration(2600);motion.setRepeatCount(ValueAnimator.INFINITE);motion.setInterpolator(new LinearInterpolator());motion.addUpdateListener(a->{phase=(float)a.getAnimatedValue();float d=target-shown;shown=Math.abs(d)<.08f?target:shown+d*.1f;invalidate();});}
@@ -31,7 +31,7 @@ public final class CsClientInstallView extends View {
     public void setInstallProgress(int pct,String text){target=Math.max(0,Math.min(100,pct));detail=text==null?"":text;status=stageFor(pct);invalidate();}
     public void complete(String text){target=100;done=true;failed=false;status="PROFILE READY";detail=text;invalidate();}
     public void fail(String text){failed=true;done=false;status="INSTALLATION STOPPED";detail=text;invalidate();}
-    private String stageFor(int n){if(n<18)return"RESOLVING FABRIC LOADER";if(n<45)return"MERGING CLIENT PACK";if(n<58)return"INSTALLING BLAZE CLIENT";if(n<90)return"INSTALLING VERIFIED MODULES";return"FINALIZING PROFILE";}
+    private String stageFor(int n){if(n<18)return"RESOLVING FABRIC LOADER";if(n<45)return"MERGING CLIENT PACK";if(n<58)return"INSTALLING CS CLIENT";if(n<90)return"INSTALLING VERIFIED MODULES";return"FINALIZING PROFILE";}
 
     @Override protected void onAttachedToWindow(){super.onAttachedToWindow();start();}@Override protected void onDetachedFromWindow(){stop();super.onDetachedFromWindow();}
     @Override protected void onDraw(Canvas c){super.onDraw(c);float w=getWidth(),h=getHeight(),cx=w*.5f,cy=h*.42f;int silver=0xffbcc3cc,white=0xfff2f3f5,whiteDone=0xffffffff;

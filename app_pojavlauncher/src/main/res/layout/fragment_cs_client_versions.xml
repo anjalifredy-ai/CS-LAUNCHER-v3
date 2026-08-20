@@ -126,7 +126,7 @@
                     android:background="@drawable/bg_badge_online"
                     android:gravity="center"
                     android:paddingHorizontal="10dp"
-                    android:text="LATEST COMPATIBLE BLAZE • AUTO-SELECTED"
+                    android:text="LATEST COMPATIBLE CS CLIENT • AUTO-SELECTED"
                     android:textColor="#FFFFFF"
                     android:textSize="7sp"
                     android:textStyle="bold" />
@@ -180,7 +180,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:letterSpacing="0.06"
-                    android:text="FABRIC • BLAZE CLIENT • VERIFIED BUILDS • V3.1"
+                    android:text="FABRIC • CS CLIENT • VERIFIED BUILDS • V3.1"
                     android:textColor="#5A636E"
                     android:textSize="7sp"
                     android:textStyle="bold" />

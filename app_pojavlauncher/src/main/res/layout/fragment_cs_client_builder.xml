@@ -165,7 +165,7 @@
                         android:textColor="#FFFFFF"
                         android:textSize="9sp"
                         android:textStyle="bold"
-                        tools:text="BLAZE 1.4 • FABRIC" />
+                        tools:text="CS CLIENT 1.4 • FABRIC" />
                 </LinearLayout>
 
                 <TextView
