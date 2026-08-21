@@ -223,44 +223,91 @@
                 android:visibility="gone">
 
                 <LinearLayout
-                    android:layout_width="520dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:maxWidth="560dp"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="12dp">
+
+                    <!-- terminal window chrome -->
+                    <LinearLayout
+                        android:id="@+id/log_cli_titlebar"
+                        android:layout_width="match_parent"
+                        android:layout_height="22dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="7dp"
+                            android:layout_height="7dp"
+                            android:background="@drawable/bg_cli_dot_red" />
+
+                        <View
+                            android:layout_width="7dp"
+                            android:layout_height="7dp"
+                            android:layout_marginStart="5dp"
+                            android:background="@drawable/bg_cli_dot_amber" />
+
+                        <View
+                            android:layout_width="7dp"
+                            android:layout_height="7dp"
+                            android:layout_marginStart="5dp"
+                            android:background="@drawable/bg_cli_dot_green" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="monospace"
+                            android:gravity="center"
+                            android:text="cs@launcher: ~/minecraft"
+                            android:textColor="#6C707C"
+                            android:textSize="8.5sp" />
+
+                        <Space
+                            android:layout_width="36dp"
+                            android:layout_height="1dp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="7dp"
+                        android:background="#1C2029" />
 
                     <TextView
                         android:id="@+id/log_cli_command"
                         android:layout_width="match_parent"
-                        android:layout_height="32dp"
+                        android:layout_height="30dp"
                         android:gravity="center_vertical"
                         android:fontFamily="monospace"
                         android:textColor="#D7D8DE"
                         android:textSize="10sp" />
 
-                    <TextView
+                    <!--
+                      Pixel-grid CS mark. Replaces the old ASCII-art TextView, whose box-drawing
+                      characters were missing from the monospace font and broke the logo apart.
+                    -->
+                    <com.kdt.CsBlockLogoView
                         android:id="@+id/log_cli_ascii"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="7dp"
-                        android:fontFamily="monospace"
-                        android:gravity="center"
-                        android:includeFontPadding="false"
-                        android:lineSpacingExtra="1dp"
-                        android:text="@string/cs_cli_ascii_logo"
-                        android:textColor="#D9DAE0"
-                        android:textSize="11sp" />
+                        android:layout_height="62dp"
+                        android:layout_marginTop="4dp" />
 
                     <TextView
                         android:id="@+id/log_cli_brand"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="12dp"
+                        android:ellipsize="end"
                         android:gravity="center"
-                        android:letterSpacing="0.02"
+                        android:letterSpacing="0.22"
+                        android:maxLines="1"
                         android:text="CS LAUNCHER"
                         android:textColor="#FFFFFF"
-                        android:textSize="24sp"
+                        android:textSize="19sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -269,16 +316,17 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:gravity="center"
+                        android:letterSpacing="0.14"
                         android:text="VERSION 3  •  CRAFT STUDIO"
                         android:textColor="#777984"
-                        android:textSize="8.5sp"
+                        android:textSize="8sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/log_cli_status"
                         android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:layout_marginTop="17dp"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="15dp"
                         android:gravity="center_vertical"
                         android:fontFamily="monospace"
                         android:lineSpacingExtra="4dp"
@@ -302,7 +350,7 @@
                         android:layout_marginTop="8dp"
                         android:gravity="center"
                         android:fontFamily="monospace"
-                        android:text="[----------] 0%"
+                        android:text="[&gt;                     ]   0%"
                         android:textColor="#8C8E98"
                         android:textSize="8.5sp" />
                 </LinearLayout>

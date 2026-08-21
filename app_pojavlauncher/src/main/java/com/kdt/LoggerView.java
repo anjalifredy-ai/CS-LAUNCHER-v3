@@ -1,5 +1,6 @@
 package com.kdt;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.text.Editable;
@@ -44,7 +45,7 @@ public class LoggerView extends ConstraintLayout {
     private View mLiveDot;
     private View mCliOverlay;
     private TextView mCliCommand;
-    private TextView mCliAscii;
+    private CsBlockLogoView mCliAscii;
     private TextView mCliBrand;
     private TextView mCliStatus;
     private TextView mCliProgressText;
@@ -324,15 +325,18 @@ public class LoggerView extends ConstraintLayout {
         mCliOverlay.setScaleY(0.97f);
         mCliOverlay.animate().alpha(1f).scaleX(1f).scaleY(1f)
                 .setDuration(240).withLayer().start();
-        mCliCommand.setText("▋");
-        mCliAscii.setAlpha(0f);
-        mCliAscii.setTranslationY(8f * getResources().getDisplayMetrics().density);
+        mCliCommand.setText("\u258b");
+        if (mCliAscii != null) {
+            mCliAscii.setAlpha(0f);
+            mCliAscii.setTranslationY(6f * getResources().getDisplayMetrics().density);
+        }
         mCliBrand.setAlpha(0f);
-        mCliBrand.setScaleX(0.92f);
-        mCliBrand.setScaleY(0.92f);
+        mCliBrand.setScaleX(0.94f);
+        mCliBrand.setScaleY(0.94f);
+        mCliBrand.setLetterSpacing(0.42f);
         mCliStatus.setText("");
         mCliProgress.setProgress(0);
-        mCliProgressText.setText("[----------] 0%");
+        mCliProgressText.setText("[>                     ]   0%");
 
         mCliAnimationRunnable = new Runnable() {
             int stage = 0;
@@ -350,45 +354,73 @@ public class LoggerView extends ConstraintLayout {
                         return;
                     }
                     mCliCommand.setText(command);
-                    mCliAscii.animate().alpha(1f).translationY(0f)
-                            .setDuration(360)
-                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
-                            .withLayer().start();
+                    if (mCliAscii != null) {
+                        mCliAscii.startReveal();
+                        mCliAscii.animate().alpha(1f).translationY(0f)
+                                .setDuration(300)
+                                .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
+                                .withLayer().start();
+                    }
                     mCliBrand.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                            .setStartDelay(110L).setDuration(320)
+                            .setStartDelay(240L).setDuration(420)
                             .setInterpolator(new android.view.animation.DecelerateInterpolator(1.8f))
                             .withLayer().start();
+                    // letters settle from wide-open to their final tracking
+                    ValueAnimator tracking = ValueAnimator.ofFloat(0.42f, 0.22f);
+                    tracking.setStartDelay(240L);
+                    tracking.setDuration(520);
+                    tracking.setInterpolator(new android.view.animation.DecelerateInterpolator(2f));
+                    tracking.addUpdateListener(a -> {
+                        if (mCliBrand != null) mCliBrand.setLetterSpacing((float) a.getAnimatedValue());
+                    });
+                    tracking.start();
                     stage = 1;
-                    postDelayed(this, 380L);
+                    postDelayed(this, 620L);
                     return;
                 }
 
-                progress = Math.min(100, progress + 6);
-                String status;
-                if (progress < 32) {
-                    status = "> Runtime ........ READY\n> Renderer ....... " + spinner[spin++ % spinner.length];
-                } else if (progress < 65) {
-                    status = "> Runtime ........ READY\n> Renderer ....... READY";
-                } else if (progress < 92) {
-                    status = "> Renderer ....... READY\n> Mod loader ..... " + spinner[spin++ % spinner.length];
-                } else {
-                    status = "> Mod loader ..... READY\n> Starting Minecraft...";
-                }
+                // Ease-out stepping: quick at the start, gentle near the end, so the bar
+                // never looks like it is ticking in fixed 6% jumps.
+                int remaining = 100 - progress;
+                progress = Math.min(100, progress + Math.max(2, Math.round(remaining * 0.14f)));
+                // Fixed three-line block with column-aligned labels: the text never reflows
+                // and never changes height, so the panel stays rock steady while it boots.
+                String spinChar = spinner[spin++ % spinner.length];
+                String status =
+                        line("runtime",    progress >= 26 ? null : spinChar) + "\n" +
+                        line("renderer",   progress >= 62 ? null : (progress >= 26 ? spinChar : "")) + "\n" +
+                        line("mod loader", progress >= 94 ? null : (progress >= 62 ? spinChar : ""));
                 mCliStatus.setText(status);
                 mCliProgress.setProgress(progress);
-                int filled = Math.min(10, progress / 10);
+                int cells = 22;
+                int filled = Math.min(cells, Math.round(progress * cells / 100f));
                 StringBuilder bar = new StringBuilder("[");
-                for (int i = 0; i < 10; i++) bar.append(i < filled ? '#' : '-');
-                bar.append("] ").append(progress).append('%');
+                for (int i = 0; i < cells; i++) bar.append(i < filled ? '=' : (i == filled ? '>' : ' '));
+                bar.append("] ").append(progress < 10 ? "  " : progress < 100 ? " " : "").append(progress).append('%');
                 mCliProgressText.setText(bar.toString());
                 if (progress < 100) {
-                    postDelayed(this, 85L);
+                    postDelayed(this, 70L);
                 } else {
-                    postDelayed(() -> hideCliOverlayAndFinish(false), 240L);
+                    postDelayed(() -> hideCliOverlayAndFinish(false), 420L);
                 }
             }
         };
         post(mCliAnimationRunnable);
+    }
+
+    /**
+     * One aligned terminal line: {@code > label ......... [ ok ]}.
+     * Passing {@code null} marks the step done, an empty string marks it pending.
+     */
+    private static String line(String label, @Nullable String spinner) {
+        StringBuilder sb = new StringBuilder("> ");
+        sb.append(label);
+        for (int i = label.length(); i < 12; i++) sb.append('.');
+        sb.append(' ');
+        if (spinner == null) sb.append("[ ok ]");
+        else if (spinner.isEmpty()) sb.append("[    ]");
+        else sb.append("[  ").append(spinner).append(" ]");
+        return sb.toString();
     }
 
     private void hideCliOverlayAndFinish(boolean immediate) {
