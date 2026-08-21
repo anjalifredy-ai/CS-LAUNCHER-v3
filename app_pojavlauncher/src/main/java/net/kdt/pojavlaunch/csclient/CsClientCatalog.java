@@ -37,9 +37,9 @@ public final class CsClientCatalog {
 
     public static List<VersionEntry> fetchLatestByMinecraft() {
         List<VersionEntry> out=new ArrayList<>();
-        out.add(bundled("1.21.11","1.0.0+1.21.11","0.18.2","cs-client-V1+1.21.11.jar","d6e5da835a0b2fc361986e9d97edcd0236f0c6e50b150a410142d0eee73608eb"));
-        out.add(bundled("26.1","1.0.0+26.1","0.19.3","cs-client-V1+26.1.jar","cd60e36959f89f3b4f83ed5e02fa12758d3152bd7e01ca5230c66cbcc3c95ed4"));
-        out.add(bundled("26.2","1.0.0+26.2","0.19.3","cs-client-V1+26.2.jar","5bfcda6d4ca5b8ce751005711ed2dcb4ef93d12a5750ef24844fd08cb0997bea"));
+        out.add(bundled("1.21.11","1.0.0+1.21.11","0.18.2","cs-client-V1+1.21.11.jar","feabbf0d172834cba3eba8ba30ce724d820730946ed9d1f282ef9940491a4f17"));
+        out.add(bundled("26.1","1.0.0+26.1","0.19.3","cs-client-V1+26.1.jar","a75474425f54130fbea228a82c31eea64f89161c970f69c6108b01e810446a62"));
+        out.add(bundled("26.2","1.0.0+26.2","0.19.3","cs-client-V1+26.2.jar","8c1f9a45205dbba8d2df41553a1adeb4be7a2c7f244df7248eb3b91ac35a6365"));
         return out;
     }
     private static VersionEntry bundled(String mc,String build,String loader,String file,String sha){VersionEntry e=new VersionEntry();e.minecraft=mc;e.versionId="cs-client-"+build;e.build=build;e.name="CS Client V1";e.fileName=file;e.assetPath="components/cs_client/"+file;e.sha256=sha;e.minimumLoader=loader;return e;}
