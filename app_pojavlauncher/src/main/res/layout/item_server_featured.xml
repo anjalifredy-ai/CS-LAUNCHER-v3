@@ -2,9 +2,9 @@
 <!--
   Highlighted server card.
 
-  Layout logic: the artwork is a bounded 92dp header strip (not the whole card), a rounded
-  server icon sits on the seam between artwork and body, and the MOTD gets its own full-width
-  line in the body where nothing overlaps it. A slow shine sweeps across the artwork.
+  Structure: the artwork is a bounded header strip, the body sits under it, and the server
+  logo is an OVERLAY placed after both of them inside the same FrameLayout — so it is always
+  drawn ON TOP of the artwork, sitting on the seam between artwork and body.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -22,207 +22,215 @@
         app:cardCornerRadius="16dp"
         app:cardElevation="5dp">
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
-            <!-- ── Artwork header ─────────────────────────────────────── -->
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="84dp">
-
-                <ImageView
-                    android:id="@+id/fs_banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@null"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bg_plantmc_banner" />
-
-                <!-- keeps the artwork from fighting the chips and the icon that overlaps it -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_featured_scrim" />
-
-                <!-- animated shine, driven from ServerAdapter -->
-                <View
-                    android:id="@+id/fs_shine"
-                    android:layout_width="70dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bg_featured_shine" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top|end"
-                    android:layout_margin="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/fs_players"
-                        android:layout_width="wrap_content"
-                        android:layout_height="19dp"
-                        android:background="@drawable/bg_featured_chip"
-                        android:drawablePadding="4dp"
-                        android:gravity="center"
-                        android:paddingHorizontal="8dp"
-                        android:textColor="#C9F7D6"
-                        android:textSize="8.5sp"
-                        android:textStyle="bold"
-                        android:visibility="gone"
-                        tools:text="128 online"
-                        tools:visibility="visible" />
-
-                    <TextView
-                        android:id="@+id/fs_ping"
-                        android:layout_width="wrap_content"
-                        android:layout_height="19dp"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_featured_chip"
-                        android:gravity="center"
-                        android:paddingHorizontal="8dp"
-                        android:textColor="#EDEEF2"
-                        android:textSize="8.5sp"
-                        tools:text="42 ms" />
-                </LinearLayout>
-            </FrameLayout>
-
-            <!-- ── Body ───────────────────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="12dp"
-                android:paddingBottom="12dp">
+                android:orientation="vertical">
 
+                <!-- ── Artwork header ─────────────────────────────────── -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="90dp">
+
+                    <ImageView
+                        android:id="@+id/fs_banner"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/bg_plantmc_banner" />
+
+                    <!-- keeps chips and the overlaying logo readable on any artwork -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_featured_scrim" />
+
+                    <!-- animated light sweep, driven from ServerAdapter -->
+                    <View
+                        android:id="@+id/fs_shine"
+                        android:layout_width="70dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_featured_shine" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/fs_players"
+                            android:layout_width="wrap_content"
+                            android:layout_height="20dp"
+                            android:background="@drawable/bg_featured_chip"
+                            android:gravity="center"
+                            android:paddingHorizontal="9dp"
+                            android:textColor="#C9F7D6"
+                            android:textSize="8.5sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            tools:text="● 33 online"
+                            tools:visibility="visible" />
+
+                        <TextView
+                            android:id="@+id/fs_ping"
+                            android:layout_width="wrap_content"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_featured_chip"
+                            android:gravity="center"
+                            android:paddingHorizontal="9dp"
+                            android:textColor="#EDEEF2"
+                            android:textSize="8.5sp"
+                            tools:text="83 ms" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- ── Body ───────────────────────────────────────────── -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:paddingHorizontal="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="12dp">
 
-                    <!-- Server icon (live favicon, falls back to the leaf mark) -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/fs_icon_card"
-                        android:layout_width="46dp"
-                        android:layout_height="46dp"
-                        android:layout_marginTop="-30dp"
-                        app:cardBackgroundColor="#0C0F16"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="4dp">
-
-                        <ImageView
-                            android:id="@+id/fs_icon"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:contentDescription="@null"
-                            android:padding="1dp"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_server_leaf" />
-                    </androidx.cardview.widget.CardView>
-
+                    <!-- title row — starts after the overlaying logo -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:paddingBottom="2dp">
+                        android:gravity="center_vertical"
+                        android:minHeight="34dp"
+                        android:orientation="horizontal"
+                        android:paddingStart="62dp"
+                        android:paddingEnd="0dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/fs_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="PlantMC"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16.5sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/fs_address"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:text="play.plantmc.fun:25627"
+                                android:textColor="#93A0AF"
+                                android:textSize="9.5sp" />
+                        </LinearLayout>
 
                         <TextView
-                            android:id="@+id/fs_name"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="PlantMC"
-                            android:textColor="#FFFFFF"
-                            android:textSize="16.5sp"
+                            android:id="@+id/fs_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_featured_chip"
+                            android:gravity="center"
+                            android:paddingHorizontal="9dp"
+                            android:textColor="#EDEEF2"
+                            android:textSize="8.5sp"
+                            android:visibility="gone"
+                            tools:text="Paper 1.21.1"
+                            tools:visibility="visible" />
+                    </LinearLayout>
+
+                    <!-- MOTD panel — full width, nothing overlaps it -->
+                    <TextView
+                        android:id="@+id/fs_motd"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_featured_motd"
+                        android:ellipsize="end"
+                        android:lineSpacingExtra="2dp"
+                        android:maxLines="2"
+                        android:minHeight="40dp"
+                        android:paddingHorizontal="11dp"
+                        android:paddingVertical="8dp"
+                        android:textColor="#E7EAF0"
+                        android:textSize="11.5sp"
+                        tools:text="⚡ PLAY.PLANTMC.FUN ⚡" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/fs_btn_play"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_featured_play"
+                            android:elevation="2dp"
+                            android:gravity="center"
+                            android:letterSpacing="0.05"
+                            android:text="PLAY"
+                            android:textColor="#07130B"
+                            android:textSize="12.5sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/fs_address"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="play.plantmc.fun:25627"
-                            android:textColor="#9FAAB8"
-                            android:textSize="9.5sp" />
+                            android:id="@+id/fs_btn_discord"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_featured_discord"
+                            android:elevation="2dp"
+                            android:gravity="center"
+                            android:paddingHorizontal="18dp"
+                            android:text="DISCORD"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/fs_version"
-                        android:layout_width="wrap_content"
-                        android:layout_height="19dp"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_featured_chip"
-                        android:gravity="center"
-                        android:paddingHorizontal="8dp"
-                        android:textColor="#EDEEF2"
-                        android:textSize="8.5sp"
-                        android:visibility="gone"
-                        tools:text="1.21"
-                        tools:visibility="visible" />
-                </LinearLayout>
-
-                <!-- MOTD gets its own clean line, full width, nothing on top of it -->
-                <TextView
-                    android:id="@+id/fs_motd"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="9dp"
-                    android:background="@drawable/bg_featured_motd"
-                    android:ellipsize="end"
-                    android:lineSpacingExtra="1.5dp"
-                    android:maxLines="2"
-                    android:minHeight="38dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="7dp"
-                    android:textColor="#E7EAF0"
-                    android:textSize="11.5sp"
-                    tools:text="Survival • Farming • Economy" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/fs_btn_play"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_featured_play"
-                        android:elevation="2dp"
-                        android:gravity="center"
-                        android:letterSpacing="0.04"
-                        android:text="PLAY"
-                        android:textColor="#07130B"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/fs_btn_discord"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_featured_discord"
-                        android:elevation="2dp"
-                        android:gravity="center"
-                        android:paddingHorizontal="18dp"
-                        android:text="DISCORD"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+
+            <!-- ── Server logo overlay — drawn last, so it sits ON the artwork ── -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/fs_icon_card"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:layout_gravity="top|start"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="68dp"
+                app:cardBackgroundColor="#0C0F16"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="8dp">
+
+                <ImageView
+                    android:id="@+id/fs_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@null"
+                    android:padding="2dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_server_leaf" />
+            </androidx.cardview.widget.CardView>
+        </FrameLayout>
     </androidx.cardview.widget.CardView>
 
     <!-- gold rim that breathes, marking the highlighted card -->
