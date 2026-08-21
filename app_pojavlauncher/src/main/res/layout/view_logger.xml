@@ -293,8 +293,8 @@
                     <com.kdt.CsBlockLogoView
                         android:id="@+id/log_cli_ascii"
                         android:layout_width="match_parent"
-                        android:layout_height="62dp"
-                        android:layout_marginTop="4dp" />
+                        android:layout_height="76dp"
+                        android:layout_marginTop="6dp" />
 
                     <TextView
                         android:id="@+id/log_cli_brand"
