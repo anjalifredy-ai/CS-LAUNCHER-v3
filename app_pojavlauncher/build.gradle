@@ -1,6 +1,6 @@
 plugins {
-    id 'com.android.application' version '8.7.2'
-
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 static def getDate() { return new Date().format('yyyyMMdd') }
@@ -243,9 +243,6 @@ dependencies {
 
 
 // ── APK slimming: drop emulator-only assets ────────────────────────────────
-// The LWJGL native bundles and the JRE tarballs ship one copy per ABI inside assets/.
-// abiFilters only trims lib/, so the asset copies are removed from the merged asset
-// folder here. Build with -PkeepX86=true to keep them.
 def csKeepX86 = (project.findProperty("keepX86") ?: "false").toBoolean()
 def csDroppedAssetDirs = ["x86", "x86_64"] as Set
 def csDroppedAssetFiles = ["bin-x86.tar.xz", "bin-x86_64.tar.xz"] as Set
