@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.application' version '8.7.2'
-    id 'com.google.gms.google-services'
+
 }
 
 static def getDate() { return new Date().format('yyyyMMdd') }
