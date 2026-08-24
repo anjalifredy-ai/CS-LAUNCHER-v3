@@ -138,8 +138,8 @@ android {
             // defaultConfig already set
             // multiDexEnabled = true
             signingConfig signingConfigs.release
-            resValue "string", "app_name", "CS Launcher V3.1"
-            resValue "string", "app_short_name", "CS Launcher V3.1"
+            resValue "string", "app_name", "Nexus Launcher CS"
+            resValue "string", "app_short_name", "Nexus Launcher CS"
             resValue 'string', 'storageProviderAuthorities', 'com.craftstudio.cslauncherv3.gamefolder'
             resValue 'string', 'application_package', 'com.craftstudio.cslauncherv3'
         }
