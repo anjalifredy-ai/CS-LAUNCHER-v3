@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "690793237049",
+    "firebase_url": "https://viewtube-e58e6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "viewtube-e58e6",
+    "storage_bucket": "viewtube-e58e6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690793237049:android:09306d6d8deb08a6a65be8",
+        "android_client_info": {
+          "package_name": "com.craftstudio.cslauncherv3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "690793237049-078nnb0blcslttmksv81aq87h956prfn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVEDRVZLrfrgUKif7ADu61lHWdcrfmhOw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "690793237049-078nnb0blcslttmksv81aq87h956prfn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
