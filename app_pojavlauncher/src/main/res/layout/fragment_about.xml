@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ═══════════════════════════════════════════════════════════════════
-     ABOUT CS LAUNCHER — premium animated page
-     • Hero (logo, name, tagline, version)
-     • Credits: PojavLauncher ("Puja") + Amethyst ("Amit") with logos
-     • Links: Discord / Website / GitHub
-     • Legal notice (GPL v3)
-     ═══════════════════════════════════════════════════════════════════ -->
+<!-- Remom About — same view IDs for Java bindings -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_cs_page_bg"
+    android:background="@color/bg_launcher_dark"
     android:orientation="vertical">
 
-    <!-- ── Header ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@drawable/bg_cs_header_bar"
+        android:background="@drawable/bg_header_bar"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="14dp">
@@ -31,7 +24,6 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center">
-
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
@@ -46,24 +38,18 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:orientation="vertical">
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/minecraftia"
-                android:includeFontPadding="false"
-                android:letterSpacing="0.02"
                 android:text="@string/cs_about_title"
                 android:textColor="#FFFFFF"
                 android:textSize="17sp"
                 android:textStyle="bold" />
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:text="The story behind the launcher"
-                android:textColor="#8B90A6"
+                android:text="Java on mobile · accounts · play"
+                android:textColor="@color/text_secondary_light"
                 android:textSize="10.5sp" />
         </LinearLayout>
     </LinearLayout>
@@ -72,18 +58,14 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:clipToPadding="false"
         android:fillViewport="true"
-        android:overScrollMode="ifContentScrolls"
-        android:padding="12dp"
-        android:scrollbars="none">
+        android:padding="12dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ══════════ HERO ══════════ -->
             <LinearLayout
                 android:id="@+id/about_hero_card"
                 android:layout_width="match_parent"
@@ -98,23 +80,19 @@
                     android:layout_height="92dp"
                     android:background="@drawable/bg_cs_world_icon"
                     android:padding="6dp">
-
                     <ImageView
                         android:id="@+id/about_cs_logo"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:contentDescription="@null"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/cs_logo" />
+                        android:src="@mipmap/ic_launcher_round" />
                 </FrameLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:fontFamily="@font/minecraftia"
-                    android:includeFontPadding="false"
-                    android:letterSpacing="0.04"
                     android:text="@string/cs_about_name"
                     android:textColor="#FFFFFF"
                     android:textSize="21sp"
@@ -126,7 +104,7 @@
                     android:layout_marginTop="5dp"
                     android:gravity="center"
                     android:text="@string/cs_about_tagline"
-                    android:textColor="#D0D0D0"
+                    android:textColor="@color/accent_light"
                     android:textSize="11.5sp"
                     android:textStyle="bold" />
 
@@ -141,36 +119,29 @@
                     android:textColor="#FFFFFF"
                     android:textSize="10.5sp"
                     android:textStyle="bold"
-                    tools:text="Version v3.27" />
+                    tools:text="Version" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:letterSpacing="0.12"
                     android:text="@string/cs_about_made_for"
-                    android:textColor="#6B7280"
+                    android:textColor="@color/text_secondary_dim"
                     android:textSize="8.5sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- ══════════ CREDITS ══════════ -->
             <TextView
                 android:id="@+id/about_credits_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:layout_marginStart="4dp"
-                android:fontFamily="@font/minecraftia"
-                android:includeFontPadding="false"
-                android:letterSpacing="0.05"
                 android:text="@string/cs_about_credits_heading"
-                android:textColor="#F0F0F3"
+                android:textColor="@color/text_primary_white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <!-- PojavLauncher ("Puja") card -->
             <LinearLayout
                 android:id="@+id/about_pojav_card"
                 android:layout_width="match_parent"
@@ -179,77 +150,27 @@
                 android:background="@drawable/bg_cs_glass_card"
                 android:orientation="vertical"
                 android:padding="14dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <FrameLayout
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:background="@drawable/bg_cs_world_icon"
-                        android:padding="3dp">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:contentDescription="@null"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/pojav_logo" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/minecraftia"
-                            android:includeFontPadding="false"
-                            android:text="@string/cs_about_pojav_name"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14.5sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="@string/cs_about_pojav_role"
-                            android:textColor="#9C9CA8"
-                            android:textSize="9.5sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="22dp"
-                        android:background="@drawable/bg_cs_settings_row"
-                        android:gravity="center"
-                        android:paddingHorizontal="10dp"
-                        android:text="@string/cs_about_credit_badge"
-                        android:textColor="#9C9CA8"
-                        android:textSize="8.5sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
+                    android:text="@string/cs_about_pojav_name"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cs_about_pojav_role"
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="9.5sp" />
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:lineSpacingExtra="2dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/cs_about_pojav_desc"
-                    android:textColor="#B9BBC4"
+                    android:textColor="@color/text_secondary_light"
                     android:textSize="11sp" />
             </LinearLayout>
 
-            <!-- Amethyst ("Amit") card -->
             <LinearLayout
                 android:id="@+id/about_amethyst_card"
                 android:layout_width="match_parent"
@@ -258,92 +179,37 @@
                 android:background="@drawable/bg_cs_glass_card"
                 android:orientation="vertical"
                 android:padding="14dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <FrameLayout
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:background="@drawable/bg_cs_world_icon"
-                        android:padding="3dp">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:contentDescription="@null"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/amethyst_logo" />
-                    </FrameLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/minecraftia"
-                            android:includeFontPadding="false"
-                            android:text="@string/cs_about_amethyst_name"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14.5sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="@string/cs_about_amethyst_role"
-                            android:textColor="#9C9CA8"
-                            android:textSize="9.5sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="22dp"
-                        android:background="@drawable/bg_cs_settings_row"
-                        android:gravity="center"
-                        android:paddingHorizontal="10dp"
-                        android:text="@string/cs_about_credit_badge"
-                        android:textColor="#9C9CA8"
-                        android:textSize="8.5sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
+                    android:text="@string/cs_about_amethyst_name"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cs_about_amethyst_role"
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="9.5sp" />
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:lineSpacingExtra="2dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/cs_about_amethyst_desc"
-                    android:textColor="#B9BBC4"
+                    android:textColor="@color/text_secondary_light"
                     android:textSize="11sp" />
             </LinearLayout>
 
-            <!-- ══════════ LINKS ══════════ -->
             <TextView
                 android:id="@+id/about_links_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:layout_marginStart="4dp"
-                android:fontFamily="@font/minecraftia"
-                android:includeFontPadding="false"
-                android:letterSpacing="0.05"
                 android:text="@string/cs_about_links_heading"
-                android:textColor="#F0F0F3"
+                android:textColor="@color/text_primary_white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <!-- Discord -->
             <LinearLayout
                 android:id="@+id/about_link_discord"
                 android:layout_width="match_parent"
@@ -352,51 +218,16 @@
                 android:background="@drawable/bg_cs_glass_card"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:paddingHorizontal="14dp">
-
-                <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_discord"
-                    android:scaleType="fitCenter" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/cs_about_discord_title"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13.5sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="1dp"
-                        android:text="@string/cs_about_discord_sub"
-                        android:textColor="#9C9CA8"
-                        android:textSize="9.5sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_infrawire_open_link"
-                    app:tint="#6B7280" />
+                    android:text="@string/cs_about_discord_title"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Website -->
             <LinearLayout
                 android:id="@+id/about_link_website"
                 android:layout_width="match_parent"
@@ -405,58 +236,16 @@
                 android:background="@drawable/bg_cs_glass_card"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:paddingHorizontal="14dp">
-
-                <FrameLayout
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="@drawable/bg_cs_icon_well">
-
-                    <ImageView
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_globe"
-                        app:tint="#00E5FF" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/cs_about_website_title"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13.5sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="1dp"
-                        android:text="@string/cs_about_website_sub"
-                        android:textColor="#9C9CA8"
-                        android:textSize="9.5sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_infrawire_open_link"
-                    app:tint="#6B7280" />
+                    android:text="@string/cs_about_website_title"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- GitHub -->
             <LinearLayout
                 android:id="@+id/about_link_github"
                 android:layout_width="match_parent"
@@ -465,70 +254,23 @@
                 android:background="@drawable/bg_cs_glass_card"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:paddingHorizontal="14dp">
-
-                <FrameLayout
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="@drawable/bg_cs_icon_well">
-
-                    <ImageView
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_github"
-                        app:tint="#D0D0D0" />
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/cs_about_github_title"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13.5sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="1dp"
-                        android:text="@string/cs_about_github_sub"
-                        android:textColor="#9C9CA8"
-                        android:textSize="9.5sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_infrawire_open_link"
-                    app:tint="#6B7280" />
+                    android:text="@string/cs_about_github_title"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- ══════════ LEGAL NOTICE ══════════ -->
             <TextView
                 android:id="@+id/about_legal_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:layout_marginStart="4dp"
-                android:fontFamily="@font/minecraftia"
-                android:includeFontPadding="false"
-                android:letterSpacing="0.05"
                 android:text="@string/cs_about_legal_heading"
-                android:textColor="#F0F0F3"
-                android:textSize="14sp"
+                android:textColor="@color/text_primary_white"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -536,31 +278,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
                 android:background="@drawable/bg_cs_glass_card"
-                android:orientation="vertical"
                 android:padding="14dp">
-
                 <TextView
                     android:id="@+id/about_legal_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:lineSpacingExtra="2.5dp"
                     android:text="@string/cs_about_legal_text"
-                    android:textColor="#9C9CA8"
-                    android:textSize="10.5sp" />
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="11sp" />
             </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="10dp"
-                android:gravity="center"
-                android:letterSpacing="0.08"
-                android:text="@string/cs_about_footer"
-                android:textColor="#6B7280"
-                android:textSize="9sp"
-                android:textStyle="bold" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>
