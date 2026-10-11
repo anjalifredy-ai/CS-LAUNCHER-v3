@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Remom accent bar (name kept for ID compat) -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#88B095" />
+    <solid android:color="#3B9EFF" />
     <corners android:radius="2dp" />
 </shape>
