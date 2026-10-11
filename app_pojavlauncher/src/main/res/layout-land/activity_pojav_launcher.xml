@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- RemomLauncher landscape shell — same IDs/paths as CS, Remom look -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,7 +9,7 @@
     android:fitsSystemWindows="false"
     android:background="@color/bg_launcher_dark">
 
-    <!-- ══════════════ SINGLE TOP BAR: Logo + Title + Nav Icons + Account + Settings ══════════════ -->
+    <!-- TOP BAR: Logo + Title + Nav + Account + Settings (same button IDs) -->
     <LinearLayout
         android:id="@+id/header_bar"
         android:layout_width="0dp"
@@ -22,7 +23,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- CS Logo (clickable → home) -->
         <FrameLayout
             android:id="@+id/btn_home_logo"
             android:layout_width="@dimen/_36sdp"
@@ -39,11 +39,10 @@
                 android:layout_gravity="center"
                 android:src="@mipmap/ic_launcher_round"
                 android:scaleType="fitCenter"
-                android:contentDescription="CS Logo" />
+                android:contentDescription="RemomLauncher" />
 
         </FrameLayout>
 
-        <!-- CS LAUNCHER v2 (clickable → home) -->
         <TextView
             android:id="@+id/tv_launcher_title"
             android:layout_width="wrap_content"
@@ -51,10 +50,10 @@
             android:layout_marginStart="@dimen/_8sdp"
             android:text="@string/cs_launcher_title"
             android:textSize="@dimen/_14ssp"
-                android:fontFamily="@font/minecraftia"
-                android:includeFontPadding="false"
+            android:fontFamily="@font/minecraftia"
+            android:includeFontPadding="false"
             android:textStyle="bold"
-            android:textColor="@color/neon_green"
+            android:textColor="@color/accent_primary"
             android:letterSpacing="0.04"
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
@@ -62,7 +61,6 @@
             android:paddingHorizontal="@dimen/_6sdp"
             android:paddingVertical="@dimen/_4sdp" />
 
-        <!-- Nav Download Mods -->
         <FrameLayout
             android:id="@+id/nav_mod_store"
             android:layout_width="@dimen/_38sdp"
@@ -85,12 +83,11 @@
                     android:id="@+id/nav_mod_store_indicator"
                     android:layout_width="14dp"
                     android:layout_height="2dp"
-                    android:background="@color/neon_green"
+                    android:background="@color/accent_primary"
                     android:visibility="invisible" />
             </LinearLayout>
         </FrameLayout>
 
-        <!-- Nav Custom Controls -->
         <FrameLayout
             android:id="@+id/nav_custom_controls"
             android:layout_width="@dimen/_38sdp"
@@ -113,12 +110,11 @@
                     android:id="@+id/nav_controls_indicator"
                     android:layout_width="14dp"
                     android:layout_height="2dp"
-                    android:background="@color/neon_green"
+                    android:background="@color/accent_primary"
                     android:visibility="invisible" />
             </LinearLayout>
         </FrameLayout>
 
-        <!-- Nav Cursor -->
         <FrameLayout
             android:id="@+id/nav_cursor"
             android:layout_width="@dimen/_38sdp"
@@ -141,14 +137,11 @@
                     android:id="@+id/nav_cursor_indicator"
                     android:layout_width="14dp"
                     android:layout_height="2dp"
-                    android:background="@color/neon_green"
+                    android:background="@color/accent_primary"
                     android:visibility="invisible" />
             </LinearLayout>
         </FrameLayout>
 
-        <!-- About Button (placeholder — full About page comes later).
-             Matches the other header nav buttons: no custom background,
-             plain ripple + icon. -->
         <ImageButton
             android:id="@+id/btn_about"
             android:layout_width="@dimen/_38sdp"
@@ -161,7 +154,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/ic_info" />
 
-        <!-- Nav Skin -->
         <FrameLayout
             android:id="@+id/nav_skin"
             android:layout_width="@dimen/_38sdp"
@@ -184,18 +176,16 @@
                     android:id="@+id/nav_skin_indicator"
                     android:layout_width="14dp"
                     android:layout_height="2dp"
-                    android:background="@color/neon_green"
+                    android:background="@color/accent_primary"
                     android:visibility="invisible" />
             </LinearLayout>
         </FrameLayout>
 
-        <!-- Spacer -->
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- Nav Home (right side) -->
         <FrameLayout
             android:id="@+id/nav_home"
             android:layout_width="@dimen/_38sdp"
@@ -218,12 +208,12 @@
                     android:id="@+id/nav_home_indicator"
                     android:layout_width="14dp"
                     android:layout_height="2dp"
-                    android:background="@color/neon_green"
+                    android:background="@color/accent_primary"
                     android:visibility="visible" />
             </LinearLayout>
         </FrameLayout>
 
-        <!-- Account Spinner -->
+        <!-- Account (KEEP) -->
         <com.kdt.mcgui.mcAccountSpinner
             android:id="@+id/account_spinner"
             android:layout_width="190dp"
@@ -236,7 +226,6 @@
             android:paddingStart="@dimen/_6sdp"
             android:paddingEnd="@dimen/_6sdp" />
 
-        <!-- Settings Button -->
         <ImageButton
             android:id="@+id/setting_button"
             android:layout_width="@dimen/_38sdp"
@@ -252,7 +241,6 @@
 
     </LinearLayout>
 
-    <!-- ══════════════ FRAGMENT CONTAINER ══════════════ -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/container_fragment"
         android:layout_width="match_parent"
@@ -261,7 +249,6 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- ══════════════ PROGRESS BAR ══════════════ -->
     <com.kdt.mcgui.ProgressLayout
         android:id="@+id/progress_layout"
         android:layout_width="match_parent"
