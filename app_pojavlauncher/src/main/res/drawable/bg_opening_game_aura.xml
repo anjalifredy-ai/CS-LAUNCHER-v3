@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Soft silver glow bleeding from the top edge of the boot screen -->
+<!-- Remom blue glow on boot / opening game screen -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
@@ -7,7 +7,7 @@
         android:gradientRadius="420dp"
         android:centerX="0.5"
         android:centerY="0.0"
-        android:startColor="#1FFFFFFF"
-        android:centerColor="#0CFFFFFF"
-        android:endColor="#000B0B0E" />
+        android:startColor="#403B9EFF"
+        android:centerColor="#183B9EFF"
+        android:endColor="#000A1628" />
 </shape>

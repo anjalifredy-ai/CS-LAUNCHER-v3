@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ════════════════════════════════════════════════════════════════
-     OPENING GAME — premium boot interstitial (shared)
-     Used as ShortcutActivity's visible content AND as the launch
-     overlay inside LauncherActivity, so the hand-off is seamless.
-═════════════════════════════════════════════════════════════════ -->
+<!-- Remom opening game / boot interstitial — same IDs -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,11 +7,10 @@
     android:id="@+id/sg_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0B0E"
+    android:background="@color/bg_launcher_dark"
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Ambient silver aura from the top edge -->
     <View
         android:id="@+id/sg_aura"
         android:layout_width="0dp"
@@ -25,7 +20,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Center stack: mark → eyebrow → title → profile → chip -->
     <LinearLayout
         android:id="@+id/sg_column"
         android:layout_width="wrap_content"
@@ -43,13 +37,13 @@
             android:layout_width="78dp"
             android:layout_height="78dp"
             android:background="@drawable/bg_deck_icon_tile">
-
             <ImageView
                 android:id="@+id/sg_mark_icon"
                 android:layout_width="52dp"
                 android:layout_height="52dp"
                 android:layout_gravity="center"
-                android:src="@mipmap/ic_launcher" />
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@null" />
         </FrameLayout>
 
         <TextView
@@ -59,7 +53,7 @@
             android:layout_marginTop="22dp"
             android:letterSpacing="0.24"
             android:text="@string/sg_boot_eyebrow"
-            android:textColor="#7C7C88"
+            android:textColor="@color/accent_light"
             android:textSize="10.5sp"
             android:textStyle="bold" />
 
@@ -70,7 +64,7 @@
             android:layout_marginTop="6dp"
             android:fontFamily="sans-serif-light"
             android:text="@string/sg_opening_game"
-            android:textColor="#F2F2F5"
+            android:textColor="@color/text_primary_white"
             android:textSize="27sp" />
 
         <TextView
@@ -82,7 +76,7 @@
             android:fontFamily="sans-serif-medium"
             android:maxLines="1"
             android:maxWidth="280dp"
-            android:textColor="#F0F0F3"
+            android:textColor="@color/text_primary_white"
             android:textSize="15sp"
             tools:text="Survival World" />
 
@@ -94,14 +88,13 @@
             android:background="@drawable/bg_settings_chip"
             android:paddingHorizontal="12dp"
             android:paddingVertical="5dp"
-            android:textColor="#9C9CA8"
+            android:textColor="@color/text_secondary_light"
             android:textSize="10.5sp"
             android:visibility="gone"
-            tools:text="1.21.1 • Fabric"
+            tools:text="1.21.1 · Fabric"
             tools:visibility="visible" />
     </LinearLayout>
 
-    <!-- Indeterminate shimmer while the launch is being prepared -->
     <ProgressBar
         android:id="@+id/sg_indeterminate"
         style="?android:attr/progressBarStyleHorizontal"
@@ -109,12 +102,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:indeterminate="true"
-        android:indeterminateTint="#B9BBC4"
+        android:indeterminateTint="@color/accent_primary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sg_column" />
 
-    <!-- Determinate progress block (swapped in once tasks report) -->
     <LinearLayout
         android:id="@+id/sg_progress_block"
         android:layout_width="0dp"
@@ -133,7 +125,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
-            android:textColor="#F2F2F5"
+            android:textColor="@color/text_primary_white"
             android:textSize="26sp"
             tools:text="42%" />
 
@@ -152,7 +144,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="11dp"
-            android:textColor="#9C9CA8"
+            android:textColor="@color/text_secondary_light"
             android:textSize="11.5sp"
             tools:text="Verifying game files…" />
     </LinearLayout>
