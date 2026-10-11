@@ -1,1 +1,203 @@
-PLACEHOLDER
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Remom home: critical IDs for Java; full UI can be expanded next -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/home_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@color/bg_launcher_dark"
+    android:padding="@dimen/_10sdp">
+
+    <LinearLayout
+        android:id="@+id/left_pane"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1.8"
+        android:orientation="vertical"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:background="@drawable/bg_fastclient_card"
+        android:padding="@dimen/_16sdp">
+
+        <LinearLayout
+            android:id="@+id/card_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/_14sdp">
+
+            <FrameLayout
+                android:layout_width="@dimen/_56sdp"
+                android:layout_height="@dimen/_56sdp"
+                android:layout_marginEnd="@dimen/_12sdp">
+                <ImageView
+                    android:id="@+id/iv_player_head"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_play_arrow"
+                    android:scaleType="fitCenter"
+                    android:background="@drawable/bg_player_head"
+                    android:contentDescription="Player Head" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tv_player_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Player"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/_16ssp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_player_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Remom"
+                    android:textColor="@color/accent_light"
+                    android:textSize="@dimen/_10ssp" />
+                <TextView
+                    android:id="@+id/tv_profile_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Default"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/_11ssp" />
+                <TextView
+                    android:id="@+id/btn_profile_setting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Profile Setting"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/_10ssp"
+                    android:padding="6dp"
+                    android:background="@drawable/bg_chip_dark"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView android:id="@+id/chip_version" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
+        <TextView android:id="@+id/chip_loader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
+        <TextView android:id="@+id/chip_java" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
+        <TextView android:id="@+id/chip_ram" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/btn_select_profile"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_44sdp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/_12sdp"
+            android:background="@drawable/bg_folder_row"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="@dimen/_14sdp">
+            <TextView
+                android:id="@+id/tv_folder_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Default"
+                android:textColor="#FFFFFF" />
+            <TextView
+                android:id="@+id/tv_profile_ram_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RAM"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/card_notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="horizontal">
+            <ImageView android:id="@+id/iv_notification_icon" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/tv_notification_title" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <TextView android:id="@+id/tv_notification_body" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <ImageView android:id="@+id/btn_dismiss_notification" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+        </LinearLayout>
+
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+
+        <net.kdt.pojavlaunch.ui.PremiumPlayButtonView
+            android:id="@+id/btn_play_main"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_52sdp"
+            android:contentDescription="@string/main_play"
+            android:clickable="true"
+            android:focusable="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▶  PLAY"
+                android:textColor="@color/play_btn_text"
+                android:textSize="@dimen/_16ssp"
+                android:textStyle="bold"
+                android:layout_gravity="center" />
+        </net.kdt.pojavlaunch.ui.PremiumPlayButtonView>
+
+        <FrameLayout
+            android:id="@+id/infrawire_card_play"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/right_pane"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="@drawable/bg_fastclient_card"
+        android:padding="@dimen/_12sdp">
+
+        <TextView
+            android:id="@+id/tv_partner_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Servers"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/tv_partner_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Quick join"
+            android:textColor="@color/text_secondary_dim" />
+        <TextView
+            android:id="@+id/tv_view_all_servers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View all"
+            android:textColor="@color/accent_light"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_partner_servers"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/btn_add_server"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add server"
+            android:textColor="@color/accent_light"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+</LinearLayout>
