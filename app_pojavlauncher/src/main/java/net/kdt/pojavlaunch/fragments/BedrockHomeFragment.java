@@ -22,6 +22,7 @@ import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.edition.BedrockProfile;
 import net.kdt.pojavlaunch.edition.BedrockProfileStore;
 import net.kdt.pojavlaunch.edition.BedrockVersionManager;
+import net.kdt.pojavlaunch.edition.BedrockVersionStatus;
 import net.kdt.pojavlaunch.edition.EditionMode;
 
 import java.io.File;
@@ -29,12 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/** Bedrock home — Day 3: validate APK after copy. */
+/** Bedrock home — Day 4: version status rows. */
 public class BedrockHomeFragment extends Fragment {
     public static final String TAG = "bedrock_home";
 
     private final List<BedrockProfile> profiles = new ArrayList<>();
-    private final List<String> versions = new ArrayList<>();
+    private final List<BedrockVersionStatus> versionRows = new ArrayList<>();
     private ProfileAdapter profileAdapter;
     private VersionAdapter versionAdapter;
     private TextView selectedName;
@@ -79,7 +80,7 @@ public class BedrockHomeFragment extends Fragment {
                 return;
             }
             Toast.makeText(requireContext(),
-                    "Sirf apna official Minecraft APK choose karo.",
+                    "Sirf apna official Minecraft APK (com.mojang.minecraftpe) choose karo.",
                     Toast.LENGTH_SHORT).show();
             pickApkLauncher.launch("application/vnd.android.package-archive");
         });
@@ -146,16 +147,20 @@ public class BedrockHomeFragment extends Fragment {
                                             requireContext(), id);
                                     long mb = apkFile.length() / (1024 * 1024);
                                     Toast.makeText(requireContext(),
-                                            "Day 3 OK: official Minecraft\n" +
-                                                    "v" + (detected != null ? detected : "?") +
+                                            "Imported OK\nv" + (detected != null ? detected : "?") +
                                                     " · " + mb + " MB",
                                             Toast.LENGTH_LONG).show();
                                     if (detected != null) {
                                         BedrockProfileStore.setVersionForSelected(requireContext(), detected);
+                                        // Also register under detected id so list shows Imported
+                                        BedrockVersionManager.registerVersion(requireContext(), detected, detected);
+                                        // Re-copy not needed — mark by validating same file path if ids differ is complex;
+                                        // keep primary id as selected import slot
                                     }
                                 } else {
                                     Toast.makeText(requireContext(),
-                                            "Reject / fail: " + (error != null ? error : "unknown"),
+                                            "Reject: " + (error != null ? error : "unknown") +
+                                                    "\nSirf com.mojang.minecraftpe allowed.",
                                             Toast.LENGTH_LONG).show();
                                 }
                                 refresh();
@@ -170,20 +175,19 @@ public class BedrockHomeFragment extends Fragment {
         profiles.addAll(BedrockProfileStore.list(requireContext()));
         profileAdapter.notifyDataSetChanged();
 
-        versions.clear();
-        for (String s : BedrockProfileStore.catalogVersions()) versions.add(s);
+        versionRows.clear();
+        versionRows.addAll(BedrockVersionStatus.buildList(requireContext()));
         versionAdapter.notifyDataSetChanged();
 
         BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
         if (selectedName != null) {
             String v = sel.versionId != null ? sel.versionId : "Play Store current";
             String id = v.startsWith("Play Store") ? "playstore" : v;
-            boolean has = BedrockVersionManager.hasFullApk(requireContext(), id);
             String detected = BedrockVersionManager.getDetectedVersionName(requireContext(), id);
-            String extra = has
-                    ? (detected != null ? " · OK v" + detected : " · APK saved")
-                    : "";
-            selectedName.setText(sel.name + " · " + v + extra);
+            boolean has = BedrockVersionManager.hasFullApk(requireContext(), id);
+            String status = has ? "Imported" : (EditionMode.isOfficialBedrockInstalled(requireContext()) ? "Play Store" : "Missing");
+            selectedName.setText(sel.name + " · " + v +
+                    (detected != null ? " · v" + detected : "") + " · " + status);
         }
         if (ownedStatus != null) {
             boolean ok = EditionMode.isOfficialBedrockInstalled(requireContext());
@@ -260,33 +264,37 @@ public class BedrockHomeFragment extends Fragment {
             tv.setLayoutParams(new RecyclerView.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
-            tv.setPadding(14, 14, 14, 14);
-            tv.setTextColor(0xFFDDDDDD);
+            tv.setPadding(14, 16, 14, 16);
             tv.setTextSize(12f);
             return new VH(tv);
         }
 
         @Override
         public void onBindViewHolder(@NonNull VH h, int position) {
-            String ver = versions.get(position);
+            BedrockVersionStatus row = versionRows.get(position);
             BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
-            boolean active = ver.equals(sel.versionId)
-                    || (sel.versionId == null && position == 0);
-            String id = ver.startsWith("Play Store") ? "playstore" : ver;
-            boolean has = BedrockVersionManager.hasFullApk(requireContext(), id);
-            String detected = BedrockVersionManager.getDetectedVersionName(requireContext(), id);
-            String mark = has
-                    ? (detected != null ? "  ✓ v" + detected : "  ✓ APK")
-                    : "  (no APK)";
-            h.title.setText((active ? "▶ " : "   ") + ver + mark);
+            String selId = sel.versionId != null && sel.versionId.startsWith("Play Store")
+                    ? "playstore" : (sel.versionId != null ? sel.versionId : "playstore");
+            boolean active = row.versionId.equals(selId)
+                    || (sel.versionId != null && sel.versionId.equals(row.displayLabel));
+
+            h.title.setText((active ? "▶ " : "   ") + row.displayLabel + "\n      " + row.statusText());
+            h.title.setTextColor(row.statusColor());
+            h.title.setBackgroundColor(active ? 0x332196F3 : 0x00000000);
             h.title.setOnClickListener(v -> {
-                BedrockProfileStore.setVersionForSelected(requireContext(), ver);
-                BedrockVersionManager.registerVersion(requireContext(), id, ver);
+                BedrockProfileStore.setVersionForSelected(requireContext(),
+                        "playstore".equals(row.versionId) ? "Play Store (current)" : row.versionId);
+                BedrockVersionManager.registerVersion(requireContext(), row.versionId, row.displayLabel);
+                if (row.kind == BedrockVersionStatus.Kind.MISSING) {
+                    Toast.makeText(requireContext(),
+                            "Missing: Import official APK for this slot.",
+                            Toast.LENGTH_SHORT).show();
+                }
                 refresh();
             });
         }
 
         @Override
-        public int getItemCount() { return versions.size(); }
+        public int getItemCount() { return versionRows.size(); }
     }
 }

@@ -1,10 +1,12 @@
 # Current step
 
-**Day 3 DONE:** After copy, inspect APK via `getPackageArchiveInfo(localPath)`.
-- Must be `com.mojang.minecraftpe` or file deleted + reject
-- Store detected `versionName` / `versionCode` in registry
-- UI shows real version when valid
+**Day 4 DONE:** Version list shows clear states:
+- **Play Store** — device official install path
+- **Imported (vX.Y)** — full APK validated in isolation
+- **Missing** — catalog entry, no APK yet
 
-**Next (Day 4):** Reject non-mojang earlier; version list shows: Play Store / Imported (vX.Y) / Missing.
+Imported-only versions (detected name not in catalog) also appear in the list.
 
-Say **"agla step"** for Day 4.
+**Next (Day 5):** Per-profile bind to imported APK path + show which profile uses which import.
+
+Say **"agla step"** for Day 5.
