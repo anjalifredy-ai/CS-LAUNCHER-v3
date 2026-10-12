@@ -2,7 +2,6 @@ package net.kdt.pojavlaunch.fragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -18,12 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.edition.BedrockProfile;
 import net.kdt.pojavlaunch.edition.BedrockProfileStore;
+import net.kdt.pojavlaunch.edition.BedrockVersionManager;
 import net.kdt.pojavlaunch.edition.EditionMode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/** Bedrock mode home: profiles + version list + Play (official gate). */
+/** Bedrock home: profiles + versions + isolation prepare + official Play. */
 public class BedrockHomeFragment extends Fragment {
     public static final String TAG = "bedrock_home";
 
@@ -55,8 +55,12 @@ public class BedrockHomeFragment extends Fragment {
 
         root.findViewById(R.id.bedrock_btn_add_profile).setOnClickListener(v -> showAddProfile());
         root.findViewById(R.id.bedrock_btn_play).setOnClickListener(v -> {
-            // Always go through ownership gate
             EditionMode.setMode(requireContext(), "bedrock");
+            BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
+            if (sel.versionId != null) {
+                String id = sel.versionId.startsWith("Play Store") ? "playstore" : sel.versionId;
+                BedrockVersionManager.registerVersion(requireContext(), id, sel.versionId);
+            }
             if (getActivity() != null) {
                 EditionMode.tryLaunchBedrock(getActivity());
             }
@@ -108,10 +112,7 @@ public class BedrockHomeFragment extends Fragment {
     private class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.VH> {
         class VH extends RecyclerView.ViewHolder {
             final TextView title;
-            VH(View v) {
-                super(v);
-                title = (TextView) v;
-            }
+            VH(View v) { super(v); title = (TextView) v; }
         }
 
         @NonNull
@@ -141,18 +142,13 @@ public class BedrockHomeFragment extends Fragment {
         }
 
         @Override
-        public int getItemCount() {
-            return profiles.size();
-        }
+        public int getItemCount() { return profiles.size(); }
     }
 
     private class VersionAdapter extends RecyclerView.Adapter<VersionAdapter.VH> {
         class VH extends RecyclerView.ViewHolder {
             final TextView title;
-            VH(View v) {
-                super(v);
-                title = (TextView) v;
-            }
+            VH(View v) { super(v); title = (TextView) v; }
         }
 
         @NonNull
@@ -175,19 +171,19 @@ public class BedrockHomeFragment extends Fragment {
             boolean active = ver.equals(sel.versionId)
                     || (sel.versionId == null && position == 0);
             h.title.setText((active ? "▶ " : "   ") + ver
-                    + (position == 0 ? "  (launch target today)" : "  (listed — isolation Phase 3)"));
+                    + (position == 0 ? "  (Play target)" : "  (isolation ready)"));
             h.title.setOnClickListener(v -> {
                 BedrockProfileStore.setVersionForSelected(requireContext(), ver);
+                String id = ver.startsWith("Play Store") ? "playstore" : ver;
+                BedrockVersionManager.registerVersion(requireContext(), id, ver);
                 Toast.makeText(requireContext(),
-                        "Version set on profile. Full multi-version runtime = Phase 3.",
-                        Toast.LENGTH_SHORT).show();
+                        "Isolation folder created for " + ver + ". Native multi-version host still Phase 3.",
+                        Toast.LENGTH_LONG).show();
                 refresh();
             });
         }
 
         @Override
-        public int getItemCount() {
-            return versions.size();
-        }
+        public int getItemCount() { return versions.size(); }
     }
 }
