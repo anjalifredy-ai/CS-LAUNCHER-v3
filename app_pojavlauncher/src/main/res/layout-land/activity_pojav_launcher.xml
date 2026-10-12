@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- RemomLauncher landscape shell — same IDs/paths as CS, Remom look -->
+<!-- RemomLauncher landscape shell — Java/Bedrock edition switch -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,7 +9,6 @@
     android:fitsSystemWindows="false"
     android:background="@color/bg_launcher_dark">
 
-    <!-- TOP BAR: Logo + Title + Nav + Account + Settings (same button IDs) -->
     <LinearLayout
         android:id="@+id/header_bar"
         android:layout_width="0dp"
@@ -31,7 +30,6 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center">
-
             <ImageView
                 android:id="@+id/iv_cs_logo"
                 android:layout_width="@dimen/_28sdp"
@@ -40,7 +38,6 @@
                 android:src="@mipmap/ic_launcher_round"
                 android:scaleType="fitCenter"
                 android:contentDescription="RemomLauncher" />
-
         </FrameLayout>
 
         <TextView
@@ -60,6 +57,16 @@
             android:focusable="true"
             android:paddingHorizontal="@dimen/_6sdp"
             android:paddingVertical="@dimen/_4sdp" />
+
+        <Spinner
+            android:id="@+id/edition_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/_36sdp"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:minWidth="96dp"
+            android:background="@drawable/bg_account_spinner"
+            android:popupBackground="@drawable/bg_account_popup"
+            android:spinnerMode="dropdown" />
 
         <FrameLayout
             android:id="@+id/nav_mod_store"
@@ -213,7 +220,6 @@
             </LinearLayout>
         </FrameLayout>
 
-        <!-- Account (KEEP) -->
         <com.kdt.mcgui.mcAccountSpinner
             android:id="@+id/account_spinner"
             android:layout_width="190dp"
@@ -238,7 +244,6 @@
             android:contentDescription="Settings"
             android:clickable="true"
             android:focusable="true" />
-
     </LinearLayout>
 
     <androidx.fragment.app.FragmentContainerView
