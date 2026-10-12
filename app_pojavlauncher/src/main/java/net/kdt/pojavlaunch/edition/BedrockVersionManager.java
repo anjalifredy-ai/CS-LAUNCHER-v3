@@ -2,6 +2,9 @@ package net.kdt.pojavlaunch.edition;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 
 import org.json.JSONArray;
@@ -14,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Bedrock version registry + isolation + official APK import (Day 1–2).
- * Full multi-version play host still later (Day 31+).
+ * Bedrock version registry + isolation + official APK import (Day 1–3).
  */
 public final class BedrockVersionManager {
     private static final String PREF = "remom_bedrock_versions";
@@ -25,6 +27,23 @@ public final class BedrockVersionManager {
     public interface CopyProgress {
         void onProgress(long copied, long totalOrMinus1);
         void onDone(boolean success, File apkFile, String error);
+    }
+
+    /** Day 3 result of reading a local APK path. */
+    public static final class ApkInspect {
+        public final boolean ok;
+        public final String packageName;
+        public final String versionName;
+        public final int versionCode;
+        public final String error;
+
+        public ApkInspect(boolean ok, String packageName, String versionName, int versionCode, String error) {
+            this.ok = ok;
+            this.packageName = packageName;
+            this.versionName = versionName;
+            this.versionCode = versionCode;
+            this.error = error;
+        }
     }
 
     private BedrockVersionManager() {}
@@ -53,7 +72,7 @@ public final class BedrockVersionManager {
 
     public static boolean hasFullApk(Context c, String versionId) {
         File f = apkFile(c, versionId);
-        return f.isFile() && f.length() > 1024 * 100; // >100KB sanity
+        return f.isFile() && f.length() > 1024 * 100;
     }
 
     private static void ensureTree(File base) {
@@ -66,6 +85,106 @@ public final class BedrockVersionManager {
             //noinspection ResultOfMethodCallIgnored
             new File(base, sub).mkdirs();
         }
+    }
+
+    /**
+     * Day 3: inspect local APK file path (after copy).
+     * Rejects anything that is not {@link EditionMode#PKG_BEDROCK}.
+     */
+    public static ApkInspect inspectLocalApk(Context c, File apk) {
+        if (c == null || apk == null || !apk.isFile()) {
+            return new ApkInspect(false, null, null, 0, "APK file missing");
+        }
+        try {
+            PackageManager pm = c.getPackageManager();
+            PackageInfo pi = pm.getPackageArchiveInfo(apk.getAbsolutePath(), 0);
+            if (pi == null) {
+                return new ApkInspect(false, null, null, 0, "Cannot read APK (corrupt?)");
+            }
+            // Some devices need sourceDir set for packageName
+            if (pi.applicationInfo != null) {
+                pi.applicationInfo.sourceDir = apk.getAbsolutePath();
+                pi.applicationInfo.publicSourceDir = apk.getAbsolutePath();
+            }
+            String pkg = pi.packageName;
+            if (pkg == null || pkg.isEmpty()) {
+                return new ApkInspect(false, null, null, 0, "No package name in APK");
+            }
+            if (!EditionMode.PKG_BEDROCK.equals(pkg)) {
+                return new ApkInspect(false, pkg, pi.versionName, pi.versionCode,
+                        "Not official Minecraft: " + pkg);
+            }
+            int vc = pi.versionCode;
+            if (android.os.Build.VERSION.SDK_INT >= 28) {
+                try {
+                    vc = (int) pi.getLongVersionCode();
+                } catch (Throwable ignored) {}
+            }
+            return new ApkInspect(true, pkg, pi.versionName != null ? pi.versionName : "?", vc, null);
+        } catch (Exception e) {
+            return new ApkInspect(false, null, null, 0, e.getMessage());
+        }
+    }
+
+    /** Validate + save detected version into registry. Deletes APK if reject. */
+    public static ApkInspect validateAndCommitApk(Context c, String versionId) {
+        File apk = apkFile(c, versionId);
+        ApkInspect r = inspectLocalApk(c, apk);
+        if (!r.ok) {
+            if (apk.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                apk.delete();
+            }
+            return r;
+        }
+        try {
+            JSONArray arr = new JSONArray(p(c).getString(KEY_REG, "[]"));
+            boolean found = false;
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                if (versionId.equals(o.optString("id"))) {
+                    o.put("apkImported", true);
+                    o.put("fullApk", true);
+                    o.put("isolationReady", true);
+                    o.put("detectedVersionName", r.versionName);
+                    o.put("detectedVersionCode", r.versionCode);
+                    o.put("packageName", r.packageName);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                JSONObject o = new JSONObject();
+                o.put("id", versionId);
+                o.put("label", r.versionName);
+                o.put("isolationReady", true);
+                o.put("apkImported", true);
+                o.put("fullApk", true);
+                o.put("detectedVersionName", r.versionName);
+                o.put("detectedVersionCode", r.versionCode);
+                o.put("packageName", r.packageName);
+                arr.put(o);
+            }
+            p(c).edit().putString(KEY_REG, arr.toString()).apply();
+        } catch (Exception ignored) {}
+        return r;
+    }
+
+    public static String getDetectedVersionName(Context c, String versionId) {
+        try {
+            JSONArray arr = new JSONArray(p(c).getString(KEY_REG, "[]"));
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
+                if (versionId.equals(o.optString("id"))) {
+                    return o.optString("detectedVersionName", null);
+                }
+            }
+        } catch (Exception ignored) {}
+        if (hasFullApk(c, versionId)) {
+            ApkInspect r = inspectLocalApk(c, apkFile(c, versionId));
+            if (r.ok) return r.versionName;
+        }
+        return null;
     }
 
     public static List<VersionEntry> list(Context c) {
@@ -110,7 +229,6 @@ public final class BedrockVersionManager {
         } catch (Exception ignored) {}
     }
 
-    /** Day 1: URI pointer only. */
     public static boolean importOfficialApkMeta(Context c, String versionId, Uri apkUri) {
         if (c == null || apkUri == null || versionId == null) return false;
         try {
@@ -126,10 +244,6 @@ public final class BedrockVersionManager {
         }
     }
 
-    /**
-     * Day 2: full APK bytes → isolation meta/official.apk.
-     * Call from background thread; progress callbacks may be any thread.
-     */
     public static void copyOfficialApk(Context c, String versionId, Uri apkUri, CopyProgress cb) {
         if (c == null || apkUri == null || versionId == null) {
             if (cb != null) cb.onDone(false, null, "null args");
@@ -171,7 +285,6 @@ public final class BedrockVersionManager {
                 dest.delete();
             }
             if (!tmp.renameTo(dest)) {
-                // fallback copy rename fail
                 try (InputStream in2 = new java.io.FileInputStream(tmp);
                      FileOutputStream out2 = new FileOutputStream(dest)) {
                     byte[] buf = new byte[64 * 1024];
@@ -181,7 +294,12 @@ public final class BedrockVersionManager {
                 //noinspection ResultOfMethodCallIgnored
                 tmp.delete();
             }
-            markImported(c, versionId, true);
+            // Day 3: validate before commit
+            ApkInspect inspect = validateAndCommitApk(c, versionId);
+            if (!inspect.ok) {
+                if (cb != null) cb.onDone(false, null, inspect.error);
+                return;
+            }
             importOfficialApkMeta(c, versionId, apkUri);
             if (cb != null) cb.onDone(true, dest, null);
         } catch (Exception e) {

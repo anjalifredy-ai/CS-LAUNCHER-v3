@@ -2,8 +2,6 @@ package net.kdt.pojavlaunch.fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/** Bedrock home — Day 2: full APK copy with progress. */
+/** Bedrock home — Day 3: validate APK after copy. */
 public class BedrockHomeFragment extends Fragment {
     public static final String TAG = "bedrock_home";
 
@@ -113,7 +111,7 @@ public class BedrockHomeFragment extends Fragment {
 
         ProgressDialog pd = new ProgressDialog(requireContext());
         pd.setTitle("Importing official APK");
-        pd.setMessage("Copying to isolation folder…");
+        pd.setMessage("Copying + validating…");
         pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         pd.setIndeterminate(true);
         pd.setCancelable(false);
@@ -131,7 +129,7 @@ public class BedrockHomeFragment extends Fragment {
                                     pd.setMax(100);
                                     int pct = (int) Math.min(100, (copied * 100) / totalOrMinus1);
                                     pd.setProgress(pct);
-                                    pd.setMessage((copied / (1024 * 1024)) + " MB copied…");
+                                    pd.setMessage((copied / (1024 * 1024)) + " MB…");
                                 } else {
                                     pd.setMessage((copied / (1024 * 1024)) + " MB…");
                                 }
@@ -144,13 +142,20 @@ public class BedrockHomeFragment extends Fragment {
                             getActivity().runOnUiThread(() -> {
                                 try { pd.dismiss(); } catch (Exception ignored) {}
                                 if (success && apkFile != null) {
+                                    String detected = BedrockVersionManager.getDetectedVersionName(
+                                            requireContext(), id);
                                     long mb = apkFile.length() / (1024 * 1024);
                                     Toast.makeText(requireContext(),
-                                            "Day 2 OK: " + mb + " MB saved\n" + apkFile.getAbsolutePath(),
+                                            "Day 3 OK: official Minecraft\n" +
+                                                    "v" + (detected != null ? detected : "?") +
+                                                    " · " + mb + " MB",
                                             Toast.LENGTH_LONG).show();
+                                    if (detected != null) {
+                                        BedrockProfileStore.setVersionForSelected(requireContext(), detected);
+                                    }
                                 } else {
                                     Toast.makeText(requireContext(),
-                                            "Copy failed: " + (error != null ? error : "unknown"),
+                                            "Reject / fail: " + (error != null ? error : "unknown"),
                                             Toast.LENGTH_LONG).show();
                                 }
                                 refresh();
@@ -174,7 +179,11 @@ public class BedrockHomeFragment extends Fragment {
             String v = sel.versionId != null ? sel.versionId : "Play Store current";
             String id = v.startsWith("Play Store") ? "playstore" : v;
             boolean has = BedrockVersionManager.hasFullApk(requireContext(), id);
-            selectedName.setText(sel.name + " · " + v + (has ? " · APK saved" : ""));
+            String detected = BedrockVersionManager.getDetectedVersionName(requireContext(), id);
+            String extra = has
+                    ? (detected != null ? " · OK v" + detected : " · APK saved")
+                    : "";
+            selectedName.setText(sel.name + " · " + v + extra);
         }
         if (ownedStatus != null) {
             boolean ok = EditionMode.isOfficialBedrockInstalled(requireContext());
@@ -265,8 +274,11 @@ public class BedrockHomeFragment extends Fragment {
                     || (sel.versionId == null && position == 0);
             String id = ver.startsWith("Play Store") ? "playstore" : ver;
             boolean has = BedrockVersionManager.hasFullApk(requireContext(), id);
-            h.title.setText((active ? "▶ " : "   ") + ver
-                    + (has ? "  ✓ APK" : "  (no APK yet)"));
+            String detected = BedrockVersionManager.getDetectedVersionName(requireContext(), id);
+            String mark = has
+                    ? (detected != null ? "  ✓ v" + detected : "  ✓ APK")
+                    : "  (no APK)";
+            h.title.setText((active ? "▶ " : "   ") + ver + mark);
             h.title.setOnClickListener(v -> {
                 BedrockProfileStore.setVersionForSelected(requireContext(), ver);
                 BedrockVersionManager.registerVersion(requireContext(), id, ver);
