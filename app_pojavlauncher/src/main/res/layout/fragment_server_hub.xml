@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Remom Server Hub + free cloud hosting shortcuts -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0D11"
+    android:background="@color/bg_launcher_dark"
     android:orientation="vertical">
 
-    <!-- Header — back + title -->
     <LinearLayout
         android:id="@+id/server_hub_header"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="#14161E"
+        android:background="@drawable/bg_header_bar"
         android:elevation="2dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -22,10 +22,10 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:background="@drawable/bg_circle"
-            android:backgroundTint="#FFFFFF"
+            android:backgroundTint="@color/accent_primary"
             android:gravity="center"
             android:text="‹"
-            android:textColor="#0B0D11"
+            android:textColor="@color/play_btn_text"
             android:textSize="22sp"
             android:textStyle="bold" />
 
@@ -36,51 +36,20 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/server_hub_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/server_hub_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Servers"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/bg_stat_chip"
-                    android:gravity="center"
-                    android:paddingHorizontal="6dp"
-                    android:text="V3.1"
-                    android:textColor="#FFFFFF"
-                    android:textSize="7sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="16dp"
-                    android:layout_marginStart="6dp"
-                    android:background="@drawable/bg_badge_compat_ok"
-                    android:gravity="center"
-                    android:paddingHorizontal="6dp"
-                    android:text="LIVE PING"
-                    android:textColor="#FFFFFF"
-                    android:textSize="7sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:text="Servers"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Live ping • per-profile lists • 1-tap join"
-                android:textColor="#6B7280"
+                android:text="Join · free host · 1-tap play"
+                android:textColor="@color/text_secondary_dim"
                 android:textSize="10sp" />
         </LinearLayout>
 
@@ -109,54 +78,103 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- FREE HOSTING -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_server_card"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="FREE SERVER HOSTING"
+                    android:textColor="@color/accent_light"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Cloud hosts (free). Create server on site → copy IP → Add below → Play. Servers sleep when empty."
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="10sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/free_host_aternos"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_auth_primary_button"
+                        android:gravity="center"
+                        android:text="Aternos"
+                        android:textColor="@color/play_btn_text"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/free_host_minehut"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_csc_outline_button"
+                        android:gravity="center"
+                        android:text="Minehut"
+                        android:textColor="@color/accent_light"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/free_host_help"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="How it works? Tap here"
+                    android:textColor="@color/text_secondary_dim"
+                    android:textSize="10sp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/server_hub_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/bg_server_card"
                 android:elevation="1dp"
                 android:orientation="vertical"
                 android:padding="14dp">
 
-                <LinearLayout
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="3dp"
-                        android:layout_height="12dp"
-                        android:background="#FFFFFF" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:letterSpacing="0.08"
-                        android:text="ADD SERVER"
-                        android:textColor="#FFFFFF"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="16dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_stat_chip"
-                        android:gravity="center"
-                        android:paddingHorizontal="6dp"
-                        android:text="IP → LIVE DATA"
-                        android:textColor="#FFFFFF"
-                        android:textSize="7sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:letterSpacing="0.08"
+                    android:text="ADD SERVER"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Enter an IP to see its MOTD, players, ping and icon before you launch"
+                    android:text="IP from Aternos/Minehut or any Java server"
                     android:textColor="#7F8894"
                     android:textSize="10sp" />
 
@@ -175,7 +193,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="mc.hypixel.net  or  play.example.com:25565"
+                        android:hint="play.example.com:25565"
                         android:imeOptions="actionDone"
                         android:inputType="textUri"
                         android:paddingHorizontal="10dp"
@@ -189,11 +207,11 @@
                         android:layout_width="76dp"
                         android:layout_height="36dp"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_csc_primary_button"
+                        android:background="@drawable/bg_auth_primary_button"
                         android:elevation="1dp"
                         android:gravity="center"
                         android:text="ADD"
-                        android:textColor="#0B0D11"
+                        android:textColor="@color/play_btn_text"
                         android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -215,7 +233,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:letterSpacing="0.06"
-                android:text="YOUR SERVERS — TAP PLAY FOR 1-CLICK"
+                android:text="YOUR SERVERS — TAP PLAY"
                 android:textColor="#9AA3B0"
                 android:textSize="8sp"
                 android:textStyle="bold" />
@@ -236,20 +254,10 @@
                 android:background="@drawable/bg_empty_state"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="Add your own servers above — live MOTD, players and ping appear instantly. Tap PLAY on any card to jump straight in."
+                android:text="Free host IP add karo upar — MOTD, players, ping, Play."
                 android:textColor="#6B7280"
                 android:textSize="11sp"
                 android:visibility="visible" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="Live ping • Auto favicon • 1-tap join • Per-profile lists"
-                android:textColor="#3E4552"
-                android:textSize="7sp"
-                android:textStyle="bold" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>
