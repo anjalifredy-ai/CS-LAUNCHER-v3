@@ -14,25 +14,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Phase 3 foundation — multi-version Bedrock management.
- *
- * What this does NOW:
- * - Registry of version ids + isolation folders under app files
- * - Prepare worlds/resource_packs/behavior_packs dirs per version
- * - Import metadata from a user-picked APK Uri (must be treated as OWNED official only)
- *
- * What this does NOT do yet:
- * - Load Mojang native libs for arbitrary old versions inside Remom process
- * - Download cracked/unofficial Bedrock clients
- * - Bypass Play license
- *
- * Real multi-version native host ≈ LeviLaunchroid-class project (ongoing).
- * Until that host exists, {@link EditionMode#tryLaunchBedrock} still opens
- * the single official Play package; isolation dirs are ready for data separation.
+ * Bedrock version registry + isolation + official APK import (Day 1–2).
+ * Full multi-version play host still later (Day 31+).
  */
 public final class BedrockVersionManager {
     private static final String PREF = "remom_bedrock_versions";
     private static final String KEY_REG = "registry";
+    public static final String APK_FILE_NAME = "official.apk";
+
+    public interface CopyProgress {
+        void onProgress(long copied, long totalOrMinus1);
+        void onDone(boolean success, File apkFile, String error);
+    }
 
     private BedrockVersionManager() {}
 
@@ -54,6 +47,15 @@ public final class BedrockVersionManager {
         return f;
     }
 
+    public static File apkFile(Context c, String versionId) {
+        return new File(new File(isolationDir(c, versionId), "meta"), APK_FILE_NAME);
+    }
+
+    public static boolean hasFullApk(Context c, String versionId) {
+        File f = apkFile(c, versionId);
+        return f.isFile() && f.length() > 1024 * 100; // >100KB sanity
+    }
+
     private static void ensureTree(File base) {
         //noinspection ResultOfMethodCallIgnored
         base.mkdirs();
@@ -68,18 +70,18 @@ public final class BedrockVersionManager {
 
     public static List<VersionEntry> list(Context c) {
         List<VersionEntry> out = new ArrayList<>();
-        // Always include play-store current
-        out.add(new VersionEntry("Play Store (current)", "playstore", true, false));
+        out.add(new VersionEntry("Play Store (current)", "playstore", true, hasFullApk(c, "playstore")));
         try {
             String raw = p(c).getString(KEY_REG, "[]");
             JSONArray arr = new JSONArray(raw);
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject o = arr.getJSONObject(i);
+                String id = o.getString("id");
                 out.add(new VersionEntry(
-                        o.optString("label", o.getString("id")),
-                        o.getString("id"),
+                        o.optString("label", id),
+                        id,
                         o.optBoolean("isolationReady", false),
-                        o.optBoolean("apkImported", false)
+                        hasFullApk(c, id) || o.optBoolean("apkImported", false)
                 ));
             }
         } catch (Exception ignored) {}
@@ -108,34 +110,96 @@ public final class BedrockVersionManager {
         } catch (Exception ignored) {}
     }
 
-    /**
-     * Copy a user-selected APK into meta/ for bookkeeping.
-     * Does NOT install or execute natives. Caller must only offer this for
-     * APKs the user is allowed to keep (their owned official builds).
-     */
+    /** Day 1: URI pointer only. */
     public static boolean importOfficialApkMeta(Context c, String versionId, Uri apkUri) {
         if (c == null || apkUri == null || versionId == null) return false;
         try {
             File dir = isolationDir(c, versionId);
             File dest = new File(new File(dir, "meta"), "official.apk.ref");
-            try (InputStream in = c.getContentResolver().openInputStream(apkUri);
-                 FileOutputStream out = new FileOutputStream(dest)) {
-                if (in == null) return false;
-                byte[] buf = new byte[8192];
-                int n;
-                long total = 0;
-                // Cap meta copy note file — store only first 0 bytes marker + uri string for large apks
-                // Full APK copy can be huge; write pointer file instead if size unknown
-                String pointer = apkUri.toString();
-                out.write(pointer.getBytes("UTF-8"));
+            try (FileOutputStream out = new FileOutputStream(dest)) {
+                out.write(apkUri.toString().getBytes("UTF-8"));
             }
-            // Mark registry
+            markImported(c, versionId, false);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Day 2: full APK bytes → isolation meta/official.apk.
+     * Call from background thread; progress callbacks may be any thread.
+     */
+    public static void copyOfficialApk(Context c, String versionId, Uri apkUri, CopyProgress cb) {
+        if (c == null || apkUri == null || versionId == null) {
+            if (cb != null) cb.onDone(false, null, "null args");
+            return;
+        }
+        File dest = apkFile(c, versionId);
+        File tmp = new File(dest.getParentFile(), APK_FILE_NAME + ".part");
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            dest.getParentFile().mkdirs();
+            long total = -1;
+            try {
+                android.database.Cursor cursor = c.getContentResolver().query(apkUri, null, null, null, null);
+                if (cursor != null) {
+                    int idx = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                    if (idx >= 0 && cursor.moveToFirst()) total = cursor.getLong(idx);
+                    cursor.close();
+                }
+            } catch (Exception ignored) {}
+
+            try (InputStream in = c.getContentResolver().openInputStream(apkUri);
+                 FileOutputStream out = new FileOutputStream(tmp)) {
+                if (in == null) {
+                    if (cb != null) cb.onDone(false, null, "cannot open stream");
+                    return;
+                }
+                byte[] buf = new byte[64 * 1024];
+                long copied = 0;
+                int n;
+                while ((n = in.read(buf)) >= 0) {
+                    out.write(buf, 0, n);
+                    copied += n;
+                    if (cb != null) cb.onProgress(copied, total);
+                }
+                out.flush();
+            }
+            if (dest.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                dest.delete();
+            }
+            if (!tmp.renameTo(dest)) {
+                // fallback copy rename fail
+                try (InputStream in2 = new java.io.FileInputStream(tmp);
+                     FileOutputStream out2 = new FileOutputStream(dest)) {
+                    byte[] buf = new byte[64 * 1024];
+                    int n;
+                    while ((n = in2.read(buf)) >= 0) out2.write(buf, 0, n);
+                }
+                //noinspection ResultOfMethodCallIgnored
+                tmp.delete();
+            }
+            markImported(c, versionId, true);
+            importOfficialApkMeta(c, versionId, apkUri);
+            if (cb != null) cb.onDone(true, dest, null);
+        } catch (Exception e) {
+            //noinspection ResultOfMethodCallIgnored
+            tmp.delete();
+            if (cb != null) cb.onDone(false, null, e.getMessage());
+        }
+    }
+
+    private static void markImported(Context c, String versionId, boolean full) {
+        try {
             JSONArray arr = new JSONArray(p(c).getString(KEY_REG, "[]"));
             boolean found = false;
             for (int i = 0; i < arr.length(); i++) {
                 if (versionId.equals(arr.getJSONObject(i).optString("id"))) {
                     arr.getJSONObject(i).put("apkImported", true);
                     arr.getJSONObject(i).put("isolationReady", true);
+                    arr.getJSONObject(i).put("fullApk", full);
                     found = true;
                     break;
                 }
@@ -146,13 +210,11 @@ public final class BedrockVersionManager {
                 o.put("label", versionId);
                 o.put("isolationReady", true);
                 o.put("apkImported", true);
+                o.put("fullApk", full);
                 arr.put(o);
             }
             p(c).edit().putString(KEY_REG, arr.toString()).apply();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        } catch (Exception ignored) {}
     }
 
     public static final class VersionEntry {

@@ -1,7 +1,7 @@
 # Current step
 
-**Day 1 DONE:** Official APK import picker on Bedrock home.
+**Day 2 DONE:** Full official APK copy → `files/bedrock_versions/<id>/meta/official.apk` + progress dialog.
 
-**Next (Day 2):** When user picks APK, copy full file into isolation dir with progress toast/dialog.
+**Next (Day 3):** `PackageManager.getPackageArchiveInfo` on copied file path — read versionName, reject non-mojang package reliably.
 
-Say **"agla step"** to continue.
+Say **"agla step"** for Day 3.
