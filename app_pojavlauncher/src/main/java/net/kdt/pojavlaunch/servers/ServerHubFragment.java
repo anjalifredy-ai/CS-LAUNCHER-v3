@@ -1,5 +1,7 @@
 package net.kdt.pojavlaunch.servers;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -20,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * V3.1 Server Hub — full-screen dedicated Servers page.
- * Opened from Profile → Servers. Each profile keeps its own list; the built-in server is shared.
+ * Server Hub — join list + Remom free hosting shortcuts (Aternos / Minehut).
  */
 public class ServerHubFragment extends Fragment {
     public static final String TAG = "ServerHubFragment";
@@ -43,7 +44,6 @@ public class ServerHubFragment extends Fragment {
     }
 
     @Override public void onViewCreated(@NonNull View root, @Nullable Bundle s){
-        // Header back
         View back = root.findViewById(R.id.server_hub_back);
         if (back != null) back.setOnClickListener(v -> {
             v.animate().scaleX(0.92f).scaleY(0.92f).setDuration(80).withEndAction(()->v.animate().scaleX(1f).scaleY(1f).setDuration(150).start()).start();
@@ -61,12 +61,19 @@ public class ServerHubFragment extends Fragment {
         addBtn = root.findViewById(R.id.server_hub_add);
         refreshBtn = root.findViewById(R.id.server_hub_refresh);
 
+        View freeAternos = root.findViewById(R.id.free_host_aternos);
+        if (freeAternos != null) freeAternos.setOnClickListener(v -> openUrl("https://aternos.org/"));
+        View freeMinehut = root.findViewById(R.id.free_host_minehut);
+        if (freeMinehut != null) freeMinehut.setOnClickListener(v -> openUrl("https://minehut.com/"));
+        View freeHelp = root.findViewById(R.id.free_host_help);
+        if (freeHelp != null) freeHelp.setOnClickListener(v -> Toast.makeText(requireContext(),
+                "Free hosts sleep when empty. Start server on website, copy IP, Add above, then Play.", Toast.LENGTH_LONG).show());
+
         if (list != null) {
             list.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter = new ServerAdapter(data, new ServerAdapter.Listener() {
                 @Override public void onJoin(ServerEntry e){
                     if (getContext()==null) return;
-                    // Simple two-choice popup: save it, or play it right now.
                     ServerPlayDialog.show(requireContext(), e, new ServerPlayDialog.Action() {
                         @Override public void onPlayNow(ServerEntry entry) {
                             queue(entry);
@@ -78,11 +85,10 @@ public class ServerHubFragment extends Fragment {
                             if (getContext()==null) return;
                             ServerStore.add(requireContext(), profileKey, entry);
                             refresh();
-                            Toast.makeText(requireContext(), "Saved \u2014 the next PLAY joins " + entry.getJoinAddress(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
-                @Override public void onRemove(ServerEntry e){
+                @Override public void onDelete(ServerEntry e){
                     if (getContext()==null) return;
                     if (e.pinned || PartnerServer.is(e.address)) {
                         Toast.makeText(requireContext(), PartnerServer.NAME + " is built into the launcher and stays in every profile", Toast.LENGTH_SHORT).show();
@@ -117,74 +123,66 @@ public class ServerHubFragment extends Fragment {
         });
         if (input != null) input.setOnEditorActionListener((v,a,e)->{ addFromInput(); return true; });
 
-        // Mast animation
-        View header = root.findViewById(R.id.server_hub_header);
-        View card = root.findViewById(R.id.server_hub_card);
-        if (header!=null){ header.setAlpha(0f); header.setTranslationY(-12f); header.animate().alpha(1f).translationY(0f).setDuration(320).start(); }
-        if (card!=null){ card.setAlpha(0f); card.setTranslationY(12f); card.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(320).start(); }
-
-        // Pull in servers the player added inside the game, then push ours back out,
-        // so the hub and the Multiplayer screen always show the same list.
-        try {
-            ServerListSync.importFromGameDir(requireContext(), profileKey);
-            ServerListSync.syncToGameDir(requireContext(), profileKey);
-        } catch (Exception ignored) {}
-
         refresh();
-        pingAll();
     }
 
-    /** Queues the server so the next launch auto-joins it (per-profile + global fallback). */
-    private void queue(ServerEntry e){
-        if (getContext()==null) return;
-        ServerStore.setPending(requireContext(), profileKey, e.address);
+    private void openUrl(String url) {
         try {
-            String cur = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey);
-            ServerStore.setPending(requireContext(), cur, e.address);
-        } catch (Exception ignored){}
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Cannot open browser", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void queue(ServerEntry e){
+        if (getContext()==null || e==null) return;
+        ServerStore.setPending(requireContext(), profileKey, e.address);
         ServerListSync.syncToGameDir(requireContext(), profileKey);
     }
 
     private void addFromInput(){
-        if (getContext()==null||input==null) return;
-        String raw = input.getText().toString().trim();
-        if (raw.isEmpty()){ Toast.makeText(requireContext(),"Enter IP like mc.hypixel.net", Toast.LENGTH_SHORT).show(); return; }
-        if (raw.contains(" ")) raw = raw.split("\\s+")[0];
-        if (raw.startsWith("http://")) raw=raw.substring(7);
-        if (raw.startsWith("https://")) raw=raw.substring(8);
-        if (raw.endsWith("/")) raw=raw.substring(0,raw.length()-1);
-        if (PartnerServer.is(raw)) {
-            Toast.makeText(requireContext(), PartnerServer.NAME + " is already built in \u2014 it is always at the top", Toast.LENGTH_SHORT).show();
-            input.setText("");
-            return;
-        }
+        if (input==null || getContext()==null) return;
+        String raw = input.getText()!=null ? input.getText().toString().trim() : "";
+        if (raw.isEmpty()){ Toast.makeText(requireContext(), "Enter an address", Toast.LENGTH_SHORT).show(); return; }
+        if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging "+raw+"…"); }
         ServerEntry e = new ServerEntry(raw);
-        final String finalRaw = raw;
-        if (status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + raw + "…"); status.setAlpha(0f); status.animate().alpha(1f).setDuration(180).start(); }
-        for(ServerEntry s: data) if(s.address.equalsIgnoreCase(e.address)){ if(status!=null) status.setText("Already added"); return; }
         ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-            @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), profileKey, entry); ServerListSync.syncToGameDir(requireContext(), profileKey); if(input!=null) input.setText(""); refresh(); if(status!=null) status.setText("✓ Added: " + (entry.motd!=null?entry.motd:"") + " • " + entry.playersOnline + "/" + entry.playersMax + " • " + entry.pingMs+"ms"); if(list!=null) list.smoothScrollToPosition(0); });}
-            @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.add(requireContext(), profileKey, entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); if(status!=null) status.setText("Added offline: " + finalRaw + " ("+ex.getMessage()+") — will retry"); });}
+            @Override public void onResult(ServerEntry entry){
+                if(!isAdded()) return;
+                requireActivity().runOnUiThread(()->{
+                    ServerStore.add(requireContext(), profileKey, entry);
+                    ServerListSync.syncToGameDir(requireContext(), profileKey);
+                    refresh();
+                    if (input!=null) input.setText("");
+                    if (status!=null) status.setText("✓ Added — "+entry.motd);
+                });
+            }
+            @Override public void onError(ServerEntry entry, Exception ex){
+                if(!isAdded()) return;
+                requireActivity().runOnUiThread(()->{
+                    ServerStore.add(requireContext(), profileKey, entry);
+                    ServerListSync.syncToGameDir(requireContext(), profileKey);
+                    refresh();
+                    if (status!=null) status.setText("Added (offline for now)");
+                });
+            }
         });
     }
+
     private void refresh(){
-        if (getContext()==null||list==null) return;
-        List<ServerEntry> stored = ServerStore.load(requireContext(), profileKey);
-        data.clear(); data.addAll(stored);
-        if(adapter!=null) adapter.notifyDataSetChanged();
-        if(empty!=null) empty.setVisibility(data.size()<=1?View.VISIBLE:View.GONE);
-        if(profileKey!=null && status!=null){
-            String pending = ServerStore.getPending(requireContext(), profileKey);
-            if(pending!=null){ status.setVisibility(View.VISIBLE); status.setText("Queued join: " + pending + " \u2014 the next PLAY auto-joins it"); }
-        }
+        if (getContext()==null) return;
+        data.clear();
+        data.addAll(ServerStore.list(requireContext(), profileKey));
+        if (adapter!=null) adapter.notifyDataSetChanged();
+        if (empty!=null) empty.setVisibility(data.isEmpty()? View.VISIBLE : View.GONE);
     }
+
     private void pingAll(){
-        if(getContext()==null||data.isEmpty()) return;
-        if(status!=null){ status.setVisibility(View.VISIBLE); status.setText("Pinging " + data.size() + " servers…"); }
-        for(ServerEntry e: new ArrayList<>(data)){
+        if (getContext()==null) return;
+        for (ServerEntry e : new ArrayList<>(data)) {
             ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); ServerListSync.syncToGameDir(requireContext(), profileKey); refresh(); });}
-                @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); });}
+                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); }); }
+                @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); }); }
             });
         }
     }
