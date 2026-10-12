@@ -1,6 +1,9 @@
 package net.kdt.pojavlaunch.fragments;
 
 import android.app.AlertDialog;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +11,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -23,7 +28,9 @@ import net.kdt.pojavlaunch.edition.EditionMode;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Bedrock home: profiles + versions + isolation prepare + official Play. */
+/**
+ * Bedrock home + Step 1/60: pick official APK and register meta for selected version.
+ */
 public class BedrockHomeFragment extends Fragment {
     public static final String TAG = "bedrock_home";
 
@@ -34,8 +41,19 @@ public class BedrockHomeFragment extends Fragment {
     private TextView selectedName;
     private TextView ownedStatus;
 
+    private ActivityResultLauncher<String> pickApkLauncher;
+
     public BedrockHomeFragment() {
         super(R.layout.fragment_bedrock_home);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        pickApkLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                this::onApkPicked
+        );
     }
 
     @Override
@@ -54,6 +72,18 @@ public class BedrockHomeFragment extends Fragment {
         versionList.setAdapter(versionAdapter);
 
         root.findViewById(R.id.bedrock_btn_add_profile).setOnClickListener(v -> showAddProfile());
+        root.findViewById(R.id.bedrock_btn_import_apk).setOnClickListener(v -> {
+            if (!EditionMode.isOfficialBedrockInstalled(requireContext())) {
+                Toast.makeText(requireContext(),
+                        "Pehle Play Store se official Minecraft install/own karo.",
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+            Toast.makeText(requireContext(),
+                    "Sirf apna official Minecraft APK choose karo (backup/extract).",
+                    Toast.LENGTH_SHORT).show();
+            pickApkLauncher.launch("application/vnd.android.package-archive");
+        });
         root.findViewById(R.id.bedrock_btn_play).setOnClickListener(v -> {
             EditionMode.setMode(requireContext(), "bedrock");
             BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
@@ -66,6 +96,42 @@ public class BedrockHomeFragment extends Fragment {
             }
         });
 
+        refresh();
+    }
+
+    private void onApkPicked(@Nullable Uri uri) {
+        if (uri == null) {
+            Toast.makeText(requireContext(), "No APK selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
+        String ver = sel.versionId != null ? sel.versionId : "Play Store (current)";
+        String id = ver.startsWith("Play Store") ? "playstore" : ver;
+
+        // Day 1: register URI pointer. Day 2: full file copy.
+        boolean ok = BedrockVersionManager.importOfficialApkMeta(requireContext(), id, uri);
+        BedrockVersionManager.registerVersion(requireContext(), id, ver);
+
+        String extra = "";
+        try {
+            // Best-effort: some providers allow archive info from path; often null for content://
+            PackageManager pm = requireContext().getPackageManager();
+            PackageInfo pi = pm.getPackageArchiveInfo(uri.toString(), 0);
+            if (pi != null && pi.packageName != null) {
+                if (!EditionMode.PKG_BEDROCK.equals(pi.packageName)) {
+                    Toast.makeText(requireContext(),
+                            "Reject: package is " + pi.packageName + ", need com.mojang.minecraftpe",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                extra = " v" + pi.versionName;
+            }
+        } catch (Exception ignored) {}
+
+        Toast.makeText(requireContext(),
+                ok ? ("Day 1 OK: APK registered for " + ver + extra + ". Full copy = Day 2.")
+                   : "Import failed",
+                Toast.LENGTH_LONG).show();
         refresh();
     }
 
@@ -86,8 +152,8 @@ public class BedrockHomeFragment extends Fragment {
         if (ownedStatus != null) {
             boolean ok = EditionMode.isOfficialBedrockInstalled(requireContext());
             ownedStatus.setText(ok
-                    ? "✓ Official Minecraft installed — Play allowed"
-                    : "✗ Minecraft not installed — buy/install from Play Store");
+                    ? "✓ Official Minecraft installed — import/play allowed"
+                    : "✗ Install official Minecraft from Play Store first");
             ownedStatus.setTextColor(ok
                     ? getResources().getColor(R.color.accent_light)
                     : 0xFFFF8A80);
@@ -171,14 +237,11 @@ public class BedrockHomeFragment extends Fragment {
             boolean active = ver.equals(sel.versionId)
                     || (sel.versionId == null && position == 0);
             h.title.setText((active ? "▶ " : "   ") + ver
-                    + (position == 0 ? "  (Play target)" : "  (isolation ready)"));
+                    + (position == 0 ? "  (Play target)" : "  (isolation)"));
             h.title.setOnClickListener(v -> {
                 BedrockProfileStore.setVersionForSelected(requireContext(), ver);
                 String id = ver.startsWith("Play Store") ? "playstore" : ver;
                 BedrockVersionManager.registerVersion(requireContext(), id, ver);
-                Toast.makeText(requireContext(),
-                        "Isolation folder created for " + ver + ". Native multi-version host still Phase 3.",
-                        Toast.LENGTH_LONG).show();
                 refresh();
             });
         }
