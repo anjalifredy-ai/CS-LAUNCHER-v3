@@ -1,14 +1,12 @@
 # Current step
 
-**Batch 2 DONE (next 5 micro-steps):**
-1. `ApkNativeInventory` — list `lib/**/*.so` inside imported APK (Zip only, no System.load)
-2. Save inventory JSON under `meta/native_inventory.json`
-3. `NativeHostChecklist` — readiness flags (all false until real host)
-4. Stub dialog shows ABI + .so counts
-5. Auto-scan after successful APK import
+**DONE:** Extract preferred-ABI `.so` from imported official APK →
+`bedrock_versions/<slot>/natives/<abi>/`
 
-**Still NOT playable multi-version.**
+Still **no** `System.load` / game window.
 
-**Next:** extract selected .so files to isolation `natives/` (still no load) OR document ABI filter.
+Checklist now marks extract when natives dir has files.
 
-Say **"agla step"** or **"5 step"**.
+**Next:** document load barriers OR attempt controlled load experiment (high risk, still not full game).
+
+Say **"agla step"**.

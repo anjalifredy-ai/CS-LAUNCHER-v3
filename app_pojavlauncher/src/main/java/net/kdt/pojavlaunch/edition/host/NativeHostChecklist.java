@@ -14,20 +14,21 @@ public final class NativeHostChecklist {
                 ? "playstore" : versionId;
         boolean owned = EditionMode.isOfficialBedrockInstalled(c);
         boolean apk = BedrockVersionManager.hasFullApk(c, slot);
-        boolean inv = apk; // inventory possible if apk
-        boolean extract = false; // not yet
+        boolean inv = apk;
+        boolean extract = NativeExtractor.hasExtracted(c, slot);
         boolean loadSo = false;
         boolean gameWindow = false;
 
-        String invLine = apk
-                ? ApkNativeInventory.loadSummary(c, slot)
-                : "—";
+        String invLine = apk ? ApkNativeInventory.loadSummary(c, slot) : "—";
+        String extLine = extract
+                ? ("yes count=" + NativeExtractor.countExtracted(c, slot))
+                : "no";
 
         return "Native host checklist\n"
                 + "[" + (owned ? "x" : " ") + "] Official Minecraft owned/installed\n"
                 + "[" + (apk ? "x" : " ") + "] Official APK imported for slot\n"
                 + "[" + (inv ? "x" : " ") + "] .so inventory scanned (" + invLine + ")\n"
-                + "[" + (extract ? "x" : " ") + "] Natives extracted to isolation\n"
+                + "[" + (extract ? "x" : " ") + "] Natives extracted (" + extLine + ")\n"
                 + "[" + (loadSo ? "x" : " ") + "] Native libs loaded in process\n"
                 + "[" + (gameWindow ? "x" : " ") + "] In-app game window\n"
                 + "\nPlayable multi-version only when last two are [x].";

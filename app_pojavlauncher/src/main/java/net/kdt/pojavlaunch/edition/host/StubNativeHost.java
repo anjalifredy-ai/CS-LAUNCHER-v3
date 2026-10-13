@@ -9,10 +9,7 @@ import androidx.annotation.Nullable;
 import net.kdt.pojavlaunch.edition.BedrockIsolationPaths;
 import net.kdt.pojavlaunch.edition.BedrockVersionManager;
 
-/**
- * Placeholder for Levi-style in-process host.
- * Shows inventory + checklist; does NOT load natives.
- */
+/** Placeholder host: inventory + extract; no load. */
 public final class StubNativeHost implements BedrockHost {
 
     @NonNull
@@ -24,7 +21,7 @@ public final class StubNativeHost implements BedrockHost {
     @NonNull
     @Override
     public String statusLine() {
-        return "Host: Native multi-version (stub — inventory only)";
+        return "Host: Native multi-version (extract only — no load)";
     }
 
     @Override
@@ -37,8 +34,11 @@ public final class StubNativeHost implements BedrockHost {
         String slot = versionId == null || versionId.startsWith("Play Store")
                 ? "playstore" : versionId;
         boolean hasApk = BedrockVersionManager.hasFullApk(activity, slot);
+        String extractLine = "";
         if (hasApk) {
             ApkNativeInventory.scanAndSave(activity, slot);
+            NativeExtractor.ExtractResult er = NativeExtractor.extractForDevice(activity, slot);
+            extractLine = "\n" + er.summary();
         }
         String checklist = NativeHostChecklist.report(activity, slot);
         String iso = BedrockIsolationPaths.summary(activity, slot);
@@ -49,7 +49,7 @@ public final class StubNativeHost implements BedrockHost {
                 .setMessage(
                         "Slot: " + slot + "\n" +
                         "Detected: " + (detected != null ? detected : "—") + "\n" +
-                        iso + "\n\n" +
+                        iso + extractLine + "\n\n" +
                         checklist)
                 .setPositiveButton("OK", null)
                 .setNeutralButton("Open official app",

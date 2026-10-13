@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 
 import net.kdt.pojavlaunch.edition.host.ApkNativeInventory;
+import net.kdt.pojavlaunch.edition.host.NativeExtractor;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -159,9 +160,9 @@ public final class BedrockVersionManager {
             }
             p(c).edit().putString(KEY_REG, arr.toString()).apply();
         } catch (Exception ignored) {}
-        // Auto inventory after valid import
         try {
             ApkNativeInventory.scanAndSave(c, versionId);
+            NativeExtractor.extractForDevice(c, versionId);
         } catch (Exception ignored) {}
         return r;
     }
