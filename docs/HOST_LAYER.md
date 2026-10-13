@@ -6,15 +6,21 @@
 Play button
    → BedrockHostRouter
         → OfficialPlayStoreHost   (works now)
-        → StubNativeHost          (imported APK; not executable yet)
-        → [Future] NativeHost     (Levi-class)
+        → StubNativeHost          (imported APK; inventory only)
+        → [Future] NativeHost     (load .so + run)
 ```
 
-## Rules
-- Never download Bedrock APKs from mirrors
-- Only user-imported official `com.mojang.minecraftpe`
-- Ownership gate: Play Store package installed
-- Router picks host by profile bind + APK presence
+## Done
+- Isolation paths, profiles, import, validate
+- Host interface + router
+- APK native **inventory** (list .so names by ABI) — no load
 
-## What is NOT done
-Loading `.so` from imported APK inside Remom process.
+## Not done
+- Extract + `System.load` / linker for Bedrock engine
+- In-process game window
+- Multi-version play
+
+## Rules
+- No mirror APK download
+- Only user-imported `com.mojang.minecraftpe`
+- Ownership gate: Play package installed

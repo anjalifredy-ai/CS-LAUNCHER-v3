@@ -2,10 +2,11 @@ package net.kdt.pojavlaunch.edition;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+
+import net.kdt.pojavlaunch.edition.host.ApkNativeInventory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,9 +17,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Bedrock version registry + isolation + official APK import (Day 1–3).
- */
+/** Bedrock version registry + isolation + official APK import. */
 public final class BedrockVersionManager {
     private static final String PREF = "remom_bedrock_versions";
     private static final String KEY_REG = "registry";
@@ -29,7 +28,6 @@ public final class BedrockVersionManager {
         void onDone(boolean success, File apkFile, String error);
     }
 
-    /** Day 3 result of reading a local APK path. */
     public static final class ApkInspect {
         public final boolean ok;
         public final String packageName;
@@ -81,16 +79,12 @@ public final class BedrockVersionManager {
         for (String sub : new String[]{"games/com.mojang/minecraftWorlds",
                 "games/com.mojang/resource_packs",
                 "games/com.mojang/behavior_packs",
-                "meta"}) {
+                "meta", "natives"}) {
             //noinspection ResultOfMethodCallIgnored
             new File(base, sub).mkdirs();
         }
     }
 
-    /**
-     * Day 3: inspect local APK file path (after copy).
-     * Rejects anything that is not {@link EditionMode#PKG_BEDROCK}.
-     */
     public static ApkInspect inspectLocalApk(Context c, File apk) {
         if (c == null || apk == null || !apk.isFile()) {
             return new ApkInspect(false, null, null, 0, "APK file missing");
@@ -101,7 +95,6 @@ public final class BedrockVersionManager {
             if (pi == null) {
                 return new ApkInspect(false, null, null, 0, "Cannot read APK (corrupt?)");
             }
-            // Some devices need sourceDir set for packageName
             if (pi.applicationInfo != null) {
                 pi.applicationInfo.sourceDir = apk.getAbsolutePath();
                 pi.applicationInfo.publicSourceDir = apk.getAbsolutePath();
@@ -126,7 +119,6 @@ public final class BedrockVersionManager {
         }
     }
 
-    /** Validate + save detected version into registry. Deletes APK if reject. */
     public static ApkInspect validateAndCommitApk(Context c, String versionId) {
         File apk = apkFile(c, versionId);
         ApkInspect r = inspectLocalApk(c, apk);
@@ -167,6 +159,10 @@ public final class BedrockVersionManager {
             }
             p(c).edit().putString(KEY_REG, arr.toString()).apply();
         } catch (Exception ignored) {}
+        // Auto inventory after valid import
+        try {
+            ApkNativeInventory.scanAndSave(c, versionId);
+        } catch (Exception ignored) {}
         return r;
     }
 
@@ -176,7 +172,8 @@ public final class BedrockVersionManager {
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject o = arr.getJSONObject(i);
                 if (versionId.equals(o.optString("id"))) {
-                    return o.optString("detectedVersionName", null);
+                    String v = o.optString("detectedVersionName", null);
+                    if (v != null && !v.isEmpty()) return v;
                 }
             }
         } catch (Exception ignored) {}
@@ -294,7 +291,6 @@ public final class BedrockVersionManager {
                 //noinspection ResultOfMethodCallIgnored
                 tmp.delete();
             }
-            // Day 3: validate before commit
             ApkInspect inspect = validateAndCommitApk(c, versionId);
             if (!inspect.ok) {
                 if (cb != null) cb.onDone(false, null, inspect.error);
