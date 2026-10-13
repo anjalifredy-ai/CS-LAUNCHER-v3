@@ -46,13 +46,9 @@ public class FastClientHomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1. Bind Account Data (Player Name & Head)
         bindAccountData(view);
-
-        // 2. Bind Profile Data (Name, Icon, Version, Chips)
         bindProfileData(view);
 
-        // 3. Play Button Functionality — premium Phase-3 launch morph
         PremiumPlayButtonView btnPlay = view.findViewById(R.id.btn_play_main);
         btnPlay.setOnClickListener(v -> {
             if (btnPlay.isStopMode()) {
@@ -64,7 +60,6 @@ public class FastClientHomeFragment extends Fragment {
             ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
         });
 
-        // 4. Profile Selection & Settings
         View btnSelectProfile = view.findViewById(R.id.btn_select_profile);
         if (btnSelectProfile != null) {
             btnSelectProfile.setOnClickListener(v -> {
@@ -79,17 +74,17 @@ public class FastClientHomeFragment extends Fragment {
             });
         }
 
-        // Server cards click listeners
         setupServerCards(view);
 
-        View sponsorPlay=view.findViewById(R.id.infrawire_card_play);if(sponsorPlay!=null)sponsorPlay.setVisibility(View.GONE);
-        View sponsorFeed=view.findViewById(R.id.infrawire_card_feed);if(sponsorFeed!=null)sponsorFeed.setVisibility(View.GONE);
+        View sponsorPlay = view.findViewById(R.id.infrawire_card_play);
+        if (sponsorPlay != null) sponsorPlay.setVisibility(View.GONE);
+        // Optional layout id — may be absent in some home layouts
+        int feedId = getResources().getIdentifier("infrawire_card_feed", "id", requireContext().getPackageName());
+        View sponsorFeed = feedId != 0 ? view.findViewById(feedId) : null;
+        if (sponsorFeed != null) sponsorFeed.setVisibility(View.GONE);
 
         updateNotificationBanner(view);
 
-        // Home entrance choreography (user req: nice home animation) —
-        // deferred one frame so the window token is ready; internally
-        // no-ops when animations are turned Off.
         view.post(() -> {
             if (isAdded() && !isRemoving()) {
                 net.kdt.pojavlaunch.UiMotion.revealScreen(view);
@@ -159,10 +154,6 @@ public class FastClientHomeFragment extends Fragment {
         }
     }
 
-    /**
-     * Wire one Infrawire sponsor card: card tap opens the Official Partners page,
-     * Deploy VPS / Learn More open the device browser directly. Non-intrusive by design.
-     */
     private void setupInfrawireCard(@Nullable View card, long fadeDelayMs) {
         if (card == null) return;
 
@@ -201,7 +192,7 @@ public class FastClientHomeFragment extends Fragment {
             } else {
                 ivPlayerHead.setImageResource(R.drawable.ic_cs_logo_placeholder);
             }
-            
+
             boolean isOnline = account.accessToken != null && !account.accessToken.equals("0");
             tvPlayerStatus.setText(isOnline ? "Online" : "Offline");
             tvPlayerStatus.setBackgroundResource(isOnline ? R.drawable.bg_badge_online : R.drawable.bg_chip_dark);
@@ -220,14 +211,13 @@ public class FastClientHomeFragment extends Fragment {
         TextView chipLoader = view.findViewById(R.id.chip_loader);
         TextView chipJava = view.findViewById(R.id.chip_java);
         TextView chipRam = view.findViewById(R.id.chip_ram);
-        ImageView ivProfileIcon = view.findViewById(R.id.iv_player_head); // Reusing player head frame for modpack icon if preferred, or I should use a separate one? User said "replace or dynamically load"
+        ImageView ivProfileIcon = view.findViewById(R.id.iv_player_head);
 
         if (profile != null) {
             tvProfileName.setText(profile.name != null ? profile.name : "Default");
             tvFolderName.setText(profile.name != null ? profile.name : "Default");
             chipVersion.setText(profile.lastVersionId != null ? profile.lastVersionId : "Unknown");
-            
-            // Loader detection
+
             String loader = "Vanilla";
             if (profile.isOptiFine()) loader = "OptiFine";
             else if (profile.lastVersionId != null) {
@@ -239,21 +229,18 @@ public class FastClientHomeFragment extends Fragment {
             }
             chipLoader.setText(loader);
 
-            // Java info
-            String javaVer = "Java 8"; // Default fallback
+            String javaVer = "Java 8";
             if (profile.javaDir != null) {
                 if (profile.javaDir.contains("17")) javaVer = "Java 17";
                 else if (profile.javaDir.contains("21")) javaVer = "Java 21";
             }
             chipJava.setText(javaVer);
 
-            // RAM info
             int ramMb = LauncherPreferences.PREF_RAM_ALLOCATION;
             chipRam.setText(String.format("%.1fGB", ramMb / 1024.0));
             TextView tvRamBadge = view.findViewById(R.id.tv_profile_ram_badge);
             if (tvRamBadge != null) tvRamBadge.setText(ramMb + " MB RAM");
 
-            // Load profile icon if it's not the default one
             if (profile.icon != null && !profile.icon.equals("default")) {
                 Drawable icon = ProfileIconCache.fetchIcon(getResources(), profileKey, profile.icon);
                 ivProfileIcon.setImageDrawable(icon);
@@ -262,20 +249,17 @@ public class FastClientHomeFragment extends Fragment {
     }
 
     private void setupServerCards(View view) {
-        int[] serverCardIds = {
-            R.id.card_server_1, R.id.card_server_2, R.id.card_server_3, R.id.card_server_4, R.id.card_server_5
-        };
         String[] serverAddresses = {
             "bananasmp.net", "fast.ascendiamc.com", "play.happymc.fun", "insanesmp.net", "fast.eternalnetwork.club"
         };
-
-        for (int i = 0; i < serverCardIds.length; i++) {
+        String pkg = requireContext().getPackageName();
+        for (int i = 0; i < serverAddresses.length; i++) {
             final String address = serverAddresses[i];
-            View card = view.findViewById(serverCardIds[i]);
+            int cid = getResources().getIdentifier("card_server_" + (i + 1), "id", pkg);
+            View card = cid != 0 ? view.findViewById(cid) : null;
             if (card != null) {
                 card.setOnClickListener(v -> {
                     Toast.makeText(getContext(), "Joining " + address + "...", Toast.LENGTH_SHORT).show();
-                    // Implement actual quick join logic if available in Tools
                 });
             }
         }
