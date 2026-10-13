@@ -8,7 +8,9 @@ import net.kdt.pojavlaunch.edition.BedrockVersionManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -61,14 +63,13 @@ public final class ApkNativeInventory {
             for (ZipEntry entry : Collections.list(zip.entries())) {
                 String name = entry.getName();
                 if (name == null || entry.isDirectory()) continue;
-                // lib/<abi>/<name.so>
                 if (!name.startsWith("lib/") || !name.endsWith(".so")) continue;
-                String rest = name.substring(4); // after lib/
+                String rest = name.substring(4);
                 int slash = rest.indexOf('/');
                 if (slash <= 0) continue;
                 String abi = rest.substring(0, slash);
                 String so = rest.substring(slash + 1);
-                if (so.contains("/")) continue; // nested skip
+                if (so.contains("/")) continue;
                 List<String> list = byAbi.get(abi);
                 if (list == null) {
                     list = new ArrayList<>();
@@ -122,8 +123,13 @@ public final class ApkNativeInventory {
             return "no inventory";
         }
         try {
-            byte[] data = java.nio.file.Files.readAllBytes(f.toPath());
-            JSONObject o = new JSONObject(new String(data, StandardCharsets.UTF_8));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try (FileInputStream in = new FileInputStream(f)) {
+                byte[] buf = new byte[4096];
+                int n;
+                while ((n = in.read(buf)) >= 0) bos.write(buf, 0, n);
+            }
+            JSONObject o = new JSONObject(new String(bos.toByteArray(), StandardCharsets.UTF_8));
             int total = o.optInt("totalSo", 0);
             JSONObject abis = o.optJSONObject("abis");
             StringBuilder sb = new StringBuilder("so=" + total);
@@ -139,7 +145,6 @@ public final class ApkNativeInventory {
             }
             return sb.toString();
         } catch (Exception e) {
-            // API 26+ Files; fallback scan
             Result r = scanApkFile(BedrockVersionManager.apkFile(c, versionId));
             return r.shortSummary();
         }
