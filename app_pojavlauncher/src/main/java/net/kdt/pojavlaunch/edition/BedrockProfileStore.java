@@ -6,11 +6,12 @@ import android.content.SharedPreferences;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** Simple JSON store for Bedrock profiles (Phase 2 UI). */
+/** Bedrock profiles + Day 5 APK/isolation bind. */
 public final class BedrockProfileStore {
     private static final String PREF = "remom_bedrock_profiles";
     private static final String KEY_LIST = "list";
@@ -20,6 +21,12 @@ public final class BedrockProfileStore {
 
     private static SharedPreferences p(Context c) {
         return c.getSharedPreferences(PREF, Context.MODE_PRIVATE);
+    }
+
+    private static String optNull(JSONObject o, String key) {
+        if (!o.has(key) || o.isNull(key)) return null;
+        String s = o.optString(key, "");
+        return s.isEmpty() ? null : s;
     }
 
     public static List<BedrockProfile> list(Context c) {
@@ -32,8 +39,9 @@ public final class BedrockProfileStore {
                 out.add(new BedrockProfile(
                         o.getString("id"),
                         o.getString("name"),
-                        o.optString("versionId", null),
-                        o.optString("isolationDir", null)
+                        optNull(o, "versionId"),
+                        optNull(o, "isolationDir"),
+                        optNull(o, "apkPath")
                 ));
             }
         } catch (Exception ignored) {}
@@ -55,6 +63,7 @@ public final class BedrockProfileStore {
                 o.put("name", bp.name);
                 o.put("versionId", bp.versionId != null ? bp.versionId : JSONObject.NULL);
                 o.put("isolationDir", bp.isolationDir != null ? bp.isolationDir : JSONObject.NULL);
+                o.put("apkPath", bp.apkPath != null ? bp.apkPath : JSONObject.NULL);
                 arr.put(o);
             }
             p(c).edit().putString(KEY_LIST, arr.toString()).apply();
@@ -67,12 +76,15 @@ public final class BedrockProfileStore {
                 UUID.randomUUID().toString(),
                 name == null || name.trim().isEmpty() ? "Bedrock profile" : name.trim(),
                 versionId,
+                null,
                 null
         );
         list.add(bp);
         saveAll(c, list);
         setSelectedId(c, bp.id);
-        return bp;
+        // Bind paths for default version slot
+        bindSelectedToVersion(c, versionId != null ? versionId : "Play Store (current)");
+        return getSelected(c);
     }
 
     public static void setSelectedId(Context c, String id) {
@@ -92,12 +104,35 @@ public final class BedrockProfileStore {
     }
 
     public static void setVersionForSelected(Context c, String versionId) {
-        List<BedrockProfile> list = list(c);
+        bindSelectedToVersion(c, versionId);
+    }
+
+    /**
+     * Day 5: bind selected profile to version slot + isolation dir + apk path if imported.
+     */
+    public static void bindSelectedToVersion(Context c, String versionLabelOrId) {
+        if (c == null) return;
+        String slot = versionLabelOrId == null || versionLabelOrId.startsWith("Play Store")
+                ? "playstore"
+                : versionLabelOrId;
+        String label = versionLabelOrId != null ? versionLabelOrId : "Play Store (current)";
+
+        BedrockVersionManager.registerVersion(c, slot, label);
+        File iso = BedrockVersionManager.isolationDir(c, slot);
+        File apk = BedrockVersionManager.apkFile(c, slot);
+        String apkPath = (apk.isFile() && apk.length() > 1024 * 100) ? apk.getAbsolutePath() : null;
+
         String id = getSelectedId(c);
         List<BedrockProfile> next = new ArrayList<>();
-        for (BedrockProfile bp : list) {
+        for (BedrockProfile bp : list(c)) {
             if (bp.id.equals(id)) {
-                next.add(new BedrockProfile(bp.id, bp.name, versionId, bp.isolationDir));
+                next.add(new BedrockProfile(
+                        bp.id,
+                        bp.name,
+                        label,
+                        iso.getAbsolutePath(),
+                        apkPath
+                ));
             } else {
                 next.add(bp);
             }
@@ -105,7 +140,35 @@ public final class BedrockProfileStore {
         saveAll(c, next);
     }
 
-    /** UI catalog — not downloadable engines until Phase 3. */
+    /** One-line status for profile list UI. */
+    public static String bindingSummary(Context c, BedrockProfile bp) {
+        if (bp == null) return "—";
+        String slot = bp.versionId == null || bp.versionId.startsWith("Play Store")
+                ? "playstore" : bp.versionId;
+        String detected = BedrockVersionManager.getDetectedVersionName(c, slot);
+        boolean hasApk = bp.apkPath != null
+                || BedrockVersionManager.hasFullApk(c, slot);
+        if (hasApk) {
+            return "Bound · Imported" + (detected != null ? " v" + detected : "")
+                    + (bp.apkPath != null ? "\n    " + shortPath(bp.apkPath) : "");
+        }
+        if (EditionMode.isOfficialBedrockInstalled(c) && "playstore".equals(slot)) {
+            return "Bound · Play Store (no local APK copy)";
+        }
+        return "Bound · Missing APK — import needed";
+    }
+
+    private static String shortPath(String path) {
+        if (path == null) return "";
+        int i = path.lastIndexOf('/');
+        if (i > 0 && i < path.length() - 1) {
+            // show …/versionId/meta/official.apk
+            int j = path.lastIndexOf('/', i - 1);
+            if (j > 0) return "…" + path.substring(j);
+        }
+        return path;
+    }
+
     public static String[] catalogVersions() {
         return new String[]{
                 "Play Store (current)",

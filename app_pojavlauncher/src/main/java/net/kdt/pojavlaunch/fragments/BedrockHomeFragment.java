@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-/** Bedrock home — Day 4: version status rows. */
+/** Bedrock home — Day 5: profile ↔ APK bind. */
 public class BedrockHomeFragment extends Fragment {
     public static final String TAG = "bedrock_home";
 
@@ -88,8 +88,7 @@ public class BedrockHomeFragment extends Fragment {
             EditionMode.setMode(requireContext(), "bedrock");
             BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
             if (sel.versionId != null) {
-                String id = sel.versionId.startsWith("Play Store") ? "playstore" : sel.versionId;
-                BedrockVersionManager.registerVersion(requireContext(), id, sel.versionId);
+                BedrockProfileStore.bindSelectedToVersion(requireContext(), sel.versionId);
             }
             if (getActivity() != null) {
                 EditionMode.tryLaunchBedrock(getActivity());
@@ -145,18 +144,14 @@ public class BedrockHomeFragment extends Fragment {
                                 if (success && apkFile != null) {
                                     String detected = BedrockVersionManager.getDetectedVersionName(
                                             requireContext(), id);
+                                    // Day 5: bind selected profile to this import
+                                    String bindLabel = detected != null ? detected : ver;
+                                    BedrockProfileStore.bindSelectedToVersion(requireContext(), bindLabel);
                                     long mb = apkFile.length() / (1024 * 1024);
                                     Toast.makeText(requireContext(),
-                                            "Imported OK\nv" + (detected != null ? detected : "?") +
+                                            "Bound to profile\nv" + (detected != null ? detected : "?") +
                                                     " · " + mb + " MB",
                                             Toast.LENGTH_LONG).show();
-                                    if (detected != null) {
-                                        BedrockProfileStore.setVersionForSelected(requireContext(), detected);
-                                        // Also register under detected id so list shows Imported
-                                        BedrockVersionManager.registerVersion(requireContext(), detected, detected);
-                                        // Re-copy not needed — mark by validating same file path if ids differ is complex;
-                                        // keep primary id as selected import slot
-                                    }
                                 } else {
                                     Toast.makeText(requireContext(),
                                             "Reject: " + (error != null ? error : "unknown") +
@@ -181,13 +176,7 @@ public class BedrockHomeFragment extends Fragment {
 
         BedrockProfile sel = BedrockProfileStore.getSelected(requireContext());
         if (selectedName != null) {
-            String v = sel.versionId != null ? sel.versionId : "Play Store current";
-            String id = v.startsWith("Play Store") ? "playstore" : v;
-            String detected = BedrockVersionManager.getDetectedVersionName(requireContext(), id);
-            boolean has = BedrockVersionManager.hasFullApk(requireContext(), id);
-            String status = has ? "Imported" : (EditionMode.isOfficialBedrockInstalled(requireContext()) ? "Play Store" : "Missing");
-            selectedName.setText(sel.name + " · " + v +
-                    (detected != null ? " · v" + detected : "") + " · " + status);
+            selectedName.setText(sel.name + "\n" + BedrockProfileStore.bindingSummary(requireContext(), sel));
         }
         if (ownedStatus != null) {
             boolean ok = EditionMode.isOfficialBedrockInstalled(requireContext());
@@ -230,7 +219,7 @@ public class BedrockHomeFragment extends Fragment {
                     ViewGroup.LayoutParams.WRAP_CONTENT));
             tv.setPadding(16, 18, 16, 18);
             tv.setTextColor(0xFFFFFFFF);
-            tv.setTextSize(13f);
+            tv.setTextSize(12f);
             return new VH(tv);
         }
 
@@ -238,11 +227,15 @@ public class BedrockHomeFragment extends Fragment {
         public void onBindViewHolder(@NonNull VH h, int position) {
             BedrockProfile bp = profiles.get(position);
             boolean sel = bp.id.equals(BedrockProfileStore.getSelectedId(requireContext()));
-            String ver = bp.versionId != null ? bp.versionId : "—";
-            h.title.setText((sel ? "● " : "○ ") + bp.name + "\n    " + ver);
+            String bind = BedrockProfileStore.bindingSummary(requireContext(), bp);
+            h.title.setText((sel ? "● " : "○ ") + bp.name + "\n    " + bind);
             h.title.setBackgroundColor(sel ? 0x332196F3 : 0x00000000);
             h.title.setOnClickListener(v -> {
                 BedrockProfileStore.setSelectedId(requireContext(), bp.id);
+                // Re-bind paths in case APK arrived later
+                if (bp.versionId != null) {
+                    BedrockProfileStore.bindSelectedToVersion(requireContext(), bp.versionId);
+                }
                 refresh();
             });
         }
@@ -282,12 +275,16 @@ public class BedrockHomeFragment extends Fragment {
             h.title.setTextColor(row.statusColor());
             h.title.setBackgroundColor(active ? 0x332196F3 : 0x00000000);
             h.title.setOnClickListener(v -> {
-                BedrockProfileStore.setVersionForSelected(requireContext(),
-                        "playstore".equals(row.versionId) ? "Play Store (current)" : row.versionId);
-                BedrockVersionManager.registerVersion(requireContext(), row.versionId, row.displayLabel);
+                // Day 5: selecting version binds the active profile
+                String label = "playstore".equals(row.versionId) ? "Play Store (current)" : row.versionId;
+                BedrockProfileStore.bindSelectedToVersion(requireContext(), label);
                 if (row.kind == BedrockVersionStatus.Kind.MISSING) {
                     Toast.makeText(requireContext(),
-                            "Missing: Import official APK for this slot.",
+                            "Profile bound to Missing slot — Import official APK.",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Profile bound → " + row.statusText(),
                             Toast.LENGTH_SHORT).show();
                 }
                 refresh();

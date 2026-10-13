@@ -1,12 +1,13 @@
 # Current step
 
-**Day 4 DONE:** Version list shows clear states:
-- **Play Store** — device official install path
-- **Imported (vX.Y)** — full APK validated in isolation
-- **Missing** — catalog entry, no APK yet
+**Day 5 DONE:** Each Bedrock profile binds to:
+- `versionId` (slot)
+- `isolationDir` (worlds/packs root)
+- `apkPath` (imported official.apk if present)
 
-Imported-only versions (detected name not in catalog) also appear in the list.
+Profile list shows binding line (Play Store / Imported vX / Missing).
+Selecting a version on the right binds the **selected profile**.
 
-**Next (Day 5):** Per-profile bind to imported APK path + show which profile uses which import.
+**Next (Day 6):** World/pack path helpers under isolation (list dirs, ensure tree on bind).
 
-Say **"agla step"** for Day 5.
+Say **"agla step"** for Day 6.
