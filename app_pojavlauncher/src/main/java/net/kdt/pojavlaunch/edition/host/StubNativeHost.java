@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import net.kdt.pojavlaunch.edition.BedrockIsolationPaths;
 import net.kdt.pojavlaunch.edition.BedrockVersionManager;
 
-/** Placeholder host: inventory + extract; no load. */
+/** Placeholder host: inventory + extract + optional load probe; no game. */
 public final class StubNativeHost implements BedrockHost {
 
     @NonNull
@@ -21,7 +21,7 @@ public final class StubNativeHost implements BedrockHost {
     @NonNull
     @Override
     public String statusLine() {
-        return "Host: Native multi-version (extract only — no load)";
+        return "Host: Native multi-version (probe only — no game)";
     }
 
     @Override
@@ -54,6 +54,21 @@ public final class StubNativeHost implements BedrockHost {
                 .setPositiveButton("OK", null)
                 .setNeutralButton("Open official app",
                         (d, w) -> new OfficialPlayStoreHost().launch(activity, versionId))
+                .setNegativeButton(hasApk ? "Run load probe" : null,
+                        hasApk ? (d, w) -> {
+                            NativeLoadProbe.ProbeResult pr =
+                                    NativeLoadProbe.run(activity, slot, 8);
+                            new AlertDialog.Builder(activity)
+                                    .setTitle("Load probe result")
+                                    .setMessage(pr.summary()
+                                            + "\n\nOK: " + pr.okNames
+                                            + "\n\nFail (sample): "
+                                            + (pr.failLines.isEmpty() ? "—"
+                                            : pr.failLines.get(0))
+                                            + "\n\nGame did NOT start.")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        } : null)
                 .show();
         return true;
     }

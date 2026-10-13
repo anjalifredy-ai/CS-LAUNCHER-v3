@@ -1,12 +1,12 @@
 # Current step
 
-**DONE:** Extract preferred-ABI `.so` from imported official APK →
-`bedrock_versions/<slot>/natives/<abi>/`
+**DONE:** `docs/NATIVE_LOAD_BARRIERS.md` + `NativeLoadProbe`
+- Tries `System.load` on extracted .so (owned APK path only)
+- Logs success/fail to `meta/load_probe.json`
+- Does **not** start Minecraft / game window
 
-Still **no** `System.load` / game window.
+Checklist can show probe attempted; `gameWindow` stays false.
 
-Checklist now marks extract when natives dir has files.
-
-**Next:** document load barriers OR attempt controlled load experiment (high risk, still not full game).
+**Next:** stop claiming more “play” progress until real host design; or Java launcher polish.
 
 Say **"agla step"**.

@@ -5,20 +5,20 @@
 ```
 Play button
    → BedrockHostRouter
-        → OfficialPlayStoreHost   (works now)
-        → StubNativeHost          (imported APK; inventory only)
-        → [Future] NativeHost     (load .so + run)
+        → OfficialPlayStoreHost   (works — opens official app)
+        → StubNativeHost          (import / extract / load probe)
+        → [Future] full native host
 ```
 
-## Done
-- Isolation paths, profiles, import, validate
-- Host interface + router
-- APK native **inventory** (list .so names by ABI) — no load
+## Pipeline so far
+1. Import owned official APK
+2. Validate package name
+3. Inventory `lib/**/*.so`
+4. Extract device ABI natives
+5. Optional `System.load` **probe** (log only)
 
-## Not done
-- Extract + `System.load` / linker for Bedrock engine
-- In-process game window
-- Multi-version play
+## Still missing for multi-version play
+See `NATIVE_LOAD_BARRIERS.md`.
 
 ## Rules
 - No mirror APK download
