@@ -1,13 +1,10 @@
 package net.kdt.pojavlaunch.edition;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -18,12 +15,11 @@ import androidx.fragment.app.FragmentActivity;
 
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
+import net.kdt.pojavlaunch.edition.host.BedrockHostRouter;
 import net.kdt.pojavlaunch.fragments.BedrockHomeFragment;
-import net.kdt.pojavlaunch.fragments.MainMenuFragment;
 
 /**
- * Java / Bedrock switch. Bedrock UI = {@link BedrockHomeFragment}.
- * Play still requires official {@code com.mojang.minecraftpe}.
+ * Java / Bedrock switch. Play goes through {@link BedrockHostRouter}.
  */
 public final class EditionMode {
     public static final String PREF = "remom_edition";
@@ -84,7 +80,6 @@ public final class EditionMode {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (first) {
                     first = false;
-                    // Still open correct home if activity recreated in bedrock mode
                     if (position == 1 && activity instanceof FragmentActivity) {
                         openBedrockUi((FragmentActivity) activity);
                     }
@@ -121,43 +116,9 @@ public final class EditionMode {
         }
     }
 
+    /** Play Bedrock via host router (Step 5). */
     public static boolean tryLaunchBedrock(Activity activity) {
         if (activity == null || !isBedrock(activity)) return false;
-
-        if (!isOfficialBedrockInstalled(activity)) {
-            new AlertDialog.Builder(activity)
-                    .setTitle("Bedrock — Minecraft required")
-                    .setMessage(
-                            "Remom does not ship Bedrock.\n\n" +
-                            "1) Buy / own Minecraft on Google Play\n" +
-                            "2) Install official app\n" +
-                            "3) Press Play again\n\n" +
-                            "Without official Minecraft, Bedrock will not open.")
-                    .setPositiveButton("Open Play Store", (d, w) -> openPlayStore(activity))
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            return true;
-        }
-
-        Intent launch = activity.getPackageManager().getLaunchIntentForPackage(PKG_BEDROCK);
-        if (launch != null) {
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(launch);
-            return true;
-        }
-
-        Toast.makeText(activity, "Reinstall Minecraft from Play Store.", Toast.LENGTH_LONG).show();
-        openPlayStore(activity);
-        return true;
-    }
-
-    private static void openPlayStore(Activity activity) {
-        try {
-            activity.startActivity(new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("market://details?id=" + PKG_BEDROCK)));
-        } catch (Exception e) {
-            activity.startActivity(new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=" + PKG_BEDROCK)));
-        }
+        return BedrockHostRouter.launchFromProfile(activity);
     }
 }

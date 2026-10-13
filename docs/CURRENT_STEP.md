@@ -1,13 +1,15 @@
 # Current step
 
-**Day 5 DONE:** Each Bedrock profile binds to:
-- `versionId` (slot)
-- `isolationDir` (worlds/packs root)
-- `apkPath` (imported official.apk if present)
+**Today batch (5 host steps) DONE:**
 
-Profile list shows binding line (Play Store / Imported vX / Missing).
-Selecting a version on the right binds the **selected profile**.
+1. Isolation path helpers (worlds / packs)
+2. `BedrockHost` interface (launch / canLaunch / status)
+3. `OfficialPlayStoreHost` — current real play path
+4. `StubNativeHost` — imported APK slot (not playable yet)
+5. `BedrockHostRouter` — Play uses host layer
 
-**Next (Day 6):** World/pack path helpers under isolation (list dirs, ensure tree on bind).
+Play still opens official Minecraft. Multi-version native = future (replace StubNativeHost).
 
-Say **"agla step"** for Day 6.
+**Next batch:** expand StubNativeHost checklist / extract APK meta natives list (no load yet).
+
+Say **"agla step"** or **"5 step"** for next batch.
