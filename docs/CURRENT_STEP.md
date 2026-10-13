@@ -1,12 +1,9 @@
 # Current step
 
-**DONE:** `docs/NATIVE_LOAD_BARRIERS.md` + `NativeLoadProbe`
-- Tries `System.load` on extracted .so (owned APK path only)
-- Logs success/fail to `meta/load_probe.json`
-- Does **not** start Minecraft / game window
+**Java focus:** `JavaFpsOptimizer` one-time Max FPS profile (VSync off, RAM, resolution, GC args).
 
-Checklist can show probe attempted; `gameWindow` stays false.
+Bedrock multi-version play still not available.
 
-**Next:** stop claiming more “play” progress until real host design; or Java launcher polish.
+See `docs/JAVA_FPS_GUIDE.md`.
 
-Say **"agla step"**.
+Say **"agla step"** for more Java tuning (e.g. re-apply button in settings) or stay on guide.
