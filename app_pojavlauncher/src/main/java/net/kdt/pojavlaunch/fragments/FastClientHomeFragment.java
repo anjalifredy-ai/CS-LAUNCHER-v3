@@ -1,14 +1,12 @@
 package net.kdt.pojavlaunch.fragments;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,40 +43,43 @@ public class FastClientHomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        try {
+            if (getActivity() != null)
+                net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
+        } catch (Throwable ignored) {}
 
         bindAccountData(view);
         bindProfileData(view);
 
         PremiumPlayButtonView btnPlay = view.findViewById(R.id.btn_play_main);
-        btnPlay.setOnClickListener(v -> {
-            if (btnPlay.isStopMode()) {
-                btnPlay.cancelPendingLaunch();
-                return;
-            }
-            btnPlay.beginLaunch();
-            v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
-            ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
-        });
+        if (btnPlay != null) {
+            btnPlay.setOnClickListener(v -> {
+                if (btnPlay.isStopMode()) {
+                    btnPlay.cancelPendingLaunch();
+                    return;
+                }
+                btnPlay.beginLaunch();
+                v.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+                ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
+            });
+        }
 
         View btnSelectProfile = view.findViewById(R.id.btn_select_profile);
         if (btnSelectProfile != null) {
-            btnSelectProfile.setOnClickListener(v -> {
-                Tools.swapFragment(requireActivity(), InstancePickerFragment.class, InstancePickerFragment.TAG, null);
-            });
+            btnSelectProfile.setOnClickListener(v ->
+                    Tools.swapFragment(requireActivity(), InstancePickerFragment.class, InstancePickerFragment.TAG, null));
         }
 
         View btnProfileSetting = view.findViewById(R.id.btn_profile_setting);
         if (btnProfileSetting != null) {
-            btnProfileSetting.setOnClickListener(v -> {
-                Tools.swapFragment(requireActivity(), ProfileEditorFragment.class, ProfileEditorFragment.TAG, null);
-            });
+            btnProfileSetting.setOnClickListener(v ->
+                    Tools.swapFragment(requireActivity(), ProfileEditorFragment.class, ProfileEditorFragment.TAG, null));
         }
 
         setupServerCards(view);
 
         View sponsorPlay = view.findViewById(R.id.infrawire_card_play);
         if (sponsorPlay != null) sponsorPlay.setVisibility(View.GONE);
-        // Optional layout id — may be absent in some home layouts
         int feedId = getResources().getIdentifier("infrawire_card_feed", "id", requireContext().getPackageName());
         View sponsorFeed = feedId != 0 ? view.findViewById(feedId) : null;
         if (sponsorFeed != null) sponsorFeed.setVisibility(View.GONE);
@@ -87,7 +88,7 @@ public class FastClientHomeFragment extends Fragment {
 
         view.post(() -> {
             if (isAdded() && !isRemoving()) {
-                net.kdt.pojavlaunch.UiMotion.revealScreen(view);
+                try { net.kdt.pojavlaunch.UiMotion.revealScreen(view); } catch (Throwable ignored) {}
             }
         });
     }
@@ -101,81 +102,57 @@ public class FastClientHomeFragment extends Fragment {
             bindProfileData(view);
             updateNotificationBanner(view);
         }
-        net.kdt.pojavlaunch.remote.FirebaseSyncManager.setHomeBannerListener(() -> updateNotificationBanner(getView()));
+        try {
+            if (getActivity() != null)
+                net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
+        } catch (Throwable ignored) {}
+        try {
+            net.kdt.pojavlaunch.remote.FirebaseSyncManager.setHomeBannerListener(() -> updateNotificationBanner(getView()));
+        } catch (Throwable ignored) {}
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        net.kdt.pojavlaunch.remote.FirebaseSyncManager.setHomeBannerListener(null);
+        try { net.kdt.pojavlaunch.remote.FirebaseSyncManager.setHomeBannerListener(null); } catch (Throwable ignored) {}
     }
 
     private void updateNotificationBanner(View root) {
         if (root == null || getActivity() == null) return;
         View card = root.findViewById(R.id.card_notification);
         if (card == null) return;
-
-        net.kdt.pojavlaunch.remote.FirebaseSyncManager.HomeBannerItem banner =
-                net.kdt.pojavlaunch.remote.FirebaseSyncManager.getLatestHomeBanner();
-        if (banner == null) {
-            card.setVisibility(View.GONE);
-            return;
-        }
-
-        TextView tvTitle = root.findViewById(R.id.tv_notification_title);
-        TextView tvBody = root.findViewById(R.id.tv_notification_body);
-        View btnClose = root.findViewById(R.id.btn_dismiss_notification);
-
-        if (tvTitle != null) tvTitle.setText(banner.title);
-        if (tvBody != null) {
-            String snippet = banner.body.replaceAll("[#*`>\\[\\]()-_]", "").trim();
-            if (snippet.isEmpty()) {
-                tvBody.setVisibility(View.GONE);
-            } else {
-                tvBody.setVisibility(View.VISIBLE);
-                tvBody.setText(snippet);
+        try {
+            net.kdt.pojavlaunch.remote.FirebaseSyncManager.HomeBannerItem banner =
+                    net.kdt.pojavlaunch.remote.FirebaseSyncManager.getLatestHomeBanner();
+            if (banner == null) { card.setVisibility(View.GONE); return; }
+            TextView tvTitle = root.findViewById(R.id.tv_notification_title);
+            TextView tvBody = root.findViewById(R.id.tv_notification_body);
+            View btnClose = root.findViewById(R.id.btn_dismiss_notification);
+            if (tvTitle != null) tvTitle.setText(banner.title);
+            if (tvBody != null) {
+                String snippet = banner.body.replaceAll("[#*`>\\[\\]()-_]", "").trim();
+                if (snippet.isEmpty()) tvBody.setVisibility(View.GONE);
+                else { tvBody.setVisibility(View.VISIBLE); tvBody.setText(snippet); }
             }
-        }
-
-        card.setVisibility(View.VISIBLE);
-        card.setOnClickListener(v -> {
-            if (banner.isAnnouncement || banner.body.length() > 60 || banner.body.contains("\n") || banner.body.contains("#") || banner.body.contains("*")) {
-                net.kdt.pojavlaunch.remote.FirebaseSyncManager.showMarkdownDialog(requireActivity(), banner.title, banner.body);
-            } else {
-                net.kdt.pojavlaunch.utils.CsPopup.show(requireActivity(), banner.title + "\n\n" + banner.body);
-            }
-        });
-
-        if (btnClose != null) {
-            btnClose.setOnClickListener(v -> {
-                net.kdt.pojavlaunch.remote.FirebaseSyncManager.dismissBanner(banner.id, requireContext());
-                card.setVisibility(View.GONE);
+            card.setVisibility(View.VISIBLE);
+            card.setOnClickListener(v -> {
+                try {
+                    net.kdt.pojavlaunch.remote.FirebaseSyncManager.showMarkdownDialog(requireActivity(), banner.title, banner.body);
+                } catch (Throwable t) {
+                    Toast.makeText(requireContext(), banner.title, Toast.LENGTH_SHORT).show();
+                }
             });
+            if (btnClose != null) {
+                btnClose.setOnClickListener(v -> {
+                    try {
+                        net.kdt.pojavlaunch.remote.FirebaseSyncManager.dismissBanner(banner.id, requireContext());
+                    } catch (Throwable ignored) {}
+                    card.setVisibility(View.GONE);
+                });
+            }
+        } catch (Throwable t) {
+            card.setVisibility(View.GONE);
         }
-    }
-
-    private void setupInfrawireCard(@Nullable View card, long fadeDelayMs) {
-        if (card == null) return;
-
-        net.kdt.pojavlaunch.sponsor.InfrawirePartner.applyPressAnimation(card);
-        card.setOnClickListener(v ->
-                net.kdt.pojavlaunch.sponsor.InfrawirePartner.openPartnerPage(requireActivity()));
-
-        View deploy = card.findViewById(R.id.infrawire_btn_deploy);
-        if (deploy != null) {
-            net.kdt.pojavlaunch.sponsor.InfrawirePartner.applyPressAnimation(deploy);
-            deploy.setOnClickListener(v -> net.kdt.pojavlaunch.sponsor.InfrawirePartner
-                    .openLink(requireContext(), net.kdt.pojavlaunch.sponsor.InfrawirePartner.URL_VPS));
-        }
-
-        View learnMore = card.findViewById(R.id.infrawire_btn_learn_more);
-        if (learnMore != null) {
-            net.kdt.pojavlaunch.sponsor.InfrawirePartner.applyPressAnimation(learnMore);
-            learnMore.setOnClickListener(v -> net.kdt.pojavlaunch.sponsor.InfrawirePartner
-                    .openLink(requireContext(), net.kdt.pojavlaunch.sponsor.InfrawirePartner.URL_WEBSITE));
-        }
-
-        net.kdt.pojavlaunch.sponsor.InfrawirePartner.fadeIn(card, fadeDelayMs);
     }
 
     private void bindAccountData(View view) {
@@ -183,20 +160,21 @@ public class FastClientHomeFragment extends Fragment {
         TextView tvPlayerName = view.findViewById(R.id.tv_player_name);
         ImageView ivPlayerHead = view.findViewById(R.id.iv_player_head);
         TextView tvPlayerStatus = view.findViewById(R.id.tv_player_status);
-
         if (account != null) {
-            tvPlayerName.setText(account.username);
-            Bitmap head = net.kdt.pojavlaunch.ui.SkinHead3DRenderer.resolve(getResources(), account);
-            if (head != null) {
-                ivPlayerHead.setImageBitmap(head);
-            } else {
-                ivPlayerHead.setImageResource(R.drawable.ic_cs_logo_placeholder);
+            if (tvPlayerName != null) tvPlayerName.setText(account.username);
+            if (ivPlayerHead != null) {
+                try {
+                    Bitmap head = net.kdt.pojavlaunch.ui.SkinHead3DRenderer.resolve(getResources(), account);
+                    if (head != null) ivPlayerHead.setImageBitmap(head);
+                    else ivPlayerHead.setImageResource(R.drawable.ic_cs_logo_placeholder);
+                } catch (Throwable t) {
+                    ivPlayerHead.setImageResource(R.drawable.ic_cs_logo_placeholder);
+                }
             }
-
-            boolean isOnline = account.accessToken != null && !account.accessToken.equals("0");
-            tvPlayerStatus.setText(isOnline ? "Online" : "Offline");
-            tvPlayerStatus.setBackgroundResource(isOnline ? R.drawable.bg_badge_online : R.drawable.bg_chip_dark);
-            tvPlayerStatus.setTextColor(isOnline ? 0xFF7FA98C : 0xFFAAAAAA);
+            if (tvPlayerStatus != null) {
+                boolean isOnline = account.accessToken != null && !account.accessToken.equals("0");
+                tvPlayerStatus.setText(isOnline ? "Online" : "Offline");
+            }
         }
     }
 
@@ -204,7 +182,6 @@ public class FastClientHomeFragment extends Fragment {
         String profileKey = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
         LauncherProfiles.load();
         MinecraftProfile profile = LauncherProfiles.mainProfileJson.profiles.get(profileKey);
-
         TextView tvProfileName = view.findViewById(R.id.tv_profile_name);
         TextView tvFolderName = view.findViewById(R.id.tv_folder_name);
         TextView chipVersion = view.findViewById(R.id.chip_version);
@@ -212,38 +189,27 @@ public class FastClientHomeFragment extends Fragment {
         TextView chipJava = view.findViewById(R.id.chip_java);
         TextView chipRam = view.findViewById(R.id.chip_ram);
         ImageView ivProfileIcon = view.findViewById(R.id.iv_player_head);
-
         if (profile != null) {
-            tvProfileName.setText(profile.name != null ? profile.name : "Default");
-            tvFolderName.setText(profile.name != null ? profile.name : "Default");
-            chipVersion.setText(profile.lastVersionId != null ? profile.lastVersionId : "Unknown");
-
+            if (tvProfileName != null) tvProfileName.setText(profile.name != null ? profile.name : "Default");
+            if (tvFolderName != null) tvFolderName.setText(profile.name != null ? profile.name : "Default");
+            if (chipVersion != null) chipVersion.setText(profile.lastVersionId != null ? profile.lastVersionId : "Unknown");
             String loader = "Vanilla";
-            if (profile.isOptiFine()) loader = "OptiFine";
-            else if (profile.lastVersionId != null) {
+            if (profile.lastVersionId != null) {
                 String vid = profile.lastVersionId.toLowerCase();
                 if (vid.contains("fabric")) loader = "Fabric";
                 else if (vid.contains("forge")) loader = "Forge";
                 else if (vid.contains("quilt")) loader = "Quilt";
                 else if (vid.contains("neoforge")) loader = "NeoForge";
             }
-            chipLoader.setText(loader);
-
-            String javaVer = "Java 8";
-            if (profile.javaDir != null) {
-                if (profile.javaDir.contains("17")) javaVer = "Java 17";
-                else if (profile.javaDir.contains("21")) javaVer = "Java 21";
-            }
-            chipJava.setText(javaVer);
-
+            if (chipLoader != null) chipLoader.setText(loader);
+            if (chipJava != null) chipJava.setText("Java");
             int ramMb = LauncherPreferences.PREF_RAM_ALLOCATION;
-            chipRam.setText(String.format("%.1fGB", ramMb / 1024.0));
-            TextView tvRamBadge = view.findViewById(R.id.tv_profile_ram_badge);
-            if (tvRamBadge != null) tvRamBadge.setText(ramMb + " MB RAM");
-
-            if (profile.icon != null && !profile.icon.equals("default")) {
-                Drawable icon = ProfileIconCache.fetchIcon(getResources(), profileKey, profile.icon);
-                ivProfileIcon.setImageDrawable(icon);
+            if (chipRam != null) chipRam.setText(String.format("%.1fGB", ramMb / 1024.0));
+            if (profile.icon != null && !profile.icon.equals("default") && ivProfileIcon != null) {
+                try {
+                    Drawable icon = ProfileIconCache.fetchIcon(getResources(), profileKey, profile.icon);
+                    ivProfileIcon.setImageDrawable(icon);
+                } catch (Throwable ignored) {}
             }
         }
     }
@@ -258,9 +224,8 @@ public class FastClientHomeFragment extends Fragment {
             int cid = getResources().getIdentifier("card_server_" + (i + 1), "id", pkg);
             View card = cid != 0 ? view.findViewById(cid) : null;
             if (card != null) {
-                card.setOnClickListener(v -> {
-                    Toast.makeText(getContext(), "Joining " + address + "...", Toast.LENGTH_SHORT).show();
-                });
+                card.setOnClickListener(v ->
+                        Toast.makeText(getContext(), "Joining " + address + "...", Toast.LENGTH_SHORT).show());
             }
         }
     }
@@ -272,9 +237,5 @@ public class FastClientHomeFragment extends Fragment {
         MinecraftProfile profileObject = LauncherProfiles.mainProfileJson.profiles.get(currentProfile);
         if (profileObject == null) return new File(Tools.DIR_GAME_NEW);
         return Tools.getGameDirPath(profileObject);
-    }
-
-    private boolean hasOnlineProfile() {
-        return Tools.hasOnlineProfile();
     }
 }
