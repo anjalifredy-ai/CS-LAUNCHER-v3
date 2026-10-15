@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Delete this file when you add drawable-nodpi/remom_hero_banner.png -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient android:angle="135" android:startColor="#1A3A5C" android:centerColor="#0D2137" android:endColor="#0A1628" />
-</shape>
