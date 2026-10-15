@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Remom Server Hub + free cloud hosting shortcuts -->
+<!-- Remom Server Hub: free cloud + LAN friends + join list -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -48,7 +48,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Join · free host · 1-tap play"
+                android:text="Join · free host · friends LAN"
                 android:textColor="@color/text_secondary_dim"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -78,7 +78,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- FREE HOSTING -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -99,7 +98,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Cloud hosts (free). Create server on site → copy IP → Add below → Play. Servers sleep when empty."
+                    android:text="Cloud free hosts. Create on site → copy IP → Add below → Play. Sleep when empty."
                     android:textColor="@color/text_secondary_light"
                     android:textSize="10sp" />
 
@@ -152,6 +151,80 @@
             </LinearLayout>
 
             <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_server_card"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="FRIENDS · SAME WIFI"
+                    android:textColor="#3B9EFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Host: world open → Pause → Open to LAN. Friends same Wi‑Fi join with your IP (port LAN screen pe). No big dedicated server needed."
+                    android:textColor="@color/text_secondary_light"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/lan_host_ip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_auth_input_box"
+                    android:padding="12dp"
+                    android:text="Detecting Wi‑Fi IP…"
+                    android:textColor="#F0F6FF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="monospace" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/lan_copy_ip"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_auth_primary_button"
+                        android:gravity="center"
+                        android:text="Copy IP"
+                        android:textColor="@color/play_btn_text"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/lan_refresh_ip"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_csc_outline_button"
+                        android:gravity="center"
+                        android:text="Refresh IP"
+                        android:textColor="@color/accent_light"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/server_hub_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -174,7 +247,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="IP from Aternos/Minehut or any Java server"
+                    android:text="Friend IP, Aternos/Minehut, or any Java server"
                     android:textColor="#7F8894"
                     android:textSize="10sp" />
 
@@ -193,7 +266,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="play.example.com:25565"
+                        android:hint="192.168.x.x:25565 or play.example.com"
                         android:imeOptions="actionDone"
                         android:inputType="textUri"
                         android:paddingHorizontal="10dp"
@@ -254,7 +327,7 @@
                 android:background="@drawable/bg_empty_state"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="Free host IP add karo upar — MOTD, players, ping, Play."
+                android:text="Friend IP ya free host IP add karo — ping, Play."
                 android:textColor="#6B7280"
                 android:textSize="11sp"
                 android:visibility="visible" />
