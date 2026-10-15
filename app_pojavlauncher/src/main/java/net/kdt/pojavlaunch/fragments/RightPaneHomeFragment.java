@@ -44,16 +44,17 @@ public class RightPaneHomeFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        try {
+            if (getActivity() != null)
+                net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
+        } catch (Throwable ignored) {}
         loadCustomWallpaper(view);
-
-        // (Req-11: the big "Profiles" header bar is gone — cards own the screen.)
 
         mRecyclerView = view.findViewById(R.id.rv_home_profiles);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         setupProfileDragAndDrop();
         setupProfileAdapter();
 
-        // Floating "+" FAB opens the Version Setup Hub (3-category grid)
         View fab = view.findViewById(R.id.fab_create_profile);
         if (fab != null) {
             fab.setScaleX(0.6f);
@@ -67,251 +68,108 @@ public class RightPaneHomeFragment extends Fragment {
                     .setInterpolator(new DecelerateInterpolator())
                     .withEndAction(() -> fab.setLayerType(View.LAYER_TYPE_NONE, null))
                     .start();
-
             fab.setOnClickListener(v -> {
-                if (!isAdded() || getContext() == null) return;
-                Fragment parent = getParentFragment();
-                if (parent instanceof MainMenuFragment) {
-                    ((MainMenuFragment) parent).openChildPane(
-                            ProfileTypeSelectFragment.class,
+                v.animate().scaleX(0.88f).scaleY(0.88f).setDuration(60)
+                        .withEndAction(() -> v.animate().scaleX(1f).scaleY(1f).setDuration(100).start())
+                        .start();
+                try {
+                    Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
                             ProfileTypeSelectFragment.TAG, null);
-                } else if (getActivity() != null) {
-                    Tools.swapFragment(getActivity(),
-                            ProfileTypeSelectFragment.class,
-                            ProfileTypeSelectFragment.TAG, null);
+                } catch (Throwable t) {
+                    Toast.makeText(requireContext(), "Open create profile", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
-
-        View refreshBtn = view.findViewById(R.id.btn_refresh_profiles);
-        if (refreshBtn != null) {
-            refreshBtn.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            refreshBtn.setAlpha(0f);
-            refreshBtn.setScaleX(0.6f);
-            refreshBtn.setScaleY(0.6f);
-            refreshBtn.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                    .setDuration(220).setStartDelay(160)
-                    .setInterpolator(new DecelerateInterpolator())
-                    .withEndAction(() -> refreshBtn.setLayerType(View.LAYER_TYPE_NONE, null))
-                    .start();
-            refreshBtn.setOnClickListener(v -> {
-                v.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-                v.animate().scaleX(0.85f).scaleY(0.85f).setDuration(80)
-                        .withEndAction(() -> {
-                            v.animate().scaleX(1f).scaleY(1f).setDuration(120).start();
-                            v.setLayerType(View.LAYER_TYPE_NONE, null);
-                        }).start();
-                setupProfileAdapter();
-                Toast.makeText(getContext(), "Profiles refreshed", Toast.LENGTH_SHORT).show();
             });
         }
     }
 
     @Override
     public void onResume() {
+        try {
+            if (getActivity() != null)
+                net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
+        } catch (Throwable ignored) {}
         super.onResume();
         setupProfileAdapter();
     }
 
-    public void reloadBackground() {
-        View v = getView();
-        if (v != null) loadCustomWallpaper(v);
+    private void loadCustomWallpaper(View view) {
+        ImageView wallpaper = view.findViewById(R.id.right_pane_wallpaper);
+        if (wallpaper == null) return;
+        try {
+            File f = new File(CUSTOM_BG_PATH);
+            if (f.exists()) {
+                wallpaper.setImageDrawable(Drawable.createFromPath(f.getAbsolutePath()));
+                wallpaper.setVisibility(View.VISIBLE);
+            }
+        } catch (Throwable ignored) {}
     }
 
     private void setupProfileDragAndDrop() {
-        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
-            @Override public boolean isLongPressDragEnabled() { return false; }
-            @Override public boolean isItemViewSwipeEnabled() { return false; }
-
-            @Override public int getMovementFlags(@NonNull RecyclerView recyclerView,
-                                                  @NonNull RecyclerView.ViewHolder viewHolder) {
-                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN
-                        | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, 0);
-            }
-
-            @Override public boolean onMove(@NonNull RecyclerView recyclerView,
-                                            @NonNull RecyclerView.ViewHolder source,
-                                            @NonNull RecyclerView.ViewHolder target) {
+        if (mProfileTouchHelper != null) return;
+        mProfileTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
+                ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, 0) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView,
+                                  @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder target) {
                 if (mAdapter == null) return false;
-                int from = source.getBindingAdapterPosition();
+                int from = viewHolder.getBindingAdapterPosition();
                 int to = target.getBindingAdapterPosition();
-                if (!mAdapter.isSameFavoriteGroup(from, to)) return false;
-                boolean moved = mAdapter.moveItem(from, to);
-                if (moved) mProfileOrderDirty = true;
-                return moved;
+                if (from == RecyclerView.NO_POSITION || to == RecyclerView.NO_POSITION) return false;
+                mAdapter.moveItem(from, to);
+                mProfileOrderDirty = true;
+                return true;
             }
-
             @Override public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {}
-
-            @Override public void onSelectedChanged(@Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
-                super.onSelectedChanged(viewHolder, actionState);
-                if (viewHolder != null && actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-                    viewHolder.itemView.animate().scaleX(1.025f).scaleY(1.025f).setDuration(100).start();
-                    viewHolder.itemView.setElevation(12f * getResources().getDisplayMetrics().density);
-                }
-            }
-
             @Override public void clearView(@NonNull RecyclerView recyclerView,
                                             @NonNull RecyclerView.ViewHolder viewHolder) {
                 super.clearView(recyclerView, viewHolder);
-                viewHolder.itemView.animate().scaleX(1f).scaleY(1f).setDuration(130).start();
-                viewHolder.itemView.setElevation(0f);
                 if (mProfileOrderDirty && mAdapter != null) {
                     mProfileOrderDirty = false;
-                    mAdapter.dispatchOrderChanged();
+                    mAdapter.persistOrder();
                 }
             }
-        };
-        mProfileTouchHelper = new ItemTouchHelper(callback);
+        });
         mProfileTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     private void setupProfileAdapter() {
-        LauncherProfiles.loadAsync(() -> {
-            if (!isAdded() || getContext() == null) return;
-
-            Map<String, MinecraftProfile> profilesMap = LauncherProfiles.mainProfileJson != null
+        if (getContext() == null || mRecyclerView == null) return;
+        try {
+            LauncherProfiles.load();
+            List<HomeProfileAdapter.Item> items = new ArrayList<>();
+            Map<String, MinecraftProfile> map = LauncherProfiles.mainProfileJson != null
                     ? LauncherProfiles.mainProfileJson.profiles : null;
-
-            List<String> keys = new ArrayList<>();
-            List<MinecraftProfile> profiles = new ArrayList<>();
-
-            if (profilesMap != null && !profilesMap.isEmpty()) {
-                List<Map.Entry<String, MinecraftProfile>> entries =
-                        LauncherProfiles.getOrderedEntries();
-                for (Map.Entry<String, MinecraftProfile> entry : entries) {
-                    String key = entry.getKey();
-                    MinecraftProfile profile = entry.getValue();
-                    if (key == null || key.isEmpty()) continue;
-                    if (profile == null) continue;
-                    if (profile.name == null || profile.name.trim().isEmpty()) continue;
-                    keys.add(key);
-                    profiles.add(profile);
+            if (map != null) {
+                for (Map.Entry<String, MinecraftProfile> e : map.entrySet()) {
+                    items.add(new HomeProfileAdapter.Item(e.getKey(), e.getValue()));
                 }
             }
-
-            mAdapter = new HomeProfileAdapter(keys, profiles,
-                    new HomeProfileAdapter.OnProfileActionListener() {
-                @Override
-                public void onProfilePlay(String profileKey, MinecraftProfile profile) {
+            mAdapter = new HomeProfileAdapter(items, new HomeProfileAdapter.Listener() {
+                @Override public void onPlay(String key) {
                     LauncherPreferences.DEFAULT_PREF.edit()
-                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
-                            .apply();
+                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key).apply();
                     ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
                 }
-
-                @Override
-                public void onProfileBrowse(String profileKey, MinecraftProfile profile) {
+                @Override public void onEdit(String key) {
+                    Bundle b = new Bundle();
+                    b.putString(ProfileEditorFragment.BUNDLE_SELECT_PROFILE_KEY, key);
+                    Tools.swapFragment(requireActivity(), ProfileEditorFragment.class,
+                            ProfileEditorFragment.TAG, b);
+                }
+                @Override public void onSelect(String key) {
                     LauncherPreferences.DEFAULT_PREF.edit()
-                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
-                            .apply();
-                    Bundle args = new Bundle();
-                    args.putString(ManageModsFragment.BUNDLE_PROFILE_KEY, profileKey);
-                    Fragment parent = getParentFragment();
-                    if (parent instanceof MainMenuFragment) {
-                        ((MainMenuFragment) parent).openChildPane(
-                                ModsSearchFragment.class, ModsSearchFragment.TAG, args);
-                    } else if (getActivity() != null) {
-                        Tools.swapFragment(requireActivity(),
-                                ModsSearchFragment.class, ModsSearchFragment.TAG, args);
-                    }
+                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key).apply();
+                    ExtraCore.setValue(ExtraConstants.REFRESH_VERSION_SPINNER, key);
                 }
-
-                @Override
-                public void onProfileEdit(String profileKey, MinecraftProfile profile) {
-                    LauncherPreferences.DEFAULT_PREF.edit()
-                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
-                            .apply();
-                    Tools.swapFragment(requireActivity(),
-                            ProfileEditorFragment.class, ProfileEditorFragment.TAG, null);
-                }
-
-                @Override
-                public void onProfileAddShortcut(String profileKey, MinecraftProfile profile) {
-                    Bundle args = new Bundle();
-                    args.putString(
-                            net.kdt.pojavlaunch.shortcuts.ShortcutIconPickerFragment.ARG_PROFILE_KEY,
-                            profileKey);
-                    Fragment parent = getParentFragment();
-                    if (parent instanceof MainMenuFragment) {
-                        ((MainMenuFragment) parent).openChildPane(
-                                net.kdt.pojavlaunch.shortcuts.ShortcutIconPickerFragment.class,
-                                net.kdt.pojavlaunch.shortcuts.ShortcutIconPickerFragment.TAG,
-                                args);
-                    } else if (getActivity() != null) {
-                        Tools.swapFragment(requireActivity(),
-                                net.kdt.pojavlaunch.shortcuts.ShortcutIconPickerFragment.class,
-                                net.kdt.pojavlaunch.shortcuts.ShortcutIconPickerFragment.TAG,
-                                args);
-                    }
-                }
-
-                @Override
-                public void onProfileFavoriteChanged(String profileKey, MinecraftProfile profile,
-                                                     boolean favorite) {
-                    if (LauncherProfiles.setFavorite(profileKey, favorite)) {
-                        setupProfileAdapter();
-                    }
-                }
-
-                @Override
-                public void onProfileOrderChanged(List<String> orderedProfileKeys) {
-                    LauncherProfiles.applyProfileOrder(orderedProfileKeys);
-                }
-            });
-
-            mAdapter.setDragStartListener(holder -> {
-                if (mProfileTouchHelper != null) mProfileTouchHelper.startDrag(holder);
             });
             mRecyclerView.setAdapter(mAdapter);
-        });
-    }
-
-    private void loadCustomWallpaper(@NonNull View view) {
-        ImageView wallpaper = view.findViewById(R.id.right_pane_wallpaper);
-        File bgFile = new File(CUSTOM_BG_PATH);
-        if (bgFile.exists()) {
-            // Animated GIF wallpapers decode on a worker thread, then loop smoothly
-            final String path = bgFile.getAbsolutePath();
-            net.kdt.pojavlaunch.PojavApplication.sExecutorService.execute(() -> {
-                Drawable d;
-                try {
-                    byte[] head = new byte[6];
-                    try (java.io.FileInputStream fis = new java.io.FileInputStream(path)) {
-                        //noinspection ResultOfMethodCallIgnored
-                        fis.read(head);
-                    }
-                    if (head[0] == 'G' && head[1] == 'I' && head[2] == 'F') {
-                        d = new pl.droidsonroids.gif.GifDrawable(path);
-                    } else {
-                        d = Drawable.createFromPath(path);
-                    }
-                } catch (Throwable t) {
-                    d = Drawable.createFromPath(path);
-                }
-                final Drawable finalDrawable = d;
-                if (getActivity() != null) {
-                    Tools.runOnUiThread(() -> applyWallpaper(wallpaper, finalDrawable));
-                }
-            });
-            return;
-        }
-        if (wallpaper.getVisibility() == View.VISIBLE) {
-            wallpaper.animate().alpha(0f).setDuration(300)
-                    .withEndAction(() -> wallpaper.setVisibility(View.GONE)).start();
-        }
-    }
-
-    private void applyWallpaper(@NonNull ImageView wallpaper, @Nullable Drawable d) {
-        if (d == null) return;
-        net.kdt.pojavlaunch.profiles.ProfileGifSupport.stopDrawable(wallpaper.getDrawable());
-        wallpaper.setImageDrawable(d);
-        wallpaper.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        wallpaper.setBackground(null);
-        if (wallpaper.getVisibility() != View.VISIBLE) {
-            wallpaper.setAlpha(0f);
-            wallpaper.setVisibility(View.VISIBLE);
-            wallpaper.animate().alpha(1f).setDuration(400).start();
+            try {
+                mRecyclerView.setLayoutAnimation(
+                        AnimationUtils.loadLayoutAnimation(getContext(), R.anim.layout_animation_fall_down));
+            } catch (Throwable ignored) {}
+        } catch (Throwable t) {
+            Toast.makeText(getContext(), "Profiles load error", Toast.LENGTH_SHORT).show();
         }
     }
 }
