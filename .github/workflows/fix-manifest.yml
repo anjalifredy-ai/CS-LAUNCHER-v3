@@ -1,0 +1,26 @@
+name: Fix manifest
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore full manifest + PE queries
+        run: |
+          set -e
+          git checkout e668b63914921988580672950f1bfd3cc4e0fb63 -- app_pojavlauncher/src/main/AndroidManifest.xml
+          FILE=app_pojavlauncher/src/main/AndroidManifest.xml
+          if ! grep -q 'com.mojang.minecraftpe' "$FILE"; then
+            sed -i 's|<package android:name="net.kdt.pojavlaunch.ffmpeg"/>|<package android:name="net.kdt.pojavlaunch.ffmpeg"/>\n        <package android:name="com.mojang.minecraftpe"/>\n        <package android:name="com.mojang.minecraftpe.unlocks"/>|' "$FILE"
+          fi
+          grep -A8 '<queries>' "$FILE"
+          git config user.name "Remom Bot"
+          git config user.email "bot@remom.local"
+          git add "$FILE"
+          git commit -m "Restore full AndroidManifest + Minecraft PE package queries" || echo nochange
+          git push
