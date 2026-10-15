@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">RemomLauncher</string>
+    <string name="cs_launcher_title">RemomLauncher</string>
+    <string name="app_short_name" translatable="false">Remom</string>
+    <string name="cs_about_name">RemomLauncher</string>
+    <string name="sg_boot_eyebrow">RemomLauncher</string>
+</resources>
