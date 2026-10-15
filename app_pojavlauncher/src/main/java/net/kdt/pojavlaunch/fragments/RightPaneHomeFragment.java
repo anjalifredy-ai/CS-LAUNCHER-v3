@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,6 +37,8 @@ public class RightPaneHomeFragment extends Fragment {
     private HomeProfileAdapter mAdapter;
     private ItemTouchHelper mProfileTouchHelper;
     private View mRootView;
+    private TextView mSelectedName;
+    private TextView mSelectedMeta;
 
     public RightPaneHomeFragment() {
         super(R.layout.fragment_right_pane_home);
@@ -50,11 +53,65 @@ public class RightPaneHomeFragment extends Fragment {
         } catch (Throwable ignored) {}
         loadCustomWallpaper(view);
 
+        mSelectedName = view.findViewById(R.id.tv_selected_profile_name);
+        mSelectedMeta = view.findViewById(R.id.tv_selected_profile_meta);
+        refreshSelectedProfileLabel();
+
         mRecyclerView = view.findViewById(R.id.rv_home_profiles);
         if (mRecyclerView != null) {
             mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
             setupProfileDragAndDrop();
             setupProfileAdapter();
+        }
+
+        View browse = view.findViewById(R.id.btn_browse_resources);
+        if (browse != null) {
+            browse.setOnClickListener(v -> {
+                try {
+                    ResourceBrowserDialog.show(requireActivity());
+                } catch (Throwable t) {
+                    try {
+                        Tools.swapFragment(requireActivity(), ModsSearchFragment.class, ModsSearchFragment.TAG, null);
+                    } catch (Throwable t2) {
+                        Toast.makeText(requireContext(), "Browse resources", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
+        View manager = view.findViewById(R.id.btn_manager);
+        if (manager != null) {
+            manager.setOnClickListener(v -> {
+                try {
+                    Tools.swapFragment(requireActivity(), ModsSearchFragment.class, ModsSearchFragment.TAG, null);
+                } catch (Throwable t) {
+                    Toast.makeText(requireContext(), "Manager", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        View play = view.findViewById(R.id.btn_play_main);
+        if (play != null) {
+            play.setOnClickListener(v -> ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true));
+        }
+
+        View edit = view.findViewById(R.id.btn_edit_selected);
+        if (edit != null) {
+            edit.setOnClickListener(v -> {
+                try {
+                    Tools.swapFragment(requireActivity(), ProfileEditorFragment.class, ProfileEditorFragment.TAG, null);
+                } catch (Throwable t) {
+                    Toast.makeText(requireContext(), "Edit profile", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        View selected = view.findViewById(R.id.btn_selected_profile);
+        if (selected != null) {
+            selected.setOnClickListener(v -> {
+                if (mRecyclerView != null) mRecyclerView.smoothScrollToPosition(0);
+                Toast.makeText(requireContext(), "Instances below — tap a card to select", Toast.LENGTH_SHORT).show();
+            });
         }
 
         View fab = view.findViewById(R.id.fab_create_profile);
@@ -82,13 +139,44 @@ public class RightPaneHomeFragment extends Fragment {
             if (getActivity() != null)
                 net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
         } catch (Throwable ignored) {}
+        refreshSelectedProfileLabel();
         setupProfileAdapter();
     }
 
-    /** Called from settings when launcher wallpaper changes. */
     public void reloadBackground() {
         View root = getView() != null ? getView() : mRootView;
         if (root != null) loadCustomWallpaper(root);
+    }
+
+    private void refreshSelectedProfileLabel() {
+        if (mSelectedName == null) return;
+        try {
+            LauncherProfiles.load();
+            String key = LauncherPreferences.DEFAULT_PREF.getString(
+                    LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+            MinecraftProfile p = null;
+            if (key != null && LauncherProfiles.mainProfileJson != null
+                    && LauncherProfiles.mainProfileJson.profiles != null) {
+                p = LauncherProfiles.mainProfileJson.profiles.get(key);
+            }
+            if (p == null && LauncherProfiles.mainProfileJson != null
+                    && LauncherProfiles.mainProfileJson.profiles != null
+                    && !LauncherProfiles.mainProfileJson.profiles.isEmpty()) {
+                Map.Entry<String, MinecraftProfile> e =
+                        LauncherProfiles.mainProfileJson.profiles.entrySet().iterator().next();
+                key = e.getKey();
+                p = e.getValue();
+            }
+            String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name
+                    : (key != null ? key : "Default");
+            mSelectedName.setText(name);
+            if (mSelectedMeta != null) {
+                String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
+                mSelectedMeta.setText(ver);
+            }
+        } catch (Throwable ignored) {
+            mSelectedName.setText("Default");
+        }
     }
 
     private void setupProfileDragAndDrop() {
@@ -125,6 +213,7 @@ public class RightPaneHomeFragment extends Fragment {
                     LauncherPreferences.DEFAULT_PREF.edit()
                             .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
                             .apply();
+                    refreshSelectedProfileLabel();
                     ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
                 }
                 @Override
@@ -132,15 +221,21 @@ public class RightPaneHomeFragment extends Fragment {
                     LauncherPreferences.DEFAULT_PREF.edit()
                             .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
                             .apply();
+                    refreshSelectedProfileLabel();
                     try {
-                        Tools.swapFragment(requireActivity(), ModsSearchFragment.class, ModsSearchFragment.TAG, null);
-                    } catch (Throwable ignored) {}
+                        ResourceBrowserDialog.show(requireActivity());
+                    } catch (Throwable t) {
+                        try {
+                            Tools.swapFragment(requireActivity(), ModsSearchFragment.class, ModsSearchFragment.TAG, null);
+                        } catch (Throwable ignored) {}
+                    }
                 }
                 @Override
                 public void onProfileEdit(String profileKey, MinecraftProfile profile) {
                     LauncherPreferences.DEFAULT_PREF.edit()
                             .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
                             .apply();
+                    refreshSelectedProfileLabel();
                     try {
                         Tools.swapFragment(requireActivity(), ProfileEditorFragment.class, ProfileEditorFragment.TAG, null);
                     } catch (Throwable ignored) {}
