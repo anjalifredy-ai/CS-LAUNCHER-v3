@@ -1,5 +1,8 @@
 package net.kdt.pojavlaunch.servers;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,18 +24,17 @@ import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Server Hub — join list + Remom free hosting shortcuts (Aternos / Minehut).
- */
+/** Server Hub — join list + free cloud host + same-WiFi friends LAN. */
 public class ServerHubFragment extends Fragment {
     public static final String TAG = "ServerHubFragment";
     private String profileKey;
     private RecyclerView list;
     private EditText input;
-    private TextView status, empty;
+    private TextView status, empty, lanIpView;
     private View addBtn, refreshBtn;
     private ServerAdapter adapter;
     private final List<ServerEntry> data = new ArrayList<>();
+    private String lastLanIp;
 
     public ServerHubFragment(){ super(R.layout.fragment_server_hub); }
 
@@ -67,6 +69,29 @@ public class ServerHubFragment extends Fragment {
         if (minehut != null) minehut.setOnClickListener(v -> openUrl("https://minehut.com/"));
         if (help != null) help.setOnClickListener(v -> Toast.makeText(requireContext(),
                 "Free hosts sleep when empty. Start server on website, copy IP, Add above, then Play.", Toast.LENGTH_LONG).show());
+
+        // Friends LAN
+        lanIpView = root.findViewById(R.id.lan_host_ip);
+        View copyLan = root.findViewById(R.id.lan_copy_ip);
+        View refreshLan = root.findViewById(R.id.lan_refresh_ip);
+        refreshLanIp();
+        if (copyLan != null) copyLan.setOnClickListener(v -> {
+            if (lastLanIp == null || lastLanIp.isEmpty()) {
+                Toast.makeText(requireContext(), "IP nahi mila — Wi‑Fi on karo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            try {
+                ClipboardManager cm = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("lan_ip", lastLanIp));
+                Toast.makeText(requireContext(), "Copied: " + lastLanIp + " — friend Add Server me paste kare", Toast.LENGTH_LONG).show();
+            } catch (Throwable t) {
+                Toast.makeText(requireContext(), lastLanIp, Toast.LENGTH_LONG).show();
+            }
+        });
+        if (refreshLan != null) refreshLan.setOnClickListener(v -> {
+            refreshLanIp();
+            Toast.makeText(requireContext(), "IP refreshed", Toast.LENGTH_SHORT).show();
+        });
 
         if (list != null) {
             list.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -112,6 +137,13 @@ public class ServerHubFragment extends Fragment {
         pingAll();
     }
 
+    private void refreshLanIp() {
+        lastLanIp = LanHostHelper.getLanIpv4(requireContext());
+        if (lanIpView != null) {
+            lanIpView.setText(LanHostHelper.formatJoinHint(lastLanIp));
+        }
+    }
+
     private void openUrl(String url){
         try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
         catch (Exception e){ Toast.makeText(requireContext(), "Cannot open browser", Toast.LENGTH_SHORT).show(); }
@@ -139,7 +171,7 @@ public class ServerHubFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     ServerStore.update(requireContext(), profileKey, entry);
                     refresh();
-                    if (status!=null) status.setText("Online · " + entry.playersOnline + "/" + entry.playersMax);
+                    if (status!=null) { status.setVisibility(View.VISIBLE); status.setText("Online · " + entry.playersOnline + "/" + entry.playersMax); }
                 });
             }
             @Override public void onError(ServerEntry entry, Exception ex){
@@ -147,7 +179,7 @@ public class ServerHubFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     ServerStore.update(requireContext(), profileKey, entry);
                     refresh();
-                    if (status!=null) status.setText("Added (offline for now)");
+                    if (status!=null) { status.setVisibility(View.VISIBLE); status.setText("Added (offline for now)"); }
                 });
             }
         });
