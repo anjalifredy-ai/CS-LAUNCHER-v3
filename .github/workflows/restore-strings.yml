@@ -1,0 +1,40 @@
+name: Restore strings
+on:
+  workflow_dispatch:
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore and brand strings
+        run: |
+          git checkout 8c9669ffa44834b32335d882428c5ec1e4dc194d -- app_pojavlauncher/src/main/res/values/strings.xml
+          python3 << 'PY'
+          from pathlib import Path
+          import re
+          p = Path('app_pojavlauncher/src/main/res/values/strings.xml')
+          t = p.read_text()
+          for a,b in [
+              ('CS CLIENT','REMOM CLIENT'),
+              ('CS Client','Remom Client'),
+              ('Nexus Launcher CS','RemomLauncher'),
+              ('CS Launcher','RemomLauncher'),
+              ('CS LAUNCHER','REMOMLAUNCHER'),
+              ('Nexus Launcher has unexpectedly crashed','RemomLauncher has unexpectedly crashed'),
+          ]:
+              t = t.replace(a,b)
+          t = re.sub(r'(<string name="pt_bta_name">)[^<]*(</string>)', r'\1REMOM CLIENT\2', t, count=1)
+          t = re.sub(r'(<string name="pt_bta_desc">)[^<]*(</string>)', r'\1Remom · Fabric · Build your profile\2', t, count=1)
+          t = re.sub(r'(<string name="sg_boot_eyebrow">)[^<]*(</string>)', r'\1RemomLauncher\2', t, count=1)
+          p.write_text(t)
+          print('branded ok', len(t))
+          PY
+          git config user.name "Remom Bot"
+          git config user.email "bot@remom.local"
+          git add app_pojavlauncher/src/main/res/values/strings.xml
+          git commit -m "Restore strings.xml + Remom branding" || echo "no change"
+          git push
