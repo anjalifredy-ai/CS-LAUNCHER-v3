@@ -20,6 +20,7 @@ import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
+import net.kdt.pojavlaunch.servers.ServerHubFragment;
 import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
@@ -86,6 +87,21 @@ public class RightPaneHomeFragment extends Fragment {
                     Tools.swapFragment(requireActivity(), ModsSearchFragment.class, ModsSearchFragment.TAG, null);
                 } catch (Throwable t) {
                     Toast.makeText(requireContext(), "Manager", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        View host = view.findViewById(R.id.btn_host_servers);
+        if (host != null) {
+            host.setOnClickListener(v -> {
+                try {
+                    Bundle args = new Bundle();
+                    String key = LauncherPreferences.DEFAULT_PREF.getString(
+                            LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+                    if (key != null) args.putString("profileKey", key);
+                    Tools.swapFragment(requireActivity(), ServerHubFragment.class, ServerHubFragment.TAG, args);
+                } catch (Throwable t) {
+                    Toast.makeText(requireContext(), "Servers / Host", Toast.LENGTH_SHORT).show();
                 }
             });
         }
