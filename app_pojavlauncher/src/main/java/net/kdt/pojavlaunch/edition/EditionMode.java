@@ -19,7 +19,7 @@ import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.edition.host.BedrockHostRouter;
 import net.kdt.pojavlaunch.fragments.BedrockHomeFragment;
 
-/** Java / Bedrock edition switch for the Remom header bar. */
+/** Java / Bedrock edition switch — Remom header. */
 public final class EditionMode {
     public static final String PREF = "remom_edition";
     public static final String KEY = "mode";
@@ -120,11 +120,11 @@ public final class EditionMode {
         if (tv == null) return;
         tv.setTypeface(Typeface.DEFAULT_BOLD);
         if (active) {
-            tv.setBackgroundResource(R.drawable.bg_cs_tab_pill_active);
-            tv.setTextColor(0xFF151518);
+            tv.setBackgroundResource(R.drawable.bg_remom_pill_on);
+            tv.setTextColor(0xFF0A1628);
         } else {
-            tv.setBackgroundResource(R.drawable.bg_cs_tab_pill_idle);
-            tv.setTextColor(0xFFE8E8EC);
+            tv.setBackgroundResource(R.drawable.bg_remom_pill_off);
+            tv.setTextColor(0xFFC8D8EC);
         }
     }
 
