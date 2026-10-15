@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -19,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import net.kdt.pojavlaunch.R;
+import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
@@ -26,7 +25,7 @@ import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Solo localhost · LAN Wi‑Fi · distant friends via free internet host. */
+/** Solo localhost · LAN · distant friends via in-app Aternos/Minehut WebView. */
 public class ServerHubFragment extends Fragment {
     public static final String TAG = "ServerHubFragment";
     private String profileKey;
@@ -65,16 +64,17 @@ public class ServerHubFragment extends Fragment {
         View aternos = root.findViewById(R.id.free_host_aternos);
         View minehut = root.findViewById(R.id.free_host_minehut);
         View help = root.findViewById(R.id.free_host_help);
-        if (aternos != null) aternos.setOnClickListener(v -> openUrl("https://aternos.org/"));
-        if (minehut != null) minehut.setOnClickListener(v -> openUrl("https://minehut.com/"));
+        // In-app WebView — Chrome nahi khulega
+        if (aternos != null) aternos.setOnClickListener(v -> openHostInApp(true));
+        if (minehut != null) minehut.setOnClickListener(v -> openHostInApp(false));
         if (help != null) help.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
                 .setTitle("Distant friends")
                 .setMessage(
-                        "1) Aternos/Minehut pe free server banao\n" +
-                        "2) Site pe Start → IP/address copy\n" +
-                        "3) Yahan ADD me paste\n" +
-                        "4) Play\n\n" +
-                        "Phone local server sirf same Wi‑Fi / solo (127.0.0.1) ke liye hai. Door ke liye internet host zaroori hai.")
+                        "Aternos/Minehut Remom ke ANDAR khulte hain (WebView).\n\n" +
+                        "1) Aternos select → login/create\n" +
+                        "2) Server start → IP copy\n" +
+                        "3) Done → ADD me paste → Play\n\n" +
+                        "Note: Aternos official API nahi deta, isliye site UI in-app dikhti hai — auto server magic nahi, lekin browser alag nahi khulta.")
                 .setPositiveButton("OK", null)
                 .show());
 
@@ -94,13 +94,13 @@ public class ServerHubFragment extends Fragment {
         refreshLanIp();
         if (copyLan != null) copyLan.setOnClickListener(v -> {
             if (lastLanIp == null || lastLanIp.isEmpty()) {
-                Toast.makeText(requireContext(), "Solo: 127.0.0.1 · Door: Aternos use karo", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Solo: 127.0.0.1 · Door: Aternos in-app", Toast.LENGTH_LONG).show();
                 return;
             }
             try {
                 ClipboardManager cm = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("lan_ip", lastLanIp));
-                Toast.makeText(requireContext(), "Wi‑Fi IP copied (same network only)", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Wi‑Fi IP copied", Toast.LENGTH_LONG).show();
             } catch (Throwable t) {
                 Toast.makeText(requireContext(), lastLanIp, Toast.LENGTH_LONG).show();
             }
@@ -129,7 +129,7 @@ public class ServerHubFragment extends Fragment {
                 @Override public void onRemove(ServerEntry e){
                     if (getContext()==null) return;
                     if (e.pinned || PartnerServer.is(e.address)) {
-                        Toast.makeText(requireContext(), PartnerServer.NAME + " stays in every profile", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), PartnerServer.NAME + " stays", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     ServerStore.remove(requireContext(), profileKey, e.address);
@@ -150,9 +150,13 @@ public class ServerHubFragment extends Fragment {
         refreshLocalStatus();
     }
 
-    private void openUrl(String url) {
-        try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
-        catch (Exception e) { Toast.makeText(requireContext(), "Browser open nahi hua", Toast.LENGTH_SHORT).show(); }
+    private void openHostInApp(boolean aternos) {
+        try {
+            HostWebFragment f = aternos ? HostWebFragment.aternos() : HostWebFragment.minehut();
+            Tools.swapFragment(requireActivity(), HostWebFragment.class, HostWebFragment.TAG, f.getArguments());
+        } catch (Throwable t) {
+            Toast.makeText(requireContext(), "Host open failed: " + t.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void showCreateLocalDialog() {
@@ -176,7 +180,7 @@ public class ServerHubFragment extends Fragment {
         box.addView(portIn);
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP\nDoor friends → Aternos/Minehut")
+                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP\nDoor → Aternos in-app")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
@@ -241,9 +245,7 @@ public class ServerHubFragment extends Fragment {
                         Toast.makeText(requireContext(), "Solo → " + soloAddr, Toast.LENGTH_LONG).show();
                         ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
                     } else {
-                        Toast.makeText(requireContext(),
-                                "Running. Solo list: 127.0.0.1 · Door friends: Aternos",
-                                Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireContext(), "Running. Solo: 127.0.0.1 · Door: Aternos in-app", Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception ex) {
@@ -269,7 +271,7 @@ public class ServerHubFragment extends Fragment {
         if (localListView == null || getContext() == null) return;
         List<LocalServerEntry> locals = LocalServerStore.load(requireContext());
         if (locals.isEmpty()) {
-            localListView.setText("No local servers — Create. Solo=127.0.0.1 · Door=Aternos");
+            localListView.setText("No local servers — Create. Solo=127.0.0.1 · Door=Aternos in-app");
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -288,7 +290,7 @@ public class ServerHubFragment extends Fragment {
         lastLanIp = LanHostHelper.getLanIpv4(requireContext());
         if (lanIpView != null) {
             if (lastLanIp == null || lastLanIp.isEmpty())
-                lanIpView.setText("Solo: 127.0.0.1 · Door: Aternos (Wi‑Fi IP nahi mila)");
+                lanIpView.setText("Solo: 127.0.0.1 · Door: Aternos in-app");
             else
                 lanIpView.setText("Solo: 127.0.0.1 · Nearby: " + lastLanIp);
         }
