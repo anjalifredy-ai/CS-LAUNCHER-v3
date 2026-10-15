@@ -12,7 +12,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
@@ -51,63 +53,69 @@ public final class EditionMode {
 
     public static void bindHeader(Activity activity) {
         if (activity == null) return;
-        bindPills(activity);
-        bindSpinner(activity);
-        refreshPillStyles(activity);
-    }
-
-    private static void bindPills(Activity activity) {
-        View javaBtn = activity.findViewById(R.id.btn_edition_java);
-        View bedrockBtn = activity.findViewById(R.id.btn_edition_bedrock);
-        if (javaBtn == null && bedrockBtn == null) return;
-        if (javaBtn != null) javaBtn.setOnClickListener(v -> selectEdition(activity, false));
-        if (bedrockBtn != null) bedrockBtn.setOnClickListener(v -> selectEdition(activity, true));
-    }
-
-    private static void bindSpinner(Activity activity) {
-        Spinner sp = activity.findViewById(R.id.edition_spinner);
-        if (sp == null) return;
-        String[] labels = new String[]{"Java", "Bedrock"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity,
-                android.R.layout.simple_spinner_dropdown_item, labels);
-        sp.setAdapter(adapter);
-        boolean bedrock = isBedrock(activity);
-        sp.setSelection(bedrock ? 1 : 0, false);
-        sp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            private boolean first = true;
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (first) { first = false; return; }
-                selectEdition(activity, position == 1);
+        try {
+            View javaBtn = activity.findViewById(R.id.btn_edition_java);
+            View bedrockBtn = activity.findViewById(R.id.btn_edition_bedrock);
+            if (javaBtn != null) {
+                javaBtn.setClickable(true);
+                javaBtn.setFocusable(true);
+                javaBtn.setOnClickListener(v -> selectEdition(activity, false));
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
-        });
+            if (bedrockBtn != null) {
+                bedrockBtn.setClickable(true);
+                bedrockBtn.setFocusable(true);
+                bedrockBtn.setOnClickListener(v -> selectEdition(activity, true));
+            }
+            Spinner sp = activity.findViewById(R.id.edition_spinner);
+            if (sp != null) {
+                String[] labels = new String[]{"Java", "Bedrock"};
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(activity,
+                        android.R.layout.simple_spinner_dropdown_item, labels);
+                sp.setAdapter(adapter);
+                sp.setSelection(isBedrock(activity) ? 1 : 0, false);
+                sp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    private boolean first = true;
+                    @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        if (first) { first = false; return; }
+                        selectEdition(activity, position == 1);
+                    }
+                    @Override public void onNothingSelected(AdapterView<?> parent) {}
+                });
+            }
+            refreshPillStyles(activity);
+        } catch (Throwable t) {
+            Toast.makeText(activity, "Edition switch error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private static void selectEdition(Activity activity, boolean bedrock) {
+        if (activity == null) return;
         if (bedrock) {
             setMode(activity, "bedrock");
+            refreshPillStyles(activity);
             if (!isOfficialBedrockInstalled(activity)) {
                 Toast.makeText(activity,
-                        "Bedrock: install official Minecraft from Play Store (owned) to play.",
+                        "Bedrock mode: Play Store se official Minecraft (owned) install karo.",
                         Toast.LENGTH_LONG).show();
             }
-            if (activity instanceof FragmentActivity) {
-                openBedrockUi((FragmentActivity) activity);
-            }
+            openBedrockUi(activity);
         } else {
             setMode(activity, "java");
+            refreshPillStyles(activity);
             if (activity instanceof FragmentActivity) {
                 try {
+                    FragmentManager fm = ((FragmentActivity) activity).getSupportFragmentManager();
+                    fm.popBackStack(BedrockHomeFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     Tools.backToMainMenu((FragmentActivity) activity);
                 } catch (Throwable t) {
-                    Toast.makeText(activity, "Switched to Java", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, "Java mode", Toast.LENGTH_SHORT).show();
                 }
             }
         }
-        refreshPillStyles(activity);
         Spinner sp = activity.findViewById(R.id.edition_spinner);
-        if (sp != null) sp.setSelection(bedrock ? 1 : 0, false);
+        if (sp != null) {
+            try { sp.setSelection(bedrock ? 1 : 0, false); } catch (Throwable ignored) {}
+        }
     }
 
     private static void refreshPillStyles(Activity activity) {
@@ -128,11 +136,28 @@ public final class EditionMode {
         }
     }
 
-    private static void openBedrockUi(FragmentActivity activity) {
+    private static void openBedrockUi(Activity activity) {
+        if (!(activity instanceof FragmentActivity)) return;
+        FragmentActivity fa = (FragmentActivity) activity;
         try {
-            Tools.swapFragment(activity, BedrockHomeFragment.class, BedrockHomeFragment.TAG, null);
-        } catch (Exception e) {
-            Toast.makeText(activity, "Could not open Bedrock screen", Toast.LENGTH_SHORT).show();
+            FragmentManager fm = fa.getSupportFragmentManager();
+            Fragment existing = fm.findFragmentByTag(BedrockHomeFragment.TAG);
+            if (existing != null && existing.isVisible()) {
+                Toast.makeText(activity, "Bedrock", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            fm.beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                    .replace(R.id.container_fragment, new BedrockHomeFragment(), BedrockHomeFragment.TAG)
+                    .addToBackStack(BedrockHomeFragment.TAG)
+                    .commitAllowingStateLoss();
+            Toast.makeText(activity, "Bedrock home", Toast.LENGTH_SHORT).show();
+        } catch (Throwable e) {
+            try {
+                Tools.swapFragment(fa, BedrockHomeFragment.class, BedrockHomeFragment.TAG, null);
+            } catch (Throwable e2) {
+                Toast.makeText(activity, "Bedrock open failed: " + e2.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
     }
 
