@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Remom home — Plus-style: hero + selected profile + PLAY + browse/manager -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -33,13 +32,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="148dp"
                 android:layout_marginBottom="10dp"
-                android:background="@drawable/bg_remom_card"
-                android:clipToOutline="true">
+                android:background="@drawable/bg_remom_card">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#1A2A4A" />
+                <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="#1A2A4A" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -48,66 +43,11 @@
                     android:padding="14dp"
                     android:gravity="bottom">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="MINECRAFT"
-                        android:textColor="#FFFFFF"
-                        android:textSize="26sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.04" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="PLAY WITHOUT LIMITS"
-                        android:textColor="#A8C4E8"
-                        android:textSize="11sp"
-                        android:letterSpacing="0.12"
-                        android:layout_marginTop="2dp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="10dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="24dp"
-                            android:gravity="center"
-                            android:paddingLeft="10dp"
-                            android:paddingRight="10dp"
-                            android:text="FAST"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:textColor="#E8F0FA"
-                            android:background="@drawable/bg_remom_tile"
-                            android:layout_marginEnd="6dp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="24dp"
-                            android:gravity="center"
-                            android:paddingLeft="10dp"
-                            android:paddingRight="10dp"
-                            android:text="STABLE"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:textColor="#E8F0FA"
-                            android:background="@drawable/bg_remom_tile"
-                            android:layout_marginEnd="6dp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="24dp"
-                            android:gravity="center"
-                            android:paddingLeft="10dp"
-                            android:paddingRight="10dp"
-                            android:text="CUSTOM"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:textColor="#E8F0FA"
-                            android:background="@drawable/bg_remom_tile" />
-                    </LinearLayout>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="MINECRAFT" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="PLAY WITHOUT LIMITS" android:textColor="#A8C4E8" android:textSize="11sp"
+                        android:letterSpacing="0.12" android:layout_marginTop="2dp" />
                 </LinearLayout>
             </FrameLayout>
 
@@ -120,149 +60,64 @@
 
                 <LinearLayout
                     android:id="@+id/btn_selected_profile"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:clickable="true"
-                    android:focusable="true"
+                    android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:paddingStart="12dp" android:paddingEnd="12dp"
+                    android:background="@drawable/bg_remom_tile" android:clickable="true" android:focusable="true"
                     android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="SELECTED"
-                        android:textSize="9sp"
-                        android:textColor="#5A7A9A"
-                        android:textStyle="bold"
-                        android:layout_marginEnd="8dp" />
-
-                    <TextView
-                        android:id="@+id/tv_selected_profile_name"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Default"
-                        android:textColor="#F0F6FF"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-
-                    <TextView
-                        android:id="@+id/tv_selected_profile_meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textColor="#7A9BB8"
-                        android:textSize="11sp"
-                        android:layout_marginStart="6dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="SELECTED" android:textSize="9sp" android:textColor="#5A7A9A" android:textStyle="bold" android:layout_marginEnd="8dp" />
+                    <TextView android:id="@+id/tv_selected_profile_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                        android:text="Default" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" />
+                    <TextView android:id="@+id/tv_selected_profile_meta" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="#7A9BB8" android:textSize="11sp" android:layout_marginStart="6dp" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/btn_edit_selected"
-                    android:layout_width="56dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="EDIT"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8F0FA"
-                    android:background="@drawable/bg_remom_tile"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginEnd="8dp" />
+                <TextView android:id="@+id/btn_edit_selected" android:layout_width="56dp" android:layout_height="match_parent"
+                    android:gravity="center" android:text="EDIT" android:textSize="11sp" android:textStyle="bold"
+                    android:textColor="#E8F0FA" android:background="@drawable/bg_remom_tile"
+                    android:clickable="true" android:focusable="true" android:layout_marginEnd="8dp" />
 
-                <TextView
-                    android:id="@+id/btn_play_main"
-                    android:layout_width="140dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="▶  PLAY"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#0A1628"
-                    android:background="@drawable/bg_remom_play"
-                    android:clickable="true"
-                    android:focusable="true" />
+                <TextView android:id="@+id/btn_play_main" android:layout_width="140dp" android:layout_height="match_parent"
+                    android:gravity="center" android:text="▶  PLAY" android:textSize="15sp" android:textStyle="bold"
+                    android:textColor="#0A1628" android:background="@drawable/bg_remom_play"
+                    android:clickable="true" android:focusable="true" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="8dp">
 
-                <LinearLayout
-                    android:id="@+id/btn_browse_resources"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical"
-                    android:paddingStart="14dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="BROWSE RESOURCES"
-                        android:textColor="#F0F6FF"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Mods · Packs · Shaders"
-                        android:textColor="#7A9BB8"
-                        android:textSize="10sp" />
+                <LinearLayout android:id="@+id/btn_browse_resources"
+                    android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center_vertical" android:paddingStart="14dp"
+                    android:background="@drawable/bg_remom_tile" android:clickable="true" android:focusable="true" android:layout_marginEnd="6dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="BROWSE RESOURCES" android:textColor="#F0F6FF" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mods · Packs · Shaders" android:textColor="#7A9BB8" android:textSize="10sp" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/btn_manager"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical"
-                    android:paddingStart="14dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:clickable="true"
-                    android:focusable="true">
+                <LinearLayout android:id="@+id/btn_manager"
+                    android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center_vertical" android:paddingStart="14dp"
+                    android:background="@drawable/bg_remom_tile" android:clickable="true" android:focusable="true" android:layout_marginEnd="6dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MANAGER" android:textColor="#F0F6FF" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mods · packs · worlds" android:textColor="#7A9BB8" android:textSize="10sp" />
+                </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="MANAGER"
-                        android:textColor="#F0F6FF"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Installed mods · packs · worlds"
-                        android:textColor="#7A9BB8"
-                        android:textSize="10sp" />
+                <LinearLayout android:id="@+id/btn_host_servers"
+                    android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                    android:orientation="vertical" android:gravity="center_vertical" android:paddingStart="14dp"
+                    android:background="@drawable/bg_remom_tile" android:clickable="true" android:focusable="true">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="HOST / SERVERS" android:textColor="#F0F6FF" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Friends · LAN · free host" android:textColor="#7A9BB8" android:textSize="10sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="YOUR INSTANCES"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="#5A7A9A"
-                android:letterSpacing="0.12"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="YOUR INSTANCES" android:textSize="10sp" android:textStyle="bold" android:textColor="#5A7A9A"
+                android:letterSpacing="0.12" android:layout_marginBottom="8dp" android:layout_marginStart="4dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_home_profiles"
@@ -288,12 +143,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_add"
-            android:contentDescription="Create profile" />
+        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center"
+            android:src="@drawable/ic_add" android:contentDescription="Create profile" />
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
