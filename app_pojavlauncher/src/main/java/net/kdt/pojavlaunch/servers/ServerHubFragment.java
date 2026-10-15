@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -26,7 +24,7 @@ import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Server Hub — in-app local named servers + join list + LAN. No external host website required. */
+/** Server Hub — in-app local servers. Solo = 127.0.0.1 (no IP share needed). */
 public class ServerHubFragment extends Fragment {
     public static final String TAG = "ServerHubFragment";
     private String profileKey;
@@ -62,7 +60,6 @@ public class ServerHubFragment extends Fragment {
         refreshBtn = root.findViewById(R.id.server_hub_refresh);
         localListView = root.findViewById(R.id.local_servers_status);
 
-        // Hide website host buttons if present — in-app only
         View aternos = root.findViewById(R.id.free_host_aternos);
         View minehut = root.findViewById(R.id.free_host_minehut);
         View help = root.findViewById(R.id.free_host_help);
@@ -74,8 +71,14 @@ public class ServerHubFragment extends Fragment {
         View startLocal = root.findViewById(R.id.btn_start_local_server);
         View stopLocal = root.findViewById(R.id.btn_stop_local_server);
         if (createLocal != null) createLocal.setOnClickListener(v -> showCreateLocalDialog());
-        if (startLocal != null) startLocal.setOnClickListener(v -> startFirstLocal());
+        if (startLocal != null) startLocal.setOnClickListener(v -> startFirstLocal(false));
         if (stopLocal != null) stopLocal.setOnClickListener(v -> stopAllLocal());
+
+        // Long-press Start = solo play (start + join localhost + launch game)
+        if (startLocal != null) startLocal.setOnLongClickListener(v -> {
+            startFirstLocal(true);
+            return true;
+        });
 
         lanIpView = root.findViewById(R.id.lan_host_ip);
         View copyLan = root.findViewById(R.id.lan_copy_ip);
@@ -83,13 +86,13 @@ public class ServerHubFragment extends Fragment {
         refreshLanIp();
         if (copyLan != null) copyLan.setOnClickListener(v -> {
             if (lastLanIp == null || lastLanIp.isEmpty()) {
-                Toast.makeText(requireContext(), "IP nahi mila — Wi‑Fi on karo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Solo ke liye IP ki zaroorat nahi — Start ke baad 127.0.0.1 list me aata hai", Toast.LENGTH_LONG).show();
                 return;
             }
             try {
                 ClipboardManager cm = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("lan_ip", lastLanIp));
-                Toast.makeText(requireContext(), "Copied: " + lastLanIp, Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Friends ke liye copied: " + lastLanIp, Toast.LENGTH_LONG).show();
             } catch (Throwable t) {
                 Toast.makeText(requireContext(), lastLanIp, Toast.LENGTH_LONG).show();
             }
@@ -147,8 +150,8 @@ public class ServerHubFragment extends Fragment {
         box.setPadding(pad, pad, pad, 0);
 
         final EditText nameIn = new EditText(ctx);
-        nameIn.setHint("Server name (e.g. Senpai Survival)");
-        nameIn.setText("Remom Friends");
+        nameIn.setHint("Server name");
+        nameIn.setText("Remom Solo");
         box.addView(nameIn);
 
         final EditText verIn = new EditText(ctx);
@@ -164,7 +167,7 @@ public class ServerHubFragment extends Fragment {
 
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Runs inside Remom with your JRE. Friends join via your Wi‑Fi IP + port. online-mode=false for offline accounts.")
+                .setMessage("Solo: Start ke baad list me \"Solo — this phone\" (127.0.0.1) aayega — IP share ki zaroorat nahi.\n\nFriends: unko Wi‑Fi IP do.")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
@@ -178,7 +181,7 @@ public class ServerHubFragment extends Fragment {
                             LocalServerRunner.prepare(ctx, e);
                             if (!isAdded()) return;
                             requireActivity().runOnUiThread(() -> {
-                                Toast.makeText(ctx, e.name + " ready — tap Start", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ctx, e.name + " ready — tap Start (long-press = Solo Play)", Toast.LENGTH_LONG).show();
                                 refreshLocalStatus();
                             });
                         } catch (Exception ex) {
@@ -192,28 +195,57 @@ public class ServerHubFragment extends Fragment {
                 .show();
     }
 
-    private void startFirstLocal() {
+    /** @param soloPlay if true, after start queue localhost and launch game */
+    private void startFirstLocal(boolean soloPlay) {
         List<LocalServerEntry> locals = LocalServerStore.load(requireContext());
         if (locals.isEmpty()) {
             Toast.makeText(requireContext(), "Pehle Create local server karo", Toast.LENGTH_SHORT).show();
             return;
         }
         LocalServerEntry e = locals.get(0);
-        Toast.makeText(requireContext(), "Starting " + e.name + "…", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(),
+                soloPlay ? ("Solo starting " + e.name + "…") : ("Starting " + e.name + "…"),
+                Toast.LENGTH_SHORT).show();
         new Thread(() -> {
             try {
                 LocalServerRunner.start(requireContext(), e);
-                String addr = e.displayAddress(LanHostHelper.getLanIpv4(requireContext()));
-                // Auto-add join entry for friends
-                ServerEntry join = new ServerEntry();
-                join.name = e.name;
-                join.address = addr;
-                ServerStore.add(requireContext(), profileKey, join);
+
+                // SOLO — always on this phone, no Wi‑Fi IP needed
+                String soloAddr = "127.0.0.1:" + e.port;
+                ServerEntry solo = new ServerEntry();
+                solo.name = e.name + " (Solo — this phone)";
+                solo.address = soloAddr;
+                ServerStore.add(requireContext(), profileKey, solo);
+
+                // Friends (optional) — LAN IP if available
+                String lan = LanHostHelper.getLanIpv4(requireContext());
+                if (lan != null && !lan.isEmpty()) {
+                    ServerEntry friends = new ServerEntry();
+                    friends.name = e.name + " (Friends Wi‑Fi)";
+                    friends.address = e.displayAddress(lan);
+                    ServerStore.add(requireContext(), profileKey, friends);
+                }
+
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
-                    Toast.makeText(requireContext(), "Online: " + addr, Toast.LENGTH_LONG).show();
                     refresh();
                     refreshLocalStatus();
+                    if (soloPlay) {
+                        queue(solo);
+                        try {
+                            if (profileKey != null)
+                                LauncherPreferences.DEFAULT_PREF.edit()
+                                        .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey).apply();
+                        } catch (Exception ignored) {}
+                        Toast.makeText(requireContext(),
+                                "Solo ready → game launch (127.0.0.1:" + e.port + ")",
+                                Toast.LENGTH_LONG).show();
+                        ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
+                    } else {
+                        Toast.makeText(requireContext(),
+                                "Running. Solo: list me \"Solo — this phone\" → Play. Friends: Wi‑Fi IP use karo.",
+                                Toast.LENGTH_LONG).show();
+                    }
                 });
             } catch (Exception ex) {
                 if (!isAdded()) return;
@@ -238,7 +270,7 @@ public class ServerHubFragment extends Fragment {
         if (localListView == null || getContext() == null) return;
         List<LocalServerEntry> locals = LocalServerStore.load(requireContext());
         if (locals.isEmpty()) {
-            localListView.setText("No local servers yet — Create with a name");
+            localListView.setText("No local servers — Create. Solo = 127.0.0.1 (IP share nahi)");
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -248,7 +280,7 @@ public class ServerHubFragment extends Fragment {
             sb.append(run ? "● " : "○ ")
                     .append(e.name)
                     .append(" · ").append(e.versionId)
-                    .append(" · ").append(e.displayAddress(lastLanIp))
+                    .append(" · Solo 127.0.0.1:").append(e.port)
                     .append(run ? " · RUNNING" : " · stopped")
                     .append('\n');
         }
@@ -257,7 +289,13 @@ public class ServerHubFragment extends Fragment {
 
     private void refreshLanIp() {
         lastLanIp = LanHostHelper.getLanIpv4(requireContext());
-        if (lanIpView != null) lanIpView.setText(LanHostHelper.formatJoinHint(lastLanIp));
+        if (lanIpView != null) {
+            if (lastLanIp == null || lastLanIp.isEmpty()) {
+                lanIpView.setText("Solo: 127.0.0.1 (IP ki zaroorat nahi) · Friends: Wi‑Fi on karo");
+            } else {
+                lanIpView.setText("Solo: 127.0.0.1 · Friends: " + lastLanIp);
+            }
+        }
     }
 
     private void queue(ServerEntry e){
