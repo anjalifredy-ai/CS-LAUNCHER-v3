@@ -154,6 +154,15 @@
         <FrameLayout android:id="@+id/nav_custom_controls" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
         <FrameLayout android:id="@+id/nav_cursor" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
         <FrameLayout android:id="@+id/nav_skin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <View android:id="@+id/nav_controls_indicator" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <View android:id="@+id/nav_cursor_indicator" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <View android:id="@+id/nav_skin_indicator" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <ImageView android:id="@+id/nav_skin_icon" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <ImageView android:id="@+id/nav_controls_icon" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <ImageView android:id="@+id/nav_cursor_icon" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <ImageView android:id="@+id/nav_mod_store_icon" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <ImageView android:id="@+id/nav_home_icon" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        <ImageButton android:id="@+id/btn_about" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
     </LinearLayout>
 
     <androidx.fragment.app.FragmentContainerView
