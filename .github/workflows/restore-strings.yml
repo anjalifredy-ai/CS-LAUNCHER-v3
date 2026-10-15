@@ -10,31 +10,32 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Restore and brand strings
+      - name: Brand strings to Remom
         run: |
-          git checkout 8c9669ffa44834b32335d882428c5ec1e4dc194d -- app_pojavlauncher/src/main/res/values/strings.xml
-          python3 << 'PY'
-          from pathlib import Path
-          import re
-          p = Path('app_pojavlauncher/src/main/res/values/strings.xml')
-          t = p.read_text()
-          for a,b in [
-              ('CS CLIENT','REMOM CLIENT'),
-              ('CS Client','Remom Client'),
-              ('Nexus Launcher CS','RemomLauncher'),
-              ('CS Launcher','RemomLauncher'),
-              ('CS LAUNCHER','REMOMLAUNCHER'),
-              ('Nexus Launcher has unexpectedly crashed','RemomLauncher has unexpectedly crashed'),
-          ]:
-              t = t.replace(a,b)
-          t = re.sub(r'(<string name="pt_bta_name">)[^<]*(</string>)', r'\1REMOM CLIENT\2', t, count=1)
-          t = re.sub(r'(<string name="pt_bta_desc">)[^<]*(</string>)', r'\1Remom · Fabric · Build your profile\2', t, count=1)
-          t = re.sub(r'(<string name="sg_boot_eyebrow">)[^<]*(</string>)', r'\1RemomLauncher\2', t, count=1)
-          p.write_text(t)
-          print('branded ok', len(t))
-          PY
+          set -e
+          FILE=app_pojavlauncher/src/main/res/values/strings.xml
+          # Prefer a full historical file if current is broken
+          if ! grep -q '<string name="pt_bta_name"' "$FILE"; then
+            git checkout 8c9669ffa44834b32335d882428c5ec1e4dc194d -- "$FILE"
+          fi
+          sed -i \
+            -e 's/CS CLIENT/REMOM CLIENT/g' \
+            -e 's/CS Client/Remom Client/g' \
+            -e 's/Nexus Launcher CS/RemomLauncher/g' \
+            -e 's/CS Launcher/RemomLauncher/g' \
+            -e 's/CS LAUNCHER/REMOMLAUNCHER/g' \
+            -e 's/Nexus Launcher has unexpectedly crashed/RemomLauncher has unexpectedly crashed/g' \
+            "$FILE"
+          # Force key titles
+          sed -i 's|<string name="pt_bta_name">[^<]*</string>|<string name="pt_bta_name">REMOM CLIENT</string>|' "$FILE"
+          sed -i 's|<string name="pt_bta_desc">[^<]*</string>|<string name="pt_bta_desc">Remom · Fabric · Build your profile</string>|' "$FILE"
+          sed -i 's|<string name="cs_launcher_title">[^<]*</string>|<string name="cs_launcher_title">RemomLauncher</string>|' "$FILE"
+          sed -i 's|<string name="cs_about_name">[^<]*</string>|<string name="cs_about_name">RemomLauncher</string>|' "$FILE"
+          sed -i 's|<string name="app_name" translatable="false">[^<]*</string>|<string name="app_name" translatable="false">RemomLauncher</string>|' "$FILE"
+          sed -i 's|<string name="sg_boot_eyebrow">[^<]*</string>|<string name="sg_boot_eyebrow">RemomLauncher</string>|' "$FILE"
+          grep -E 'pt_bta_name|cs_launcher_title|app_name"' "$FILE" | head -6
           git config user.name "Remom Bot"
           git config user.email "bot@remom.local"
-          git add app_pojavlauncher/src/main/res/values/strings.xml
-          git commit -m "Restore strings.xml + Remom branding" || echo "no change"
+          git add "$FILE"
+          git commit -m "Remom branding on all CS/Nexus UI strings" || echo nochange
           git push
