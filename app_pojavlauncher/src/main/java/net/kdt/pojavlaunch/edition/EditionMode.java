@@ -43,12 +43,22 @@ public final class EditionMode {
 
     public static boolean isOfficialBedrockInstalled(Context c) {
         if (c == null) return false;
-        try {
-            c.getPackageManager().getPackageInfo(PKG_BEDROCK, 0);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
+        PackageManager pm = c.getPackageManager();
+        String[] pkgs = new String[]{PKG_BEDROCK, "com.mojang.minecraftpe.unlocks"};
+        for (String pkg : pkgs) {
+            try {
+                pm.getPackageInfo(pkg, 0);
+                return true;
+            } catch (Throwable ignored) {}
+            try {
+                pm.getApplicationInfo(pkg, 0);
+                return true;
+            } catch (Throwable ignored) {}
+            try {
+                if (pm.getLaunchIntentForPackage(pkg) != null) return true;
+            } catch (Throwable ignored) {}
         }
+        return false;
     }
 
     public static void bindHeader(Activity activity) {
@@ -95,8 +105,10 @@ public final class EditionMode {
             refreshPillStyles(activity);
             if (!isOfficialBedrockInstalled(activity)) {
                 Toast.makeText(activity,
-                        "Bedrock mode: Play Store se official Minecraft (owned) install karo.",
+                        "Bedrock: Play Store se official Minecraft (owned) install karo — fir detect hoga.",
                         Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(activity, "Official Minecraft PE detected ✓", Toast.LENGTH_SHORT).show();
             }
             openBedrockUi(activity);
         } else {
