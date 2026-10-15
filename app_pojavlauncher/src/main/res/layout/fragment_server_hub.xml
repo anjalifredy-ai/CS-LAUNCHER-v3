@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Remom Server Hub: free cloud + LAN friends + join list -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -48,7 +47,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Join · free host · friends LAN"
+                android:text="In-app host · friends LAN · join"
                 android:textColor="@color/text_secondary_dim"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -78,6 +77,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- IN-APP LOCAL SERVERS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -89,8 +89,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"
-                    android:text="FREE SERVER HOSTING"
-                    android:textColor="@color/accent_light"
+                    android:text="HOST INSIDE REMOM"
+                    android:textColor="#3B9EFF"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -98,56 +98,74 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Cloud free hosts. Create on site → copy IP → Add below → Play. Sleep when empty."
+                    android:text="Named local Java server — no website. Create → Start → friends join your IP:port on same Wi‑Fi."
                     android:textColor="@color/text_secondary_light"
                     android:textSize="10sp" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/local_servers_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_auth_input_box"
+                    android:padding="12dp"
+                    android:text="No local servers yet"
+                    android:textColor="#F0F6FF"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/free_host_aternos"
+                        android:id="@+id/btn_create_local_server"
                         android:layout_width="0dp"
-                        android:layout_height="40dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
+                        android:layout_marginEnd="4dp"
                         android:background="@drawable/bg_auth_primary_button"
                         android:gravity="center"
-                        android:text="Aternos"
+                        android:text="Create"
                         android:textColor="@color/play_btn_text"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
 
                     <TextView
-                        android:id="@+id/free_host_minehut"
+                        android:id="@+id/btn_start_local_server"
                         android:layout_width="0dp"
-                        android:layout_height="40dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:layout_marginStart="6dp"
+                        android:layout_marginHorizontal="4dp"
                         android:background="@drawable/bg_csc_outline_button"
                         android:gravity="center"
-                        android:text="Minehut"
+                        android:text="Start"
                         android:textColor="@color/accent_light"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/btn_stop_local_server"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_csc_outline_button"
+                        android:gravity="center"
+                        android:text="Stop"
+                        android:textColor="#FF8A80"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/free_host_help"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:text="How it works? Tap here"
-                    android:textColor="@color/text_secondary_dim"
-                    android:textSize="10sp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                <!-- Kept for code compat; hidden -->
+                <TextView android:id="@+id/free_host_aternos" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+                <TextView android:id="@+id/free_host_minehut" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+                <TextView android:id="@+id/free_host_help" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -171,7 +189,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Host: world open → Pause → Open to LAN. Friends same Wi‑Fi join with your IP (port LAN screen pe). No big dedicated server needed."
+                    android:text="Share this IP with friends. Port = server port (default 25565) or Open-to-LAN port."
                     android:textColor="@color/text_secondary_light"
                     android:textSize="10sp" />
 
@@ -238,7 +256,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"
-                    android:text="ADD SERVER"
+                    android:text="ADD / JOIN SERVER"
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -247,7 +265,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Friend IP, Aternos/Minehut, or any Java server"
+                    android:text="Friend IP:port or any Java server address"
                     android:textColor="#7F8894"
                     android:textSize="10sp" />
 
@@ -266,7 +284,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="192.168.x.x:25565 or play.example.com"
+                        android:hint="192.168.x.x:25565"
                         android:imeOptions="actionDone"
                         android:inputType="textUri"
                         android:paddingHorizontal="10dp"
@@ -297,7 +315,6 @@
                     android:textColor="#9AA3B0"
                     android:textSize="10sp"
                     android:visibility="gone"
-                    tools:text="Pinging…"
                     tools:visibility="visible" />
             </LinearLayout>
 
@@ -327,7 +344,7 @@
                 android:background="@drawable/bg_empty_state"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="Friend IP ya free host IP add karo — ping, Play."
+                android:text="Create local server ya friend IP add karo"
                 android:textColor="#6B7280"
                 android:textSize="11sp"
                 android:visibility="visible" />
