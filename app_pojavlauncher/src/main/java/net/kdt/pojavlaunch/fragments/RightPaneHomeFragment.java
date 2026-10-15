@@ -35,6 +35,7 @@ public class RightPaneHomeFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private HomeProfileAdapter mAdapter;
     private ItemTouchHelper mProfileTouchHelper;
+    private View mRootView;
 
     public RightPaneHomeFragment() {
         super(R.layout.fragment_right_pane_home);
@@ -42,6 +43,7 @@ public class RightPaneHomeFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mRootView = view;
         try {
             if (getActivity() != null)
                 net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
@@ -81,6 +83,12 @@ public class RightPaneHomeFragment extends Fragment {
                 net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
         } catch (Throwable ignored) {}
         setupProfileAdapter();
+    }
+
+    /** Called from settings when launcher wallpaper changes. */
+    public void reloadBackground() {
+        View root = getView() != null ? getView() : mRootView;
+        if (root != null) loadCustomWallpaper(root);
     }
 
     private void setupProfileDragAndDrop() {
@@ -164,10 +172,15 @@ public class RightPaneHomeFragment extends Fragment {
         ImageView wallpaper = view.findViewById(R.id.right_pane_wallpaper);
         if (wallpaper == null) return;
         File bgFile = new File(CUSTOM_BG_PATH);
-        if (!bgFile.exists()) return;
+        if (!bgFile.exists()) {
+            wallpaper.setVisibility(View.GONE);
+            return;
+        }
         try {
             wallpaper.setImageDrawable(Drawable.createFromPath(bgFile.getAbsolutePath()));
             wallpaper.setVisibility(View.VISIBLE);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+            wallpaper.setVisibility(View.GONE);
+        }
     }
 }
