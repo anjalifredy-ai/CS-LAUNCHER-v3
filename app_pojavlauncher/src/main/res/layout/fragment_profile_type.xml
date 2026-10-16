@@ -126,7 +126,7 @@
                         android:focusable="true">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
                             <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_minecraft" tools:ignore="ContentDescription" />
+                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/cs_logo" tools:ignore="ContentDescription" />
                             </FrameLayout>
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="Vanilla" android:textColor="#F0F6FF" android:textSize="13.5sp" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="Official Mojang releases" android:textColor="#7A9BB8" android:textSize="9.5sp" />
@@ -198,7 +198,7 @@
                     <FrameLayout android:id="@+id/modded_profile_neoforge" android:layout_width="148dp" android:layout_height="134dp" android:layout_marginStart="10dp" android:background="@drawable/bg_profile_type_card" android:clickable="true" android:focusable="true">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
                             <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_neoforge" />
+                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_neoforge_profile" />
                             </FrameLayout>
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_neoforge_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_neoforge_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
@@ -239,7 +239,7 @@
                     <FrameLayout android:id="@+id/modded_profile_modpack" android:layout_width="180dp" android:layout_height="134dp" android:background="@drawable/bg_cs_client_promo_card" android:clickable="true" android:focusable="true">
                         <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
                             <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_modpack" />
+                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_modpack_profile" />
                             </FrameLayout>
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="Install Modpack" android:textColor="#F0F6FF" android:textSize="13.5sp" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="CurseForge, Modrinth or import zip" android:textColor="#7A9BB8" android:textSize="9.5sp" />
