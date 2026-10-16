@@ -1,18 +1,12 @@
 package net.kdt.pojavlaunch.fragments;
 
-import static net.kdt.pojavlaunch.Tools.hasNoOnlineProfileDialog;
-import static net.kdt.pojavlaunch.Tools.hasOnlineProfile;
-
 import android.animation.LayoutTransition;
-import android.os.Build;
-import android.view.MotionEvent;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.OvershootInterpolator;
-import androidx.core.view.ViewCompat;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -21,7 +15,6 @@ import androidx.fragment.app.Fragment;
 
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
-
 
 public class ProfileTypeSelectFragment extends Fragment {
     public static final String TAG = "ProfileTypeSelectFragment";
@@ -40,14 +33,12 @@ public class ProfileTypeSelectFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mContent = view.findViewById(R.id.setup_hub_content);
 
-        // Hardware acceleration
         if (getActivity() != null) {
             getActivity().getWindow().setFlags(
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         }
 
-        // Smooth layout transitions
         if (mContent != null) {
             LayoutTransition transition = new LayoutTransition();
             transition.enableTransitionType(LayoutTransition.CHANGING);
@@ -58,16 +49,13 @@ public class ProfileTypeSelectFragment extends Fragment {
             mContent.setLayoutTransition(transition);
         }
 
-        // Cascading entrance: header → section blocks → per-card stagger
         view.post(() -> animateEntrance(view));
-
         wireButton(view);
     }
 
     private void animateEntrance(@NonNull View view) {
         float rise = 20f * getResources().getDisplayMetrics().density;
         animateBlock(view.findViewById(R.id.setup_hub_header), 0, rise);
-        // Portrait rails expose section wrappers; the landscape grid does not.
         animateBlock(view.findViewById(R.id.section_vanilla), 90, rise);
         animateBlock(view.findViewById(R.id.section_loaders), 170, rise);
         animateBlock(view.findViewById(R.id.section_more), 250, rise);
@@ -101,32 +89,46 @@ public class ProfileTypeSelectFragment extends Fragment {
     private void wireButton(@NonNull View view) {
         View b;
         b = view.findViewById(R.id.vanilla_profile);
-        b.setOnClickListener(v -> navigateTo(ProfileEditorFragment.class, ProfileEditorFragment.TAG, new Bundle(1)));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(ProfileEditorFragment.class, ProfileEditorFragment.TAG, new Bundle(1)));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.optifine_profile);
-        b.setOnClickListener(v -> tryInstall(OptiFineInstallFragment.class, OptiFineInstallFragment.TAG));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(OptiFineInstallFragment.class, OptiFineInstallFragment.TAG, null));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.modded_profile_fabric);
-        b.setOnClickListener(v -> tryInstall(FabricInstallFragment.class, FabricInstallFragment.TAG));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(FabricInstallFragment.class, FabricInstallFragment.TAG, null));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.modded_profile_forge);
-        b.setOnClickListener(v -> tryInstall(ForgeInstallFragment.class, ForgeInstallFragment.TAG));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(ForgeInstallFragment.class, ForgeInstallFragment.TAG, null));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.modded_profile_neoforge);
-        b.setOnClickListener(v -> tryInstall(NeoForgeInstallFragment.class, NeoForgeInstallFragment.TAG));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(NeoForgeInstallFragment.class, NeoForgeInstallFragment.TAG, null));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.modded_profile_modpack);
-        b.setOnClickListener(v -> tryInstall(ModpackCreateFragment.class, ModpackCreateFragment.TAG));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(ModpackCreateFragment.class, ModpackCreateFragment.TAG, null));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.modded_profile_quilt);
-        b.setOnClickListener(v -> tryInstall(QuiltInstallFragment.class, QuiltInstallFragment.TAG));
-        setupTouchAnimation(b);
+        if (b != null) {
+            b.setOnClickListener(v -> navigateTo(QuiltInstallFragment.class, QuiltInstallFragment.TAG, null));
+            setupTouchAnimation(b);
+        }
 
         b = view.findViewById(R.id.modded_profile_bta);
         if (b != null) {
@@ -135,28 +137,24 @@ public class ProfileTypeSelectFragment extends Fragment {
         }
     }
 
-    /** Scale-press micro-interaction for all interactive buttons */
     private void setupTouchAnimation(View button) {
+        if (button == null) return;
         button.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    v.animate().scaleX(0.96f).scaleY(0.96f)
-                            .setDuration(100).start();
+                    v.animate().scaleX(0.96f).scaleY(0.96f).setDuration(100).start();
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    v.animate().scaleX(1f).scaleY(1f)
-                            .setDuration(150)
-                            .setInterpolator(new OvershootInterpolator(2f))
-                            .start();
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(150)
+                            .setInterpolator(new OvershootInterpolator(2f)).start();
                     break;
             }
             return false;
         });
     }
-    /** Navigate within right pane if inside MainMenuFragment, otherwise full-screen swap. */
+
     protected void navigateTo(Class<? extends Fragment> cls, String tag, Bundle args) {
-        // Walk up to find MainMenuFragment (could be grandparent if nested)
         Fragment parent = getParentFragment();
         while (parent != null && !(parent instanceof MainMenuFragment)) {
             parent = parent.getParentFragment();
@@ -167,13 +165,4 @@ public class ProfileTypeSelectFragment extends Fragment {
             Tools.swapFragment(requireActivity(), cls, tag, args);
         }
     }
-
-    private void tryInstall(Class<? extends Fragment> fragmentClass, String tag){
-        if(!hasOnlineProfile()){
-            hasNoOnlineProfileDialog(requireActivity());
-        } else {
-            navigateTo(fragmentClass, tag, null);
-        }
-    }
 }
-
