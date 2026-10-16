@@ -9,6 +9,8 @@ import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 import net.kdt.pojavlaunch.worlds.NbtIO;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -17,24 +19,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Keeps {@code <gameDir>/servers.dat} in sync with the launcher's Server Hub, so anything added
- * in the hub also shows up in the in-game Multiplayer list.
+ * Keeps {@code <gameDir>/servers.dat} in sync with the launcher Server Hub.
  *
- * <p>Why the old version did not work:
- * <ul>
- *   <li>it <b>overwrote</b> servers.dat, throwing away servers the player had added in-game;</li>
- *   <li>it wrote the favicon as a {@code data:image/png;base64,...} <i>string</i>. Since 1.20.5
- *       Minecraft reads the icon with a byte-array codec, so a string value makes the whole
- *       entry (often the whole file) fail to decode and the Multiplayer list comes up empty.
- *       The icon is now simply omitted — the game downloads it on its own first ping;</li>
- *   <li>it only ran while the hub was open, so a server added before the game directory existed
- *       was never written. {@code Tools.launchMinecraft} now re-syncs right before launch.</li>
- * </ul>
+ * CRITICAL: never overwrite / rebuild servers.dat when the existing file fails to parse.
+ * That was wiping servers the player added in Multiplayer on the next launch.
  */
 public class ServerListSync {
     private static final String TAG = "ServerListSync";
 
     public static void syncToGameDir(Context ctx, String profileKey) {
+        // Pull in-game servers into hub first so nothing is lost across launches
+        importFromGameDir(ctx, profileKey);
         syncToGameDir(ctx, profileKey, resolveGameDir(profileKey));
     }
 
@@ -45,12 +40,15 @@ public class ServerListSync {
                 Log.w(TAG, "cannot create game dir " + gameDir);
                 return;
             }
+            // Always import first when we know the exact gameDir
+            importFromGameDir(ctx, profileKey, gameDir);
+
             List<ServerEntry> hubServers = ServerStore.load(ctx, profileKey);
             File dat = new File(gameDir, "servers.dat");
 
-            // ── 1. read whatever the game already has, so nothing is lost ──
             NbtIO.NbtList list = new NbtIO.NbtList(10 /* TAG_Compound */);
             Set<String> known = new LinkedHashSet<>();
+            boolean existingOk = false;
             if (dat.isFile()) {
                 try {
                     Map<String, Object> existing = NbtIO.readPossiblyGzipped(dat);
@@ -64,15 +62,15 @@ public class ServerListSync {
                             if (ip instanceof String) known.add(((String) ip).toLowerCase());
                             list.items.add(entry);
                         }
+                        existingOk = true;
                     }
                 } catch (Exception readFail) {
-                    Log.w(TAG, "existing servers.dat unreadable, rebuilding: " + readFail);
-                    list = new NbtIO.NbtList(10);
-                    known.clear();
+                    // NEVER wipe the file. Leave Minecraft's servers.dat alone.
+                    Log.w(TAG, "servers.dat unreadable — leaving file untouched: " + readFail.getMessage());
+                    return;
                 }
             }
 
-            // ── 2. append the hub servers that are not in the file yet ──
             boolean changed = false;
             for (ServerEntry e : hubServers) {
                 if (e == null || e.address == null || e.address.isEmpty()) continue;
@@ -81,19 +79,26 @@ public class ServerListSync {
                 Map<String, Object> entry = new LinkedHashMap<>();
                 entry.put("ip", e.address);
                 String name = e.name != null && !e.name.isEmpty() ? e.name : e.address;
-                // servers.dat holds plain text; colour codes belong to the live MOTD only.
                 name = MotdRenderer.stripLegacy(name).trim();
                 if (name.isEmpty()) name = e.address;
                 if (name.length() > 64) name = name.substring(0, 64);
                 entry.put("name", name);
-                // NOTE: no "icon" tag on purpose (see class javadoc).
+                // no icon tag (byte[] only since 1.20.5; string icons break the whole list)
                 entry.put("acceptTextures", (byte) 1);
                 list.items.add(entry);
                 known.add(key);
                 changed = true;
             }
 
-            if (!changed && dat.isFile()) return; // nothing to do, do not touch the file
+            if (!changed) return; // keep existing file as-is
+
+            // Backup before write
+            if (dat.isFile() && existingOk) {
+                try {
+                    File bak = new File(gameDir, "servers.dat.bak");
+                    copyFile(dat, bak);
+                } catch (Exception ignored) {}
+            }
 
             Map<String, Object> root = new LinkedHashMap<>();
             root.put("servers", list);
@@ -104,18 +109,26 @@ public class ServerListSync {
         }
     }
 
-    /** Pulls servers the player added in-game back into the hub, so both lists match. */
     public static void importFromGameDir(Context ctx, String profileKey) {
+        importFromGameDir(ctx, profileKey, resolveGameDir(profileKey));
+    }
+
+    public static void importFromGameDir(Context ctx, String profileKey, File gameDir) {
         try {
-            File gameDir = resolveGameDir(profileKey);
             if (gameDir == null) return;
             File dat = new File(gameDir, "servers.dat");
             if (!dat.isFile()) return;
-            Map<String, Object> root = NbtIO.readPossiblyGzipped(dat);
+            Map<String, Object> root;
+            try {
+                root = NbtIO.readPossiblyGzipped(dat);
+            } catch (Exception e) {
+                Log.w(TAG, "import skip (unreadable): " + e.getMessage());
+                return;
+            }
             Object serversTag = root.get("servers");
             if (!(serversTag instanceof NbtIO.NbtList)) return;
 
-            List<ServerEntry> current = ServerStore.load(ctx, profileKey);
+            List<ServerEntry> current = ServerStore.loadUserServers(ctx, profileKey);
             Set<String> known = new LinkedHashSet<>();
             for (ServerEntry e : current) if (e.address != null) known.add(e.address.toLowerCase());
 
@@ -163,5 +176,14 @@ public class ServerListSync {
         }
         if (gameDir == null) gameDir = new File(Tools.DIR_GAME_NEW);
         return gameDir;
+    }
+
+    private static void copyFile(File src, File dst) throws Exception {
+        try (FileInputStream in = new FileInputStream(src);
+             FileOutputStream out = new FileOutputStream(dst)) {
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+        }
     }
 }
