@@ -135,49 +135,52 @@ public class RightPaneHomeFragment extends Fragment {
             fab.setAlpha(0f);
             fab.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(200)
                     .setInterpolator(new DecelerateInterpolator()).start();
-            fab.setOnClickListener(v -> {
-                try {
-                    Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
-                            ProfileTypeSelectFragment.TAG, null);
-                } catch (Throwable t) {
-                    Toast.makeText(requireContext(), "Open create profile", Toast.LENGTH_SHORT).show();
-                }
-            });
+            fab.setOnClickListener(v -> openCreateProfile());
         }
     }
 
-    /** Dropdown like CS Launcher Plus — pick profile from list */
+    private void openCreateProfile() {
+        try {
+            Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
+                    ProfileTypeSelectFragment.TAG, null);
+        } catch (Throwable t) {
+            Toast.makeText(requireContext(), "Open create profile", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /** CS Plus style: list + Create New Instance */
     private void showProfilePicker() {
         try {
             LauncherProfiles.load();
-            if (LauncherProfiles.mainProfileJson == null
-                    || LauncherProfiles.mainProfileJson.profiles == null
-                    || LauncherProfiles.mainProfileJson.profiles.isEmpty()) {
-                Toast.makeText(requireContext(), "No profiles — create one first", Toast.LENGTH_SHORT).show();
-                return;
-            }
             List<String> keys = new ArrayList<>();
             List<String> labels = new ArrayList<>();
-            for (Map.Entry<String, MinecraftProfile> e : LauncherProfiles.mainProfileJson.profiles.entrySet()) {
-                keys.add(e.getKey());
-                MinecraftProfile p = e.getValue();
-                String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name : e.getKey();
-                String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
-                labels.add(ver.isEmpty() ? name : (name + "  ·  " + ver));
+            if (LauncherProfiles.mainProfileJson != null
+                    && LauncherProfiles.mainProfileJson.profiles != null) {
+                for (Map.Entry<String, MinecraftProfile> e : LauncherProfiles.mainProfileJson.profiles.entrySet()) {
+                    keys.add(e.getKey());
+                    MinecraftProfile p = e.getValue();
+                    String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name : e.getKey();
+                    String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
+                    labels.add(ver.isEmpty() ? name : (name + "  ·  " + ver));
+                }
             }
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Select profile")
-                    .setItems(labels.toArray(new String[0]), (d, which) -> {
-                        String key = keys.get(which);
-                        LauncherPreferences.DEFAULT_PREF.edit()
-                                .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key)
-                                .apply();
-                        refreshSelectedProfileLabel();
-                        setupProfileAdapter();
-                        Toast.makeText(requireContext(), "Profile selected", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+            AlertDialog.Builder b = new AlertDialog.Builder(requireContext());
+            b.setTitle("Select Profile");
+            if (labels.isEmpty()) {
+                b.setMessage("No instances yet");
+            } else {
+                b.setItems(labels.toArray(new String[0]), (d, which) -> {
+                    String key = keys.get(which);
+                    LauncherPreferences.DEFAULT_PREF.edit()
+                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key)
+                            .apply();
+                    refreshSelectedProfileLabel();
+                    setupProfileAdapter();
+                });
+            }
+            b.setPositiveButton("+ Create New Instance", (d, w) -> openCreateProfile());
+            b.setNegativeButton("Close", null);
+            b.show();
         } catch (Throwable t) {
             Toast.makeText(requireContext(), "Profile picker error", Toast.LENGTH_SHORT).show();
         }
