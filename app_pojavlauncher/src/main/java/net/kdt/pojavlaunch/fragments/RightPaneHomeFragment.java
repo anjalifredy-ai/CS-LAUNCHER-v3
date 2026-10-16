@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -124,10 +125,7 @@ public class RightPaneHomeFragment extends Fragment {
 
         View selected = view.findViewById(R.id.btn_selected_profile);
         if (selected != null) {
-            selected.setOnClickListener(v -> {
-                if (mRecyclerView != null) mRecyclerView.smoothScrollToPosition(0);
-                Toast.makeText(requireContext(), "Instances below — tap a card to select", Toast.LENGTH_SHORT).show();
-            });
+            selected.setOnClickListener(v -> showProfilePicker());
         }
 
         View fab = view.findViewById(R.id.fab_create_profile);
@@ -145,6 +143,43 @@ public class RightPaneHomeFragment extends Fragment {
                     Toast.makeText(requireContext(), "Open create profile", Toast.LENGTH_SHORT).show();
                 }
             });
+        }
+    }
+
+    /** Dropdown like CS Launcher Plus — pick profile from list */
+    private void showProfilePicker() {
+        try {
+            LauncherProfiles.load();
+            if (LauncherProfiles.mainProfileJson == null
+                    || LauncherProfiles.mainProfileJson.profiles == null
+                    || LauncherProfiles.mainProfileJson.profiles.isEmpty()) {
+                Toast.makeText(requireContext(), "No profiles — create one first", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            List<String> keys = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
+            for (Map.Entry<String, MinecraftProfile> e : LauncherProfiles.mainProfileJson.profiles.entrySet()) {
+                keys.add(e.getKey());
+                MinecraftProfile p = e.getValue();
+                String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name : e.getKey();
+                String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
+                labels.add(ver.isEmpty() ? name : (name + "  ·  " + ver));
+            }
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Select profile")
+                    .setItems(labels.toArray(new String[0]), (d, which) -> {
+                        String key = keys.get(which);
+                        LauncherPreferences.DEFAULT_PREF.edit()
+                                .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key)
+                                .apply();
+                        refreshSelectedProfileLabel();
+                        setupProfileAdapter();
+                        Toast.makeText(requireContext(), "Profile selected", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        } catch (Throwable t) {
+            Toast.makeText(requireContext(), "Profile picker error", Toast.LENGTH_SHORT).show();
         }
     }
 
