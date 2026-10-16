@@ -18,9 +18,7 @@ import androidx.fragment.app.Fragment;
 import net.kdt.pojavlaunch.R;
 
 /**
- * Opens Aternos / Minehut inside Remom (no external browser).
- * User creates server on the site UI, copies IP, taps Done → back to hub to ADD.
- * Official public create-API nahi hai — isliye in-app WebView hi legal/stable path hai.
+ * Opens Aternos / Exaroton / Minehut inside Remom (no external browser).
  */
 public class HostWebFragment extends Fragment {
     public static final String TAG = "HostWebFragment";
@@ -40,6 +38,15 @@ public class HostWebFragment extends Fragment {
         return f;
     }
 
+    public static HostWebFragment exaroton() {
+        HostWebFragment f = new HostWebFragment();
+        Bundle b = new Bundle();
+        b.putString(ARG_URL, "https://exaroton.com/");
+        b.putString(ARG_TITLE, "Exaroton");
+        f.setArguments(b);
+        return f;
+    }
+
     public static HostWebFragment minehut() {
         HostWebFragment f = new HostWebFragment();
         Bundle b = new Bundle();
@@ -52,8 +59,8 @@ public class HostWebFragment extends Fragment {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(@NonNull View root, @Nullable Bundle savedInstanceState) {
-        String url = "https://aternos.org/";
-        String title = "Aternos";
+        String url = "https://exaroton.com/";
+        String title = "Exaroton";
         Bundle args = getArguments();
         if (args != null) {
             if (args.getString(ARG_URL) != null) url = args.getString(ARG_URL);
@@ -70,7 +77,7 @@ public class HostWebFragment extends Fragment {
         View done = root.findViewById(R.id.host_web_done);
         if (done != null) done.setOnClickListener(v -> {
             Toast.makeText(requireContext(),
-                    "Server IP copy karke Server Hub → ADD me paste karo",
+                    "Server IP copy karke Host → ADD me paste karo",
                     Toast.LENGTH_LONG).show();
             requireActivity().getSupportFragmentManager().popBackStack();
         });
