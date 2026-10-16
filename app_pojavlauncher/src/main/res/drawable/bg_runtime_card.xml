@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Runtime wizard card: resting state -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#15151B" />
-    <stroke android:width="1dp" android:color="#26262E" />
+    <solid android:color="#12263F" />
+    <stroke android:width="1dp" android:color="#1E3A5F" />
     <corners android:radius="16dp" />
 </shape>
