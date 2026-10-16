@@ -25,12 +25,12 @@ import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Solo localhost · LAN · distant friends via in-app Aternos/Minehut WebView. */
 public class ServerHubFragment extends Fragment {
     public static final String TAG = "ServerHubFragment";
     private String profileKey;
     private RecyclerView list;
     private EditText input;
+    private EditText nameInput;
     private TextView status, empty, lanIpView, localListView;
     private View addBtn, refreshBtn;
     private ServerAdapter adapter;
@@ -51,10 +51,16 @@ public class ServerHubFragment extends Fragment {
         if (back != null) back.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         TextView title = root.findViewById(R.id.server_hub_title);
         if (title != null && profileKey != null) {
-            try { LauncherProfiles.load(); String name = LauncherProfiles.mainProfileJson.profiles.get(profileKey) != null ? LauncherProfiles.mainProfileJson.profiles.get(profileKey).name : profileKey; title.setText(name + " — Servers"); } catch (Exception ignored) {}
+            try {
+                LauncherProfiles.load();
+                String name = LauncherProfiles.mainProfileJson.profiles.get(profileKey) != null
+                        ? LauncherProfiles.mainProfileJson.profiles.get(profileKey).name : profileKey;
+                title.setText(name + " — Servers");
+            } catch (Exception ignored) {}
         }
         list = root.findViewById(R.id.server_hub_list);
         input = root.findViewById(R.id.server_hub_input);
+        nameInput = root.findViewById(R.id.server_hub_name);
         status = root.findViewById(R.id.server_hub_status);
         empty = root.findViewById(R.id.server_hub_empty);
         addBtn = root.findViewById(R.id.server_hub_add);
@@ -64,17 +70,16 @@ public class ServerHubFragment extends Fragment {
         View aternos = root.findViewById(R.id.free_host_aternos);
         View minehut = root.findViewById(R.id.free_host_minehut);
         View help = root.findViewById(R.id.free_host_help);
-        // In-app WebView — Chrome nahi khulega
         if (aternos != null) aternos.setOnClickListener(v -> openHostInApp(true));
         if (minehut != null) minehut.setOnClickListener(v -> openHostInApp(false));
         if (help != null) help.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
-                .setTitle("Distant friends")
+                .setTitle("Offline / cracked join")
                 .setMessage(
-                        "Aternos/Minehut Remom ke ANDAR khulte hain (WebView).\n\n" +
-                        "1) Aternos select → login/create\n" +
-                        "2) Server start → IP copy\n" +
-                        "3) Done → ADD me paste → Play\n\n" +
-                        "Note: Aternos official API nahi deta, isliye site UI in-app dikhti hai — auto server magic nahi, lekin browser alag nahi khulta.")
+                        "1) Offline account select in header\n" +
+                        "2) Host panel: online-mode=false + Restart\n" +
+                        "3) Version match\n" +
+                        "4) Name + IP yahan ADD → list me save\n\n" +
+                        "Public 'cracked' servers bhi kabhi online-mode ON rakhte hain — tab premium account chahiye.")
                 .setPositiveButton("OK", null)
                 .show());
 
@@ -94,7 +99,7 @@ public class ServerHubFragment extends Fragment {
         refreshLanIp();
         if (copyLan != null) copyLan.setOnClickListener(v -> {
             if (lastLanIp == null || lastLanIp.isEmpty()) {
-                Toast.makeText(requireContext(), "Solo: 127.0.0.1 · Door: Aternos in-app", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Solo: 127.0.0.1", Toast.LENGTH_LONG).show();
                 return;
             }
             try {
@@ -122,6 +127,7 @@ public class ServerHubFragment extends Fragment {
                             queue(entry);
                             if (getContext()==null) return;
                             ServerStore.add(requireContext(), profileKey, entry);
+                            ServerListSync.syncToGameDir(requireContext(), profileKey);
                             refresh();
                         }
                     });
@@ -138,6 +144,7 @@ public class ServerHubFragment extends Fragment {
                 }
                 @Override public void onEdit(ServerEntry e){
                     if (e.pinned || PartnerServer.is(e.address)) { onJoin(e); return; }
+                    if (nameInput != null && e.name != null) nameInput.setText(e.name);
                     if (input != null) input.setText(e.address);
                 }
             });
@@ -145,6 +152,9 @@ public class ServerHubFragment extends Fragment {
         }
         if (addBtn != null) addBtn.setOnClickListener(v -> addFromInput());
         if (refreshBtn != null) refreshBtn.setOnClickListener(v -> { refresh(); pingAll(); refreshLocalStatus(); });
+
+        // Import any in-game servers so list never looks empty after restart
+        try { ServerListSync.importFromGameDir(requireContext(), profileKey); } catch (Throwable ignored) {}
         refresh();
         pingAll();
         refreshLocalStatus();
@@ -180,7 +190,7 @@ public class ServerHubFragment extends Fragment {
         box.addView(portIn);
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP\nDoor → Aternos in-app")
+                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP\nOffline friends → online-mode false on host")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
@@ -221,16 +231,17 @@ public class ServerHubFragment extends Fragment {
                 LocalServerRunner.start(requireContext(), e);
                 String soloAddr = "127.0.0.1:" + e.port;
                 ServerEntry solo = new ServerEntry();
-                solo.name = e.name + " (Solo — this phone)";
+                solo.name = e.name + " (Solo)";
                 solo.address = soloAddr;
                 ServerStore.add(requireContext(), profileKey, solo);
                 String lan = LanHostHelper.getLanIpv4(requireContext());
                 if (lan != null && !lan.isEmpty()) {
                     ServerEntry friends = new ServerEntry();
-                    friends.name = e.name + " (Same Wi‑Fi)";
+                    friends.name = e.name + " (Wi‑Fi)";
                     friends.address = e.displayAddress(lan);
                     ServerStore.add(requireContext(), profileKey, friends);
                 }
+                ServerListSync.syncToGameDir(requireContext(), profileKey);
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     refresh();
@@ -245,7 +256,7 @@ public class ServerHubFragment extends Fragment {
                         Toast.makeText(requireContext(), "Solo → " + soloAddr, Toast.LENGTH_LONG).show();
                         ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
                     } else {
-                        Toast.makeText(requireContext(), "Running. Solo: 127.0.0.1 · Door: Aternos in-app", Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireContext(), "Running · Solo 127.0.0.1", Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception ex) {
@@ -271,7 +282,7 @@ public class ServerHubFragment extends Fragment {
         if (localListView == null || getContext() == null) return;
         List<LocalServerEntry> locals = LocalServerStore.load(requireContext());
         if (locals.isEmpty()) {
-            localListView.setText("No local servers — Create. Solo=127.0.0.1 · Door=Aternos in-app");
+            localListView.setText("No local servers — Create");
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -290,7 +301,7 @@ public class ServerHubFragment extends Fragment {
         lastLanIp = LanHostHelper.getLanIpv4(requireContext());
         if (lanIpView != null) {
             if (lastLanIp == null || lastLanIp.isEmpty())
-                lanIpView.setText("Solo: 127.0.0.1 · Door: Aternos in-app");
+                lanIpView.setText("Solo: 127.0.0.1");
             else
                 lanIpView.setText("Solo: 127.0.0.1 · Nearby: " + lastLanIp);
         }
@@ -304,13 +315,23 @@ public class ServerHubFragment extends Fragment {
     private void addFromInput(){
         if (input == null || getContext()==null) return;
         String raw = input.getText().toString().trim();
-        if (raw.isEmpty()) { Toast.makeText(requireContext(), "Enter address", Toast.LENGTH_SHORT).show(); return; }
+        if (raw.isEmpty()) {
+            Toast.makeText(requireContext(), "Enter address", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String displayName = raw;
+        if (nameInput != null) {
+            String n = nameInput.getText().toString().trim();
+            if (!n.isEmpty()) displayName = n;
+        }
         ServerEntry e = new ServerEntry();
-        e.name = raw;
+        e.name = displayName;
         e.address = raw;
         ServerStore.add(requireContext(), profileKey, e);
         ServerListSync.syncToGameDir(requireContext(), profileKey);
         input.setText("");
+        if (nameInput != null) nameInput.setText("");
+        Toast.makeText(requireContext(), "Saved: " + displayName, Toast.LENGTH_SHORT).show();
         refresh();
     }
 
@@ -326,8 +347,14 @@ public class ServerHubFragment extends Fragment {
         if (getContext()==null) return;
         for (ServerEntry e : new ArrayList<>(data)) {
             ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-                @Override public void onResult(ServerEntry entry){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); }); }
-                @Override public void onError(ServerEntry entry, Exception ex){ if(!isAdded()) return; requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); }); }
+                @Override public void onResult(ServerEntry entry){
+                    if(!isAdded()) return;
+                    requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); });
+                }
+                @Override public void onError(ServerEntry entry, Exception ex){
+                    if(!isAdded()) return;
+                    requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); });
+                }
             });
         }
     }
