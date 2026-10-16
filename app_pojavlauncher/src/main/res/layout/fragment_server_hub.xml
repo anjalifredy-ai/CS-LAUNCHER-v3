@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_launcher_dark"
+    android:background="#0A1628"
     android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/server_hub_header"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@drawable/bg_header_bar"
+        android:background="@drawable/bg_remom_header"
         android:elevation="2dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -20,11 +19,10 @@
             android:id="@+id/server_hub_back"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:background="@drawable/bg_circle"
-            android:backgroundTint="@color/accent_primary"
+            android:background="@drawable/bg_remom_tile"
             android:gravity="center"
             android:text="‹"
-            android:textColor="@color/play_btn_text"
+            android:textColor="#F0F6FF"
             android:textSize="22sp"
             android:textStyle="bold" />
 
@@ -39,16 +37,16 @@
                 android:id="@+id/server_hub_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Servers"
-                android:textColor="#FFFFFF"
+                android:text="Host / Servers"
+                android:textColor="#F0F6FF"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Solo · same Wi‑Fi · distant friends"
-                android:textColor="@color/text_secondary_dim"
+                android:text="Solo · LAN · Add IP · Free host"
+                android:textColor="#7A9BB8"
                 android:textSize="10sp" />
         </LinearLayout>
 
@@ -56,10 +54,10 @@
             android:id="@+id/server_hub_refresh"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:background="@drawable/bg_csc_outline_button"
+            android:background="@drawable/bg_remom_tile"
             android:gravity="center"
             android:text="↻"
-            android:textColor="#FFFFFF"
+            android:textColor="#3B9EFF"
             android:textSize="18sp" />
     </LinearLayout>
 
@@ -77,11 +75,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- LOCAL IN-APP -->
+            <!-- LOCAL HOST -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_server_card"
+                android:background="@drawable/bg_remom_card"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -89,7 +87,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"
-                    android:text="HOST INSIDE REMOM"
+                    android:text="HOST ON THIS PHONE"
                     android:textColor="#3B9EFF"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -98,8 +96,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Solo = 127.0.0.1 (IP nahi). Same Wi‑Fi friends = neeche wala IP. Door ke friends = neeche Internet host."
-                    android:textColor="@color/text_secondary_light"
+                    android:text="Create → Start. Solo join: 127.0.0.1 · Same Wi‑Fi: phone IP below."
+                    android:textColor="#7A9BB8"
                     android:textSize="10sp" />
 
                 <TextView
@@ -107,9 +105,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_auth_input_box"
+                    android:background="@drawable/bg_remom_tile"
                     android:padding="12dp"
-                    android:text="No local servers yet"
+                    android:text="No local servers — Create"
                     android:textColor="#F0F6FF"
                     android:textSize="12sp" />
 
@@ -121,30 +119,31 @@
 
                     <TextView android:id="@+id/btn_create_local_server"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginEnd="4dp" android:background="@drawable/bg_auth_primary_button"
-                        android:gravity="center" android:text="Create" android:textColor="@color/play_btn_text"
+                        android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_play"
+                        android:gravity="center" android:text="Create" android:textColor="#0A1628"
                         android:textStyle="bold" android:clickable="true" android:focusable="true" />
 
                     <TextView android:id="@+id/btn_start_local_server"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp" android:background="@drawable/bg_csc_outline_button"
-                        android:gravity="center" android:text="Start" android:textColor="@color/accent_light"
+                        android:layout_marginHorizontal="4dp" android:background="@drawable/bg_remom_tile"
+                        android:gravity="center" android:text="Start" android:textColor="#3B9EFF"
                         android:textStyle="bold" android:clickable="true" android:focusable="true" />
 
                     <TextView android:id="@+id/btn_stop_local_server"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginStart="4dp" android:background="@drawable/bg_csc_outline_button"
+                        android:layout_marginStart="4dp" android:background="@drawable/bg_remom_tile"
                         android:gravity="center" android:text="Stop" android:textColor="#FF8A80"
                         android:textStyle="bold" android:clickable="true" android:focusable="true" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- DISTANT FRIENDS — internet free host -->
+            <!-- ADD SERVER (Dawn style: name + IP) -->
             <LinearLayout
+                android:id="@+id/server_hub_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_server_card"
+                android:background="@drawable/bg_remom_card"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -152,7 +151,93 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"
-                    android:text="DISTANT FRIENDS · INTERNET"
+                    android:text="ADD SERVER"
+                    android:textColor="#F0F6FF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Name + address. Cracked servers need online-mode=false on host. List saves with profile."
+                    android:textColor="#7A9BB8"
+                    android:textSize="10sp" />
+
+                <EditText
+                    android:id="@+id/server_hub_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_remom_tile"
+                    android:hint="Server name (e.g. Apple MC)"
+                    android:paddingHorizontal="12dp"
+                    android:singleLine="true"
+                    android:textColor="#F0F6FF"
+                    android:textColorHint="#5A7A9A"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_remom_tile"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp">
+
+                    <EditText
+                        android:id="@+id/server_hub_input"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="IP or address:port"
+                        android:imeOptions="actionDone"
+                        android:inputType="textUri"
+                        android:paddingHorizontal="10dp"
+                        android:singleLine="true"
+                        android:textColor="#F0F6FF"
+                        android:textColorHint="#5A7A9A"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/server_hub_add"
+                        android:layout_width="76dp"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_remom_play"
+                        android:gravity="center"
+                        android:text="ADD"
+                        android:textColor="#0A1628"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/server_hub_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="#7A9BB8"
+                    android:textSize="10sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- FREE INTERNET HOST (optional WebView) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_remom_card"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="FREE CLOUD HOST"
                     android:textColor="#FFB74D"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -161,8 +246,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Door city / alag network? Phone Wi‑Fi IP kaam nahi karega. Free cloud host banao → IP copy → yahan ADD → Play."
-                    android:textColor="@color/text_secondary_light"
+                    android:text="Door friends: create on Aternos/Minehut → set online-mode false for offline → copy IP → ADD above."
+                    android:textColor="#7A9BB8"
                     android:textSize="10sp" />
 
                 <LinearLayout
@@ -177,10 +262,10 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
-                        android:background="@drawable/bg_auth_primary_button"
+                        android:background="@drawable/bg_remom_play"
                         android:gravity="center"
-                        android:text="Aternos (free)"
-                        android:textColor="@color/play_btn_text"
+                        android:text="Aternos"
+                        android:textColor="#0A1628"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
@@ -191,10 +276,10 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_csc_outline_button"
+                        android:background="@drawable/bg_remom_tile"
                         android:gravity="center"
-                        android:text="Minehut (free)"
-                        android:textColor="@color/accent_light"
+                        android:text="Minehut"
+                        android:textColor="#3B9EFF"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
@@ -206,8 +291,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:gravity="center"
-                    android:text="Kaise? Tap — short guide"
-                    android:textColor="@color/text_secondary_dim"
+                    android:text="Help · online-mode for offline accounts"
+                    android:textColor="#5A7A9A"
                     android:textSize="10sp"
                     android:clickable="true"
                     android:focusable="true" />
@@ -218,7 +303,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_server_card"
+                android:background="@drawable/bg_remom_card"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -226,7 +311,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"
-                    android:text="SAME WIFI · NEARBY"
+                    android:text="SAME WIFI"
                     android:textColor="#3B9EFF"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -236,7 +321,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_auth_input_box"
+                    android:background="@drawable/bg_remom_tile"
                     android:padding="12dp"
                     android:text="Detecting…"
                     android:textColor="#F0F6FF"
@@ -252,89 +337,16 @@
 
                     <TextView android:id="@+id/lan_copy_ip"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginEnd="6dp" android:background="@drawable/bg_auth_primary_button"
-                        android:gravity="center" android:text="Copy Wi‑Fi IP" android:textColor="@color/play_btn_text"
+                        android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_play"
+                        android:gravity="center" android:text="Copy IP" android:textColor="#0A1628"
                         android:textStyle="bold" android:clickable="true" android:focusable="true" />
 
                     <TextView android:id="@+id/lan_refresh_ip"
                         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginStart="6dp" android:background="@drawable/bg_csc_outline_button"
-                        android:gravity="center" android:text="Refresh" android:textColor="@color/accent_light"
+                        android:layout_marginStart="6dp" android:background="@drawable/bg_remom_tile"
+                        android:gravity="center" android:text="Refresh" android:textColor="#3B9EFF"
                         android:textStyle="bold" android:clickable="true" android:focusable="true" />
                 </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/server_hub_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_server_card"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="ADD / JOIN"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Aternos IP, friend IP, ya 127.0.0.1:25565 (solo)"
-                    android:textColor="#7F8894"
-                    android:textSize="10sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_auth_input_box"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="4dp">
-
-                    <EditText
-                        android:id="@+id/server_hub_input"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@null"
-                        android:hint="address or IP:port"
-                        android:imeOptions="actionDone"
-                        android:inputType="textUri"
-                        android:paddingHorizontal="10dp"
-                        android:singleLine="true"
-                        android:textColor="#FFFFFF"
-                        android:textColorHint="#5A636E"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/server_hub_add"
-                        android:layout_width="76dp"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_auth_primary_button"
-                        android:gravity="center"
-                        android:text="ADD"
-                        android:textColor="@color/play_btn_text"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/server_hub_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="#9AA3B0"
-                    android:textSize="10sp"
-                    android:visibility="gone" />
             </LinearLayout>
 
             <TextView
@@ -342,9 +354,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:letterSpacing="0.06"
-                android:text="YOUR SERVERS — TAP PLAY"
-                android:textColor="#9AA3B0"
-                android:textSize="8sp"
+                android:text="YOUR SERVERS"
+                android:textColor="#5A7A9A"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -360,11 +372,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_empty_state"
+                android:background="@drawable/bg_remom_tile"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="Solo Start / Aternos IP / friend IP add karo"
-                android:textColor="#6B7280"
+                android:text="Add name + IP · or Create local · or free cloud host"
+                android:textColor="#7A9BB8"
                 android:textSize="11sp"
                 android:visibility="visible" />
         </LinearLayout>
