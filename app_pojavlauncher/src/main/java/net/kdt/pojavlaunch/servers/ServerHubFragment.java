@@ -68,18 +68,20 @@ public class ServerHubFragment extends Fragment {
         localListView = root.findViewById(R.id.local_servers_status);
 
         View aternos = root.findViewById(R.id.free_host_aternos);
+        View exaroton = root.findViewById(R.id.free_host_exaroton);
         View minehut = root.findViewById(R.id.free_host_minehut);
         View help = root.findViewById(R.id.free_host_help);
-        if (aternos != null) aternos.setOnClickListener(v -> openHostInApp(true));
-        if (minehut != null) minehut.setOnClickListener(v -> openHostInApp(false));
+        if (exaroton != null) exaroton.setOnClickListener(v -> openHostInApp("exaroton"));
+        if (aternos != null) aternos.setOnClickListener(v -> openHostInApp("aternos"));
+        if (minehut != null) minehut.setOnClickListener(v -> openHostInApp("minehut"));
         if (help != null) help.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
-                .setTitle("Offline / cracked join")
+                .setTitle("Cloud host · offline")
                 .setMessage(
-                        "1) Offline account select in header\n" +
-                        "2) Host panel: online-mode=false + Restart\n" +
-                        "3) Version match\n" +
-                        "4) Name + IP yahan ADD → list me save\n\n" +
-                        "Public 'cracked' servers bhi kabhi online-mode ON rakhte hain — tab premium account chahiye.")
+                        "1) Exaroton / Aternos / Minehut button\n" +
+                        "2) App ke andar site khulegi\n" +
+                        "3) Server create + Start\n" +
+                        "4) Offline ke liye online-mode=false / Cracked ON\n" +
+                        "5) IP copy → yahan Name+IP ADD → Play")
                 .setPositiveButton("OK", null)
                 .show());
 
@@ -153,16 +155,18 @@ public class ServerHubFragment extends Fragment {
         if (addBtn != null) addBtn.setOnClickListener(v -> addFromInput());
         if (refreshBtn != null) refreshBtn.setOnClickListener(v -> { refresh(); pingAll(); refreshLocalStatus(); });
 
-        // Import any in-game servers so list never looks empty after restart
         try { ServerListSync.importFromGameDir(requireContext(), profileKey); } catch (Throwable ignored) {}
         refresh();
         pingAll();
         refreshLocalStatus();
     }
 
-    private void openHostInApp(boolean aternos) {
+    private void openHostInApp(String which) {
         try {
-            HostWebFragment f = aternos ? HostWebFragment.aternos() : HostWebFragment.minehut();
+            HostWebFragment f;
+            if ("exaroton".equals(which)) f = HostWebFragment.exaroton();
+            else if ("minehut".equals(which)) f = HostWebFragment.minehut();
+            else f = HostWebFragment.aternos();
             Tools.swapFragment(requireActivity(), HostWebFragment.class, HostWebFragment.TAG, f.getArguments());
         } catch (Throwable t) {
             Toast.makeText(requireContext(), "Host open failed: " + t.getMessage(), Toast.LENGTH_LONG).show();
@@ -190,7 +194,7 @@ public class ServerHubFragment extends Fragment {
         box.addView(portIn);
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP\nOffline friends → online-mode false on host")
+                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
