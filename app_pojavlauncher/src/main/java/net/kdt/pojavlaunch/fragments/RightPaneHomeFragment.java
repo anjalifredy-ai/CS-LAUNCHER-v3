@@ -1,8 +1,14 @@
 package net.kdt.pojavlaunch.fragments;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -10,10 +16,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.kdt.pojavlaunch.R;
@@ -22,6 +28,7 @@ import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.servers.ServerHubFragment;
+import net.kdt.pojavlaunch.servers.ServerListSync;
 import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
@@ -109,7 +116,15 @@ public class RightPaneHomeFragment extends Fragment {
 
         View play = view.findViewById(R.id.btn_play_main);
         if (play != null) {
-            play.setOnClickListener(v -> ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true));
+            play.setOnClickListener(v -> {
+                try {
+                    String key = LauncherPreferences.DEFAULT_PREF.getString(
+                            LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+                    if (key != null && getContext() != null)
+                        ServerListSync.syncToGameDir(requireContext(), key);
+                } catch (Throwable ignored) {}
+                ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
+            });
         }
 
         View edit = view.findViewById(R.id.btn_edit_selected);
@@ -148,39 +163,114 @@ public class RightPaneHomeFragment extends Fragment {
         }
     }
 
-    /** CS Plus style: list + Create New Instance */
+    /** CS Launcher Plus style dual-panel picker */
     private void showProfilePicker() {
         try {
             LauncherProfiles.load();
-            List<String> keys = new ArrayList<>();
-            List<String> labels = new ArrayList<>();
+            final List<String> keys = new ArrayList<>();
+            final List<MinecraftProfile> profiles = new ArrayList<>();
             if (LauncherProfiles.mainProfileJson != null
                     && LauncherProfiles.mainProfileJson.profiles != null) {
                 for (Map.Entry<String, MinecraftProfile> e : LauncherProfiles.mainProfileJson.profiles.entrySet()) {
                     keys.add(e.getKey());
-                    MinecraftProfile p = e.getValue();
-                    String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name : e.getKey();
-                    String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
-                    labels.add(ver.isEmpty() ? name : (name + "  ·  " + ver));
+                    profiles.add(e.getValue());
                 }
             }
-            AlertDialog.Builder b = new AlertDialog.Builder(requireContext());
-            b.setTitle("Select Profile");
-            if (labels.isEmpty()) {
-                b.setMessage("No instances yet");
-            } else {
-                b.setItems(labels.toArray(new String[0]), (d, which) -> {
-                    String key = keys.get(which);
-                    LauncherPreferences.DEFAULT_PREF.edit()
-                            .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key)
-                            .apply();
-                    refreshSelectedProfileLabel();
-                    setupProfileAdapter();
+
+            final Dialog dialog = new Dialog(requireContext());
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            View root = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.dialog_profile_picker, null, false);
+            dialog.setContentView(root);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+
+            TextView count = root.findViewById(R.id.pp_instance_count);
+            TextView currentName = root.findViewById(R.id.pp_current_name);
+            TextView create = root.findViewById(R.id.pp_create_new);
+            TextView close = root.findViewById(R.id.pp_close);
+            RecyclerView list = root.findViewById(R.id.pp_list);
+
+            if (count != null) count.setText(keys.size() + " instance" + (keys.size() == 1 ? "" : "s"));
+
+            final String activeKey = LauncherPreferences.DEFAULT_PREF.getString(
+                    LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+            if (currentName != null) {
+                String cn = "—";
+                if (activeKey != null && LauncherProfiles.mainProfileJson != null
+                        && LauncherProfiles.mainProfileJson.profiles != null) {
+                    MinecraftProfile ap = LauncherProfiles.mainProfileJson.profiles.get(activeKey);
+                    if (ap != null && ap.name != null && !ap.name.isEmpty()) cn = ap.name;
+                    else if (activeKey != null) cn = activeKey;
+                }
+                currentName.setText(cn);
+            }
+
+            if (list != null) {
+                list.setLayoutManager(new LinearLayoutManager(requireContext()));
+                list.setAdapter(new RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+                    @NonNull
+                    @Override
+                    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                        View row = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.item_profile_picker_row, parent, false);
+                        return new RecyclerView.ViewHolder(row) {};
+                    }
+
+                    @Override
+                    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+                        String key = keys.get(position);
+                        MinecraftProfile p = profiles.get(position);
+                        String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name : key;
+                        String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
+                        TextView n = holder.itemView.findViewById(R.id.pp_row_name);
+                        TextView m = holder.itemView.findViewById(R.id.pp_row_meta);
+                        TextView active = holder.itemView.findViewById(R.id.pp_row_active);
+                        TextView editBtn = holder.itemView.findViewById(R.id.pp_row_edit);
+                        if (n != null) n.setText(name);
+                        if (m != null) m.setText(ver);
+                        boolean isActive = key.equals(activeKey);
+                        if (active != null) active.setVisibility(isActive ? View.VISIBLE : View.GONE);
+                        holder.itemView.setOnClickListener(v -> {
+                            LauncherPreferences.DEFAULT_PREF.edit()
+                                    .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key)
+                                    .apply();
+                            refreshSelectedProfileLabel();
+                            setupProfileAdapter();
+                            dialog.dismiss();
+                        });
+                        if (editBtn != null) {
+                            editBtn.setOnClickListener(v -> {
+                                LauncherPreferences.DEFAULT_PREF.edit()
+                                        .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, key)
+                                        .apply();
+                                dialog.dismiss();
+                                try {
+                                    Tools.swapFragment(requireActivity(), ProfileEditorFragment.class,
+                                            ProfileEditorFragment.TAG, null);
+                                } catch (Throwable ignored) {}
+                            });
+                        }
+                    }
+
+                    @Override
+                    public int getItemCount() {
+                        return keys.size();
+                    }
                 });
             }
-            b.setPositiveButton("+ Create New Instance", (d, w) -> openCreateProfile());
-            b.setNegativeButton("Close", null);
-            b.show();
+
+            if (create != null) create.setOnClickListener(v -> {
+                dialog.dismiss();
+                openCreateProfile();
+            });
+            if (close != null) close.setOnClickListener(v -> dialog.dismiss());
+
+            dialog.show();
         } catch (Throwable t) {
             Toast.makeText(requireContext(), "Profile picker error", Toast.LENGTH_SHORT).show();
         }
@@ -192,6 +282,13 @@ public class RightPaneHomeFragment extends Fragment {
         try {
             if (getActivity() != null)
                 net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
+        } catch (Throwable ignored) {}
+        // Re-import in-game servers so list never looks wiped after play session
+        try {
+            String key = LauncherPreferences.DEFAULT_PREF.getString(
+                    LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+            if (key != null && getContext() != null)
+                ServerListSync.importFromGameDir(requireContext(), key);
         } catch (Throwable ignored) {}
         refreshSelectedProfileLabel();
         setupProfileAdapter();
@@ -268,6 +365,9 @@ public class RightPaneHomeFragment extends Fragment {
                             .putString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, profileKey)
                             .apply();
                     refreshSelectedProfileLabel();
+                    try {
+                        ServerListSync.syncToGameDir(requireContext(), profileKey);
+                    } catch (Throwable ignored) {}
                     ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
                 }
                 @Override
