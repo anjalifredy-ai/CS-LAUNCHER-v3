@@ -31,6 +31,7 @@ public class ServerHubFragment extends Fragment {
     private RecyclerView list;
     private EditText input;
     private EditText nameInput;
+    private EditText tunnelInput;
     private TextView status, empty, lanIpView, localListView;
     private View addBtn, refreshBtn;
     private ServerAdapter adapter;
@@ -61,6 +62,7 @@ public class ServerHubFragment extends Fragment {
         list = root.findViewById(R.id.server_hub_list);
         input = root.findViewById(R.id.server_hub_input);
         nameInput = root.findViewById(R.id.server_hub_name);
+        tunnelInput = root.findViewById(R.id.tunnel_public_input);
         status = root.findViewById(R.id.server_hub_status);
         empty = root.findViewById(R.id.server_hub_empty);
         addBtn = root.findViewById(R.id.server_hub_add);
@@ -75,14 +77,28 @@ public class ServerHubFragment extends Fragment {
         if (aternos != null) aternos.setOnClickListener(v -> openHostInApp("aternos"));
         if (minehut != null) minehut.setOnClickListener(v -> openHostInApp("minehut"));
         if (help != null) help.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
-                .setTitle("Cloud host · offline")
+                .setTitle("Cloud host")
+                .setMessage("Exaroton/Aternos/Minehut → create → start → IP ADD.")
+                .setPositiveButton("OK", null).show());
+
+        View playit = root.findViewById(R.id.btn_open_playit);
+        View saveTunnel = root.findViewById(R.id.btn_save_tunnel);
+        View tunnelHelp = root.findViewById(R.id.btn_tunnel_help);
+        if (playit != null) playit.setOnClickListener(v -> openHostInApp("playit"));
+        if (saveTunnel != null) saveTunnel.setOnClickListener(v -> saveTunnelAddress());
+        if (tunnelHelp != null) tunnelHelp.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
+                .setTitle("Door friends · local host")
                 .setMessage(
-                        "1) Exaroton / Aternos / Minehut button\n" +
-                        "2) App ke andar site khulegi\n" +
-                        "3) Server create + Start\n" +
-                        "4) Offline ke liye online-mode=false / Cracked ON\n" +
-                        "5) IP copy → yahan Name+IP ADD → Play")
+                        "1) Is phone pe Create + Start (local server)\n" +
+                        "2) Open playit.gg (free)\n" +
+                        "3) Minecraft / TCP tunnel → local port 25565\n" +
+                        "4) Jo public address mile (xxx.playit.gg:port) copy\n" +
+                        "5) Yahan paste → Save public address\n" +
+                        "6) Friend Multiplayer me woh address add kare\n\n" +
+                        "Phone on + tunnel on + local server running hona zaroori.\n" +
+                        "Mobile data / CGNAT pe bhi tunnel kaam karta hai.")
                 .setPositiveButton("OK", null)
+                .setNeutralButton("Open playit", (d, w) -> openHostInApp("playit"))
                 .show());
 
         View createLocal = root.findViewById(R.id.btn_create_local_server);
@@ -161,15 +177,32 @@ public class ServerHubFragment extends Fragment {
         refreshLocalStatus();
     }
 
+    private void saveTunnelAddress() {
+        if (tunnelInput == null || getContext() == null) return;
+        String addr = tunnelInput.getText().toString().trim();
+        if (addr.isEmpty()) {
+            Toast.makeText(requireContext(), "playit public address paste karo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ServerEntry e = new ServerEntry();
+        e.name = "Distant (tunnel)";
+        e.address = addr;
+        ServerStore.add(requireContext(), profileKey, e);
+        ServerListSync.syncToGameDir(requireContext(), profileKey);
+        Toast.makeText(requireContext(), "Saved — friends is address se join karen", Toast.LENGTH_LONG).show();
+        refresh();
+    }
+
     private void openHostInApp(String which) {
         try {
             HostWebFragment f;
             if ("exaroton".equals(which)) f = HostWebFragment.exaroton();
             else if ("minehut".equals(which)) f = HostWebFragment.minehut();
+            else if ("playit".equals(which)) f = HostWebFragment.playit();
             else f = HostWebFragment.aternos();
             Tools.swapFragment(requireActivity(), HostWebFragment.class, HostWebFragment.TAG, f.getArguments());
         } catch (Throwable t) {
-            Toast.makeText(requireContext(), "Host open failed: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), "Open failed: " + t.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -194,7 +227,7 @@ public class ServerHubFragment extends Fragment {
         box.addView(portIn);
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Solo → 127.0.0.1\nSame Wi‑Fi → phone IP")
+                .setMessage("Solo → 127.0.0.1\nWi‑Fi → phone IP\nDoor → Start + playit tunnel")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
@@ -260,7 +293,9 @@ public class ServerHubFragment extends Fragment {
                         Toast.makeText(requireContext(), "Solo → " + soloAddr, Toast.LENGTH_LONG).show();
                         ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
                     } else {
-                        Toast.makeText(requireContext(), "Running · Solo 127.0.0.1", Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireContext(),
+                                "Running. Door friends: playit tunnel + Save public address",
+                                Toast.LENGTH_LONG).show();
                     }
                 });
             } catch (Exception ex) {
