@@ -17,9 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import net.kdt.pojavlaunch.R;
 
-/**
- * Opens Aternos / Exaroton / Minehut inside Remom (no external browser).
- */
+/** Opens Aternos / Exaroton / Minehut / playit.gg inside Remom. */
 public class HostWebFragment extends Fragment {
     public static final String TAG = "HostWebFragment";
     public static final String ARG_URL = "url";
@@ -30,28 +28,27 @@ public class HostWebFragment extends Fragment {
     }
 
     public static HostWebFragment aternos() {
-        HostWebFragment f = new HostWebFragment();
-        Bundle b = new Bundle();
-        b.putString(ARG_URL, "https://aternos.org/");
-        b.putString(ARG_TITLE, "Aternos");
-        f.setArguments(b);
-        return f;
+        return of("https://aternos.org/", "Aternos");
     }
 
     public static HostWebFragment exaroton() {
-        HostWebFragment f = new HostWebFragment();
-        Bundle b = new Bundle();
-        b.putString(ARG_URL, "https://exaroton.com/");
-        b.putString(ARG_TITLE, "Exaroton");
-        f.setArguments(b);
-        return f;
+        return of("https://exaroton.com/", "Exaroton");
     }
 
     public static HostWebFragment minehut() {
+        return of("https://minehut.com/", "Minehut");
+    }
+
+    /** Free tunnel so local phone server is reachable by distant friends. */
+    public static HostWebFragment playit() {
+        return of("https://playit.gg/", "playit.gg tunnel");
+    }
+
+    private static HostWebFragment of(String url, String title) {
         HostWebFragment f = new HostWebFragment();
         Bundle b = new Bundle();
-        b.putString(ARG_URL, "https://minehut.com/");
-        b.putString(ARG_TITLE, "Minehut");
+        b.putString(ARG_URL, url);
+        b.putString(ARG_TITLE, title);
         f.setArguments(b);
         return f;
     }
@@ -59,8 +56,8 @@ public class HostWebFragment extends Fragment {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(@NonNull View root, @Nullable Bundle savedInstanceState) {
-        String url = "https://exaroton.com/";
-        String title = "Exaroton";
+        String url = "https://playit.gg/";
+        String title = "playit.gg";
         Bundle args = getArguments();
         if (args != null) {
             if (args.getString(ARG_URL) != null) url = args.getString(ARG_URL);
@@ -77,7 +74,7 @@ public class HostWebFragment extends Fragment {
         View done = root.findViewById(R.id.host_web_done);
         if (done != null) done.setOnClickListener(v -> {
             Toast.makeText(requireContext(),
-                    "Server IP copy karke Host → ADD me paste karo",
+                    "Public address copy karke Host → Tunnel box me paste karo",
                     Toast.LENGTH_LONG).show();
             requireActivity().getSupportFragmentManager().popBackStack();
         });
