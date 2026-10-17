@@ -45,7 +45,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Solo · LAN · Exaroton · Aternos"
+                android:text="Solo · Wi‑Fi · Tunnel · Cloud"
                 android:textColor="#7A9BB8"
                 android:textSize="10sp" />
         </LinearLayout>
@@ -75,6 +75,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- LOCAL -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -95,7 +96,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Create → Start. Solo: 127.0.0.1 · Same Wi‑Fi: phone IP."
+                    android:text="Create → Start. Solo 127.0.0.1 · Wi‑Fi = phone IP · Door = tunnel neeche."
                     android:textColor="#7A9BB8"
                     android:textSize="10sp" />
 
@@ -136,6 +137,86 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- DISTANT TUNNEL -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_remom_card"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="DISTANT FRIENDS · TUNNEL"
+                    android:textColor="#81C784"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Phone local server door city se tabhi join hoga jab free tunnel (playit.gg) public address de. 1) Local Start 2) playit open 3) port 25565 tunnel 4) address yahan SAVE."
+                    android:textColor="#7A9BB8"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/btn_open_playit"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_remom_play"
+                    android:gravity="center"
+                    android:text="Open playit.gg (free tunnel)"
+                    android:textColor="#0A1628"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <EditText
+                    android:id="@+id/tunnel_public_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_remom_tile"
+                    android:hint="Public address from playit (e.g. xxx.playit.gg:12345)"
+                    android:paddingHorizontal="12dp"
+                    android:singleLine="true"
+                    android:inputType="textUri"
+                    android:textColor="#F0F6FF"
+                    android:textColorHint="#5A7A9A"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/btn_save_tunnel"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_remom_tile"
+                    android:gravity="center"
+                    android:text="Save public address → server list"
+                    android:textColor="#3B9EFF"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btn_tunnel_help"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Help · step by step"
+                    android:textColor="#5A7A9A"
+                    android:textSize="10sp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+            <!-- ADD SERVER -->
             <LinearLayout
                 android:id="@+id/server_hub_card"
                 android:layout_width="match_parent"
@@ -158,7 +239,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Name + IP. List saves with profile. Cracked = host online-mode false."
+                    android:text="Any IP / hostname. List saves with profile."
                     android:textColor="#7A9BB8"
                     android:textSize="10sp" />
 
@@ -222,6 +303,7 @@
                     android:visibility="gone" />
             </LinearLayout>
 
+            <!-- CLOUD -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -243,7 +325,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Exaroton / Aternos / Minehut Remom ke andar. Server banao → IP copy → ADD."
+                    android:text="Server cloud pe (phone off bhi chal sakta). Free tiers auto-stop kar sakte hain."
                     android:textColor="#7A9BB8"
                     android:textSize="10sp" />
 
@@ -253,62 +335,34 @@
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/free_host_exaroton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/bg_remom_play"
-                        android:gravity="center"
-                        android:text="Exaroton"
-                        android:textColor="#0A1628"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true" />
+                    <TextView android:id="@+id/free_host_exaroton"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                        android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_play"
+                        android:gravity="center" android:text="Exaroton" android:textColor="#0A1628"
+                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
 
-                    <TextView
-                        android:id="@+id/free_host_aternos"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp"
-                        android:background="@drawable/bg_remom_tile"
-                        android:gravity="center"
-                        android:text="Aternos"
-                        android:textColor="#3B9EFF"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true" />
+                    <TextView android:id="@+id/free_host_aternos"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                        android:layout_marginHorizontal="4dp" android:background="@drawable/bg_remom_tile"
+                        android:gravity="center" android:text="Aternos" android:textColor="#3B9EFF"
+                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
 
-                    <TextView
-                        android:id="@+id/free_host_minehut"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:background="@drawable/bg_remom_tile"
-                        android:gravity="center"
-                        android:text="Minehut"
-                        android:textColor="#3B9EFF"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true" />
+                    <TextView android:id="@+id/free_host_minehut"
+                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+                        android:layout_marginStart="4dp" android:background="@drawable/bg_remom_tile"
+                        android:gravity="center" android:text="Minehut" android:textColor="#3B9EFF"
+                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/free_host_help"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
+                <TextView android:id="@+id/free_host_help"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:gravity="center"
                     android:text="Help · cracked / online-mode"
-                    android:textColor="#5A7A9A"
-                    android:textSize="10sp"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:textColor="#5A7A9A" android:textSize="10sp"
+                    android:clickable="true" android:focusable="true" />
             </LinearLayout>
 
+            <!-- WIFI -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -385,7 +439,7 @@
                 android:background="@drawable/bg_remom_tile"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="Add IP · Create local · or open Exaroton"
+                android:text="Local · Tunnel · or Cloud"
                 android:textColor="#7A9BB8"
                 android:textSize="11sp"
                 android:visibility="visible" />
