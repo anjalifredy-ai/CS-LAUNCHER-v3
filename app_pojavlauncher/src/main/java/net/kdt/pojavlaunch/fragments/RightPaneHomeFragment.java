@@ -163,7 +163,6 @@ public class RightPaneHomeFragment extends Fragment {
         }
     }
 
-    /** CS Launcher Plus style dual-panel picker */
     private void showProfilePicker() {
         try {
             LauncherProfiles.load();
@@ -283,7 +282,6 @@ public class RightPaneHomeFragment extends Fragment {
             if (getActivity() != null)
                 net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
         } catch (Throwable ignored) {}
-        // Re-import in-game servers so list never looks wiped after play session
         try {
             String key = LauncherPreferences.DEFAULT_PREF.getString(
                     LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
@@ -300,7 +298,7 @@ public class RightPaneHomeFragment extends Fragment {
     }
 
     private void refreshSelectedProfileLabel() {
-        if (mSelectedName == null) return;
+        if (mSelectedName == null && getView() == null) return;
         try {
             LauncherProfiles.load();
             String key = LauncherPreferences.DEFAULT_PREF.getString(
@@ -320,13 +318,18 @@ public class RightPaneHomeFragment extends Fragment {
             }
             String name = (p != null && p.name != null && !p.name.isEmpty()) ? p.name
                     : (key != null ? key : "Default");
-            mSelectedName.setText(name);
-            if (mSelectedMeta != null) {
-                String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
-                mSelectedMeta.setText(ver);
+            String ver = (p != null && p.lastVersionId != null) ? p.lastVersionId : "";
+            if (mSelectedName != null) mSelectedName.setText(name);
+            if (mSelectedMeta != null) mSelectedMeta.setText(ver);
+            View root = getView() != null ? getView() : mRootView;
+            if (root != null) {
+                TextView playVer = root.findViewById(R.id.tv_play_version);
+                if (playVer != null) playVer.setText(ver);
+                TextView chip = root.findViewById(R.id.tv_hero_version_chip);
+                if (chip != null) chip.setText(ver.isEmpty() ? "Java" : ver);
             }
         } catch (Throwable ignored) {
-            mSelectedName.setText("Default");
+            if (mSelectedName != null) mSelectedName.setText("Default");
         }
     }
 
