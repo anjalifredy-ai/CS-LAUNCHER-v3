@@ -12,21 +12,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingTop="26dp"
-        android:paddingBottom="38dp">
+        android:paddingTop="20dp"
+        android:paddingBottom="40dp">
 
+        <!-- CS Plus style header -->
         <LinearLayout
             android:id="@+id/setup_hub_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="22dp">
+            android:paddingHorizontal="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:letterSpacing="0.22"
-                android:text="@string/pt_eyebrow"
+                android:letterSpacing="0.18"
+                android:text="NEW INSTANCE"
                 android:textColor="#3B9EFF"
                 android:textSize="10sp"
                 android:textStyle="bold" />
@@ -35,35 +36,213 @@
                 android:id="@+id/setup_hub_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
-                android:fontFamily="sans-serif-light"
-                android:text="@string/pt_title"
+                android:layout_marginTop="6dp"
+                android:text="What do you want to create?"
                 android:textColor="#F0F6FF"
-                android:textSize="27sp" />
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:lineSpacingExtra="2dp"
-                android:text="@string/pt_subtitle"
+                android:layout_marginTop="4dp"
+                android:text="Pick Normal profile or install a modpack"
                 android:textColor="#7A9BB8"
                 android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- 3 primary cards like CS Plus -->
         <LinearLayout
-            android:id="@+id/section_vanilla"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
+            android:layout_marginTop="18dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <!-- NORMAL -->
+            <FrameLayout
+                android:id="@+id/vanilla_profile"
+                android:layout_width="0dp"
+                android:layout_height="168dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_remom_card"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:text="FABRIC · FORGE"
+                        android:textColor="#3B9EFF"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="⛏"
+                        android:textColor="#8AB4D8"
+                        android:textSize="36sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Normal"
+                        android:textColor="#F0F6FF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Vanilla, Fabric, Forge, Quilt or NeoForge"
+                        android:textColor="#7A9BB8"
+                        android:textSize="9sp"
+                        android:maxLines="2" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- COMING SOON (visual only — taps still open fabric as safe fallback via optifine unused? keep non-click path) -->
+            <FrameLayout
+                android:id="@+id/modded_profile_bta"
+                android:layout_width="0dp"
+                android:layout_height="168dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="6dp"
+                android:background="@drawable/bg_remom_card"
+                android:alpha="0.85"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+                        android:background="@drawable/bg_remom_play"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:text="COMING SOON"
+                        android:textColor="#0A1628"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="CS"
+                        android:textColor="#3B9EFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CS Client"
+                        android:textColor="#F0F6FF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Client profiles here soon"
+                        android:textColor="#7A9BB8"
+                        android:textSize="9sp"
+                        android:maxLines="2" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <!-- MODPACK -->
+            <FrameLayout
+                android:id="@+id/modded_profile_modpack"
+                android:layout_width="0dp"
+                android:layout_height="168dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_remom_card"
+                android:clickable="true"
+                android:focusable="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:gravity="center"
+                        android:paddingHorizontal="8dp"
+                        android:text="MODRINTH · CF"
+                        android:textColor="#81C784"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="📦"
+                        android:textSize="32sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Modpack"
+                        android:textColor="#F0F6FF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Browse and install as a new profile"
+                        android:textColor="#7A9BB8"
+                        android:textSize="9sp"
+                        android:maxLines="2" />
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- LOADERS (Normal path detail) -->
+        <LinearLayout
+            android:id="@+id/section_loaders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="22dp"
+                android:layout_marginStart="20dp"
                 android:letterSpacing="0.12"
-                android:text="@string/pt_section_vanilla"
+                android:text="OR PICK A LOADER"
                 android:textColor="#5A7A9A"
                 android:textSize="10sp"
                 android:textStyle="bold" />
@@ -71,11 +250,11 @@
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="11dp"
+                android:layout_marginTop="12dp"
                 android:clipToPadding="false"
                 android:overScrollMode="never"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:scrollbars="none">
 
                 <LinearLayout
@@ -84,170 +263,96 @@
                     android:orientation="horizontal">
 
                     <FrameLayout
-                        android:id="@+id/modded_profile_bta"
-                        android:layout_width="154dp"
-                        android:layout_height="134dp"
-                        android:background="@drawable/bg_cs_client_promo_card"
+                        android:id="@+id/modded_profile_fabric"
+                        android:layout_width="132dp"
+                        android:layout_height="120dp"
+                        android:background="@drawable/bg_remom_tile"
                         android:clickable="true"
                         android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/cs_logo" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_bta_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_bta_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_fabric" tools:ignore="ContentDescription" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Fabric" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Light & fast" android:textColor="#7A9BB8" android:textSize="9sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/modded_profile_forge"
+                        android:layout_width="132dp"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_forge" tools:ignore="ContentDescription" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Forge" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Classic mods" android:textColor="#7A9BB8" android:textSize="9sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/modded_profile_neoforge"
+                        android:layout_width="132dp"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_neoforge_profile" tools:ignore="ContentDescription" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="NeoForge" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Modern Forge" android:textColor="#7A9BB8" android:textSize="9sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/modded_profile_quilt"
+                        android:layout_width="132dp"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:clickable="true"
+                        android:focusable="true">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_quilt" tools:ignore="ContentDescription" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Quilt" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Fabric fork" android:textColor="#7A9BB8" android:textSize="9sp" />
                         </LinearLayout>
                     </FrameLayout>
 
                     <FrameLayout
                         android:id="@+id/optifine_profile"
-                        android:layout_width="154dp"
-                        android:layout_height="134dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_profile_type_card"
+                        android:layout_width="132dp"
+                        android:layout_height="120dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_remom_tile"
                         android:clickable="true"
                         android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_optifine" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_optifine_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_optifine_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
-                        </LinearLayout>
-                    </FrameLayout>
-
-                    <FrameLayout
-                        android:id="@+id/vanilla_profile"
-                        android:layout_width="154dp"
-                        android:layout_height="134dp"
-                        android:layout_marginStart="10dp"
-                        android:background="@drawable/bg_profile_type_card"
-                        android:clickable="true"
-                        android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/cs_logo" tools:ignore="ContentDescription" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="Vanilla" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="Official Mojang releases" android:textColor="#7A9BB8" android:textSize="9.5sp" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
+                            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_optifine" tools:ignore="ContentDescription" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="OptiFine" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Shaders / FPS" android:textColor="#7A9BB8" android:textSize="9sp" />
                         </LinearLayout>
                     </FrameLayout>
                 </LinearLayout>
             </HorizontalScrollView>
         </LinearLayout>
 
+        <!-- keep section ids for Java -->
         <LinearLayout
-            android:id="@+id/section_loaders"
+            android:id="@+id/section_vanilla"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="22dp"
-                android:letterSpacing="0.12"
-                android:text="@string/pt_section_loaders"
-                android:textColor="#5A7A9A"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="11dp"
-                android:clipToPadding="false"
-                android:overScrollMode="never"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
-                android:scrollbars="none">
-
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-
-                    <FrameLayout android:id="@+id/modded_profile_fabric" android:layout_width="148dp" android:layout_height="134dp" android:background="@drawable/bg_profile_type_card" android:clickable="true" android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_fabric" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_fabric_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_fabric_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
-                        </LinearLayout>
-                    </FrameLayout>
-
-                    <FrameLayout android:id="@+id/modded_profile_quilt" android:layout_width="148dp" android:layout_height="134dp" android:layout_marginStart="10dp" android:background="@drawable/bg_profile_type_card" android:clickable="true" android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_quilt" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_quilt_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_quilt_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
-                        </LinearLayout>
-                    </FrameLayout>
-
-                    <FrameLayout android:id="@+id/modded_profile_forge" android:layout_width="148dp" android:layout_height="134dp" android:layout_marginStart="10dp" android:background="@drawable/bg_profile_type_card" android:clickable="true" android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_forge" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_forge_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_forge_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
-                        </LinearLayout>
-                    </FrameLayout>
-
-                    <FrameLayout android:id="@+id/modded_profile_neoforge" android:layout_width="148dp" android:layout_height="134dp" android:layout_marginStart="10dp" android:background="@drawable/bg_profile_type_card" android:clickable="true" android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_neoforge_profile" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="@string/pt_neoforge_name" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="@string/pt_neoforge_desc" android:textColor="#7A9BB8" android:textSize="9.5sp" />
-                        </LinearLayout>
-                    </FrameLayout>
-                </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:orientation="vertical" />
 
         <LinearLayout
             android:id="@+id/section_more"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="22dp"
-                android:letterSpacing="0.12"
-                android:text="MODPACKS"
-                android:textColor="#5A7A9A"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="11dp"
-                android:clipToPadding="false"
-                android:overScrollMode="never"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
-                android:scrollbars="none">
-
-                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <FrameLayout android:id="@+id/modded_profile_modpack" android:layout_width="180dp" android:layout_height="134dp" android:background="@drawable/bg_cs_client_promo_card" android:clickable="true" android:focusable="true">
-                        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="13dp">
-                            <FrameLayout android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_deck_icon_tile">
-                                <ImageView android:layout_width="23dp" android:layout_height="23dp" android:layout_gravity="center" android:src="@drawable/ic_modpack_profile" />
-                            </FrameLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="sans-serif-medium" android:text="Install Modpack" android:textColor="#F0F6FF" android:textSize="13.5sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:maxLines="2" android:ellipsize="end" android:text="CurseForge, Modrinth or import zip" android:textColor="#7A9BB8" android:textSize="9.5sp" />
-                        </LinearLayout>
-                    </FrameLayout>
-                </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:orientation="vertical" />
 
     </LinearLayout>
 </com.kdt.DefocusableScrollView>
