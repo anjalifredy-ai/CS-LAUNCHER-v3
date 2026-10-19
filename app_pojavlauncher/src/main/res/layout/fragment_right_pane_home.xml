@@ -20,19 +20,19 @@
         android:fillViewport="true"
         android:overScrollMode="never"
         android:clipToPadding="false"
-        android:paddingBottom="88dp">
+        android:paddingBottom="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="10dp">
 
-            <!-- HERO banner -->
+            <!-- HERO — CS Plus style -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="160dp"
-                android:layout_marginBottom="12dp"
+                android:layout_height="172dp"
+                android:layout_marginBottom="10dp"
                 android:background="@drawable/bg_remom_card"
                 android:clipToOutline="true">
 
@@ -47,7 +47,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="#660A1628" />
+                    android:background="#550A1628" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -67,32 +67,33 @@
                             android:layout_height="wrap_content"
                             android:text="MINECRAFT"
                             android:textColor="#FFFFFF"
-                            android:textSize="28sp"
+                            android:textSize="30sp"
                             android:textStyle="bold"
-                            android:shadowColor="#80000000"
+                            android:shadowColor="#AA000000"
                             android:shadowDx="0"
                             android:shadowDy="2"
-                            android:shadowRadius="4" />
+                            android:shadowRadius="6" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:letterSpacing="0.16"
                             android:text="PLAY WITHOUT LIMITS"
-                            android:textColor="#C8DCF5"
-                            android:textSize="11sp"
-                            android:letterSpacing="0.14"
-                            android:layout_marginTop="2dp" />
+                            android:textColor="#D0E4FF"
+                            android:textSize="11sp" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="10dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
-                            android:layout_height="24dp"
+                            android:layout_height="26dp"
                             android:background="@drawable/bg_remom_tile"
                             android:gravity="center"
                             android:paddingHorizontal="10dp"
@@ -100,25 +101,27 @@
                             android:textColor="#B8F0C8"
                             android:textSize="10sp"
                             android:textStyle="bold" />
+
                         <TextView
                             android:layout_width="wrap_content"
-                            android:layout_height="24dp"
+                            android:layout_height="26dp"
                             android:layout_marginStart="6dp"
                             android:background="@drawable/bg_remom_tile"
                             android:gravity="center"
                             android:paddingHorizontal="10dp"
-                            android:text="STABLE"
+                            android:text="☁ STABLE"
                             android:textColor="#A8C4E8"
                             android:textSize="10sp"
                             android:textStyle="bold" />
+
                         <TextView
                             android:layout_width="wrap_content"
-                            android:layout_height="24dp"
+                            android:layout_height="26dp"
                             android:layout_marginStart="6dp"
                             android:background="@drawable/bg_remom_tile"
                             android:gravity="center"
                             android:paddingHorizontal="10dp"
-                            android:text="CUSTOM"
+                            android:text="◆ CUSTOMIZABLE"
                             android:textColor="#E0C8FF"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -131,11 +134,11 @@
                         <TextView
                             android:id="@+id/tv_hero_version_chip"
                             android:layout_width="wrap_content"
-                            android:layout_height="26dp"
+                            android:layout_height="28dp"
                             android:background="@drawable/bg_remom_play"
                             android:gravity="center"
                             android:paddingHorizontal="12dp"
-                            android:text="Java"
+                            android:text="26.3 · Fabric"
                             android:textColor="#0A1628"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -143,145 +146,200 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <!-- Profile strip + PLAY -->
+            <!-- SELECTED PROFILE + EDIT + PLAY -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:orientation="horizontal"
+                android:layout_height="68dp"
+                android:layout_marginBottom="10dp"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="10dp">
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/btn_selected_profile"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp"
                     android:background="@drawable/bg_remom_tile"
                     android:clickable="true"
                     android:focusable="true"
-                    android:layout_marginEnd="8dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_selected_profile_icon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_deck_icon_tile"
+                        android:gravity="center"
+                        android:text="◆"
+                        android:textColor="#3B9EFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:letterSpacing="0.08"
                             android:text="SELECTED PROFILE"
-                            android:textSize="9sp"
                             android:textColor="#5A7A9A"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.08" />
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+
                         <TextView
                             android:id="@+id/tv_selected_profile_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
                             android:text="Default"
                             android:textColor="#F0F6FF"
                             android:textSize="15sp"
-                            android:textStyle="bold"
-                            android:maxLines="1"
-                            android:ellipsize="end" />
+                            android:textStyle="bold" />
+
                         <TextView
                             android:id="@+id/tv_selected_profile_meta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:maxLines="1"
                             android:textColor="#7A9BB8"
-                            android:textSize="11sp"
-                            android:maxLines="1" />
+                            android:textSize="11sp" />
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tv_profile_arrow"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:gravity="center"
                         android:text="▼"
-                        android:textSize="13sp"
                         android:textColor="#8AB4D8"
-                        android:background="@drawable/bg_deck_icon_tile" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
-                <TextView
+                <LinearLayout
                     android:id="@+id/btn_edit_selected"
-                    android:layout_width="52dp"
+                    android:layout_width="56dp"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="EDIT"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="#E8F0FA"
+                    android:layout_marginEnd="8dp"
                     android:background="@drawable/bg_remom_tile"
                     android:clickable="true"
                     android:focusable="true"
-                    android:layout_marginEnd="8dp" />
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="▣"
+                        android:textColor="#E8F0FA"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="EDIT"
+                        android:textColor="#E8F0FA"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/btn_play_main"
-                    android:layout_width="148dp"
+                    android:layout_width="152dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
                     android:background="@drawable/bg_remom_play"
                     android:clickable="true"
                     android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical"
                     android:paddingHorizontal="8dp">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="▶  PLAY"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#0A1628" />
+                        android:textColor="#0A1628"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/tv_play_version"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:maxLines="1"
                         android:text=""
-                        android:textSize="10sp"
                         android:textColor="#1A3A58"
-                        android:maxLines="1" />
+                        android:textSize="10sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Action tiles -->
+            <!-- BROWSE + MANAGER (CS Plus 2-tile row) -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
+                android:layout_height="64dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/btn_browse_resources"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_marginEnd="6dp"
                     android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp"
                     android:background="@drawable/bg_remom_tile"
                     android:clickable="true"
                     android:focusable="true"
-                    android:layout_marginEnd="6dp">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="10dp">
+
+                    <TextView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:gravity="center"
+                        android:text="⬡"
+                        android:textColor="#3B9EFF"
+                        android:textSize="16sp" />
+
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="BROWSE RESOURCES" android:textColor="#F0F6FF" android:textSize="11sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Mods · Packs · Shaders" android:textColor="#7A9BB8" android:textSize="10sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="BROWSE RESOURCES"
+                            android:textColor="#F0F6FF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mods · Resource Packs · Shader Packs"
+                            android:textColor="#7A9BB8"
+                            android:textSize="10sp" />
                     </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="›" android:textColor="#8AB4D8" android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#8AB4D8"
+                        android:textSize="20sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -289,96 +347,135 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp"
                     android:background="@drawable/bg_remom_tile"
                     android:clickable="true"
                     android:focusable="true"
-                    android:layout_marginEnd="6dp">
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="MANAGER" android:textColor="#F0F6FF" android:textSize="11sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Installed mods · packs" android:textColor="#7A9BB8" android:textSize="10sp" />
-                    </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="›" android:textColor="#8AB4D8" android:textSize="18sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/btn_host_servers"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:clickable="true"
-                    android:focusable="true">
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="10dp">
+
+                    <TextView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:gravity="center"
+                        android:text="☰"
+                        android:textColor="#3B9EFF"
+                        android:textSize="16sp" />
+
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="HOST / SERVERS" android:textColor="#F0F6FF" android:textSize="11sp" android:textStyle="bold" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Solo · LAN multiplayer" android:textColor="#7A9BB8" android:textSize="10sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="MANAGER"
+                            android:textColor="#F0F6FF"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Manage Installed Mods, Packs and Worlds"
+                            android:textColor="#7A9BB8"
+                            android:textSize="10sp" />
                     </LinearLayout>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="›" android:textColor="#8AB4D8" android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="›"
+                        android:textColor="#8AB4D8"
+                        android:textSize="20sp" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <!-- HOST row (Remom extra, full width) -->
+            <LinearLayout
+                android:id="@+id/btn_host_servers"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_remom_tile"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HOST / SERVERS"
+                    android:textColor="#F0F6FF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:text="Solo · LAN · Exaroton · Aternos"
+                    android:textColor="#7A9BB8"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="#8AB4D8"
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="YOUR INSTANCES"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="#5A7A9A"
-                android:letterSpacing="0.12"
+                android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp" />
+                android:letterSpacing="0.12"
+                android:text="YOUR INSTANCES"
+                android:textColor="#5A7A9A"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_home_profiles"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
                 android:clipToPadding="false"
-                android:paddingBottom="8dp"
-                android:overScrollMode="never" />
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                android:paddingBottom="8dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- Create = bottom floating + like CS -->
     <FrameLayout
         android:id="@+id/fab_create_profile"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginBottom="20dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/bg_fab_create_profile"
         android:clickable="true"
-        android:focusable="true"
         android:elevation="8dp"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_add"
-            android:contentDescription="Create profile" />
+            android:contentDescription="Create"
+            android:src="@drawable/ic_add" />
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
