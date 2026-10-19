@@ -1,58 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modpack / Mod Search — premium glass redesign (user req).
-     All view IDs preserved for SearchModFragment (R5). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_cs_page_bg"
+    android:background="#0A1628"
     android:orientation="vertical">
 
-    <!-- ── HEADER (glass, back + title + search + filter) ── -->
     <LinearLayout
         android:id="@+id/mod_store_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_cs_header_bar"
+        android:background="#0D1C30"
         android:orientation="vertical"
         android:paddingBottom="12dp">
 
-        <!-- Row: back + title -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="12dp"
-            android:paddingTop="8dp">
+            android:paddingTop="10dp">
 
             <ImageButton
                 android:id="@+id/mod_store_back"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
-                android:background="@drawable/bg_cs_settings_row"
+                android:background="@drawable/bg_remom_tile"
                 android:contentDescription="@string/global_back"
                 android:padding="9dp"
                 android:src="@drawable/ic_arrow_back"
-                android:tint="#FFFFFF" />
+                android:tint="#F0F6FF" />
 
-            <TextView
-                android:id="@+id/mod_store_title"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
-                android:fontFamily="@font/minecraftia"
-                android:includeFontPadding="false"
-                android:letterSpacing="0.02"
-                android:text="BROWSE RESOURCES"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/mod_store_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="MOD LIBRARY"
+                    android:textColor="#F0F6FF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Discover and manage your mods"
+                    android:textColor="#7A9BB8"
+                    android:textSize="11sp" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Row: search + filter -->
+        <!-- Tabs look: Mods / Resource Packs / Shaders -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_remom_play"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:text="⬡ Mods"
+                android:textColor="#0A1628"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_remom_tile"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="Resource Packs"
+                android:textColor="#8AB4D8"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_remom_tile"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="Shaders"
+                android:textColor="#8AB4D8"
+                android:textSize="11sp" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="46dp"
@@ -65,7 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@drawable/bg_cs_input_field">
+                android:background="@drawable/bg_remom_tile">
 
                 <EditText
                     android:id="@+id/search_mod_edittext"
@@ -79,8 +125,8 @@
                     android:paddingStart="40dp"
                     android:paddingEnd="16dp"
                     android:singleLine="true"
-                    android:textColor="#FFFFFF"
-                    android:textColorHint="#6B7280"
+                    android:textColor="#F0F6FF"
+                    android:textColorHint="#5A7A9A"
                     android:textSize="13.5sp" />
 
                 <ImageView
@@ -90,49 +136,42 @@
                     android:layout_marginStart="12dp"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_cs_search"
-                    app:tint="#6B7280" />
+                    app:tint="#5A7A9A" />
             </FrameLayout>
 
             <ImageButton
                 android:id="@+id/search_mod_filter"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
                 android:layout_marginStart="10dp"
-                android:background="@drawable/bg_cs_settings_row"
+                android:background="@drawable/bg_remom_tile"
                 android:contentDescription="@string/browse_filter_cd"
                 android:padding="8dp"
                 android:src="@drawable/ic_filter"
-                app:tint="#FFFFFF" />
-
+                app:tint="#F0F6FF" />
         </LinearLayout>
-
     </LinearLayout>
 
-    <!-- Progress bar -->
     <ProgressBar
         android:id="@+id/search_mod_progressbar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:indeterminate="true"
-        android:progressTint="#D0D0D0"
+        android:progressTint="#3B9EFF"
         android:visibility="gone" />
 
-    <!-- Mod list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_mod_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:fadingEdgeLength="24dp"
         android:overScrollMode="never"
         android:paddingHorizontal="10dp"
         android:paddingVertical="12dp"
-        android:requiresFadingEdge="vertical"
         android:scrollbars="none" />
 
-    <!-- Status text -->
     <TextView
         android:id="@+id/search_mod_status_text"
         android:layout_width="wrap_content"
@@ -141,7 +180,7 @@
         android:gravity="center"
         android:padding="24dp"
         android:text="No results found."
-        android:textColor="#9CA3AF"
+        android:textColor="#7A9BB8"
         android:textSize="12.5sp"
         android:visibility="gone" />
 
