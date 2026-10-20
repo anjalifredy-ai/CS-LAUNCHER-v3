@@ -15,7 +15,6 @@
         android:paddingTop="20dp"
         android:paddingBottom="40dp">
 
-        <!-- CS Plus style header -->
         <LinearLayout
             android:id="@+id/setup_hub_header"
             android:layout_width="match_parent"
@@ -51,7 +50,6 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- 3 primary cards like CS Plus -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -59,7 +57,6 @@
             android:orientation="horizontal"
             android:paddingHorizontal="16dp">
 
-            <!-- NORMAL -->
             <FrameLayout
                 android:id="@+id/vanilla_profile"
                 android:layout_width="0dp"
@@ -82,7 +79,7 @@
                         android:background="@drawable/bg_remom_tile"
                         android:gravity="center"
                         android:paddingHorizontal="8dp"
-                        android:text="FABRIC · FORGE"
+                        android:text="FABRIC - FORGE"
                         android:textColor="#3B9EFF"
                         android:textSize="8sp"
                         android:textStyle="bold" />
@@ -92,9 +89,10 @@
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:text="⛏"
+                        android:text="N"
                         android:textColor="#8AB4D8"
-                        android:textSize="36sp" />
+                        android:textSize="36sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -115,7 +113,6 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <!-- COMING SOON (visual only — taps still open fabric as safe fallback via optifine unused? keep non-click path) -->
             <FrameLayout
                 android:id="@+id/modded_profile_bta"
                 android:layout_width="0dp"
@@ -173,7 +170,6 @@
                 </LinearLayout>
             </FrameLayout>
 
-            <!-- MODPACK -->
             <FrameLayout
                 android:id="@+id/modded_profile_modpack"
                 android:layout_width="0dp"
@@ -196,7 +192,7 @@
                         android:background="@drawable/bg_remom_tile"
                         android:gravity="center"
                         android:paddingHorizontal="8dp"
-                        android:text="MODRINTH · CF"
+                        android:text="MODRINTH - CF"
                         android:textColor="#81C784"
                         android:textSize="8sp"
                         android:textStyle="bold" />
@@ -206,8 +202,10 @@
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:text="📦"
-                        android:textSize="32sp" />
+                        android:text="MP"
+                        android:textColor="#81C784"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -229,7 +227,6 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- LOADERS (Normal path detail) -->
         <LinearLayout
             android:id="@+id/section_loaders"
             android:layout_width="match_parent"
@@ -272,7 +269,7 @@
                         <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp">
                             <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@drawable/ic_fabric" tools:ignore="ContentDescription" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Fabric" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Light & fast" android:textColor="#7A9BB8" android:textSize="9sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="Light and fast" android:textColor="#7A9BB8" android:textSize="9sp" />
                         </LinearLayout>
                     </FrameLayout>
 
@@ -339,7 +336,6 @@
             </HorizontalScrollView>
         </LinearLayout>
 
-        <!-- keep section ids for Java -->
         <LinearLayout
             android:id="@+id/section_vanilla"
             android:layout_width="match_parent"
