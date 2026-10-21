@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cs_bg_pure_black"
+    android:orientation="vertical">
+
+    <include layout="@layout/cs_top_app_bar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SETTINGS"
+                android:textColor="@color/cs_text_primary"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp"
+                android:text="Customize CS Launcher Plus to match your style"
+                android:textColor="@color/cs_text_secondary"
+                android:textSize="12sp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/card_java_tweaks"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Java Tweaks" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp" android:text="JVM / Memory"
+                        android:textColor="@color/cs_text_secondary" android:textSize="10sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_misc"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Misc" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp" android:text="Version list"
+                        android:textColor="@color/cs_text_secondary" android:textSize="10sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_video"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Video" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp" android:text="Renderer"
+                        android:textColor="@color/cs_text_secondary" android:textSize="10sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_experimental"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Experiment" android:textColor="@color/cs_warning_yellow"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp" android:text="No support"
+                        android:textColor="@color/cs_text_secondary" android:textSize="10sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <LinearLayout
+                    android:id="@+id/card_accounts"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Accounts" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_profiles"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Profiles" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_launcher"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Launcher" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_about"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/cs_card_bg"
+                    android:padding="10dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="About" android:textColor="@color/cs_text_primary"
+                        android:textStyle="bold" android:textSize="12sp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
