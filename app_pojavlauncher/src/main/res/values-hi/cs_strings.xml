@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CS Launcher Plus — Hindi (Part 3) -->
+<resources>
+    <string name="cs_app_name">CS लॉन्चर प्लस</string>
+    <string name="cs_tagline">सीमाओं से परे खेलो</string>
+    <string name="cs_username_demo">ROHIT</string>
+    <string name="cs_home_banner_title">MINECRAFT</string>
+    <string name="cs_home_banner_sub">सीमाओं के बिना खेलो</string>
+    <string name="cs_badge_fabric">26.3 · फैब्रिक</string>
+    <string name="cs_badge_fast">तेज़</string>
+    <string name="cs_badge_stable">स्थिर</string>
+    <string name="cs_badge_customizable">कस्टमाइज़ेबल</string>
+    <string name="cs_profile_default">स्पंकी ऑप्टिमाइज्ड</string>
+    <string name="cs_profile_version">26.3 · फैब्रिक</string>
+    <string name="cs_btn_edit">एडिट</string>
+    <string name="cs_btn_play">खेलो</string>
+    <string name="cs_card_browse_title">ब्राउज़ रिसोर्सेज़</string>
+    <string name="cs_card_browse_sub">मॉड्स, रिसोर्स पैक, शेडर</string>
+    <string name="cs_card_manager_title">मैनेजर</string>
+    <string name="cs_card_manager_sub">इंस्टॉल्ड मॉड्स, पैक और वर्ल्ड</string>
+    <string name="cs_new_instance_title">नया इंस्टेंस</string>
+    <string name="cs_new_instance_sub">आप क्या बनाना चाहते हैं?</string>
+    <string name="cs_option_normal">नॉर्मल</string>
+    <string name="cs_option_normal_chip">फैब्रिक · फोर्ज</string>
+    <string name="cs_option_normal_desc">वैनिला, फैब्रिक, फोर्ज, क्विल्ट या नियोफोर्ज</string>
+    <string name="cs_option_cs_client">CS क्लाइंट</string>
+    <string name="cs_option_coming_soon">जल्द आ रहा है</string>
+    <string name="cs_option_cs_client_desc">जल्द ही यहां CS क्लाइंट प्रोफाइल बना सकेंगे</string>
+    <string name="cs_option_modpack">मॉडपैक</string>
+    <string name="cs_option_modpack_desc">मॉडपैक ब्राउज़ करें और नई प्रोफाइल बनाएं</string>
+    <string name="cs_settings_title">सेटिंग्स</string>
+    <string name="cs_settings_sub">अपनी स्टाइल के अनुसार कस्टमाइज़ करें</string>
+    <string name="cs_settings_java_tweaks">जावा ट्वीक्स</string>
+    <string name="cs_settings_java_tweaks_desc">जावा रनटाइम, JVM आर्ग्युमेंट्स, मेमोरी</string>
+    <string name="cs_settings_misc">विविध सेटिंग्स</string>
+    <string name="cs_settings_misc_desc">वर्ज़न लिस्ट और लाइब्रेरी चेक</string>
+    <string name="cs_settings_video">वीडियो और रेंडरर</string>
+    <string name="cs_settings_video_desc">रिज़ॉल्यूशन, रेंडरर और परफॉरमेंस</string>
+    <string name="cs_settings_experimental">प्रायोगिक</string>
+    <string name="cs_settings_experimental_desc">बिना आधिकारिक सपोर्ट वाले फीचर्स</string>
+    <string name="cs_edit_profile_title">प्रोफाइल एडिट</string>
+    <string name="cs_edit_profile_sub">आइडेंटिटी, आर्ट, रनटाइम और रेंडरर</string>
+    <string name="cs_manage_content_title">कंटेंट / मॉड्स मैनेज</string>
+    <string name="cs_btn_browse">+ ब्राउज़</string>
+    <string name="cs_badge_update">अपडेट</string>
+    <string name="cs_badge_enabled">सक्रिय</string>
+    <string name="cs_btn_save">सहेजें</string>
+    <string name="cs_btn_cancel">रद्द करें</string>
+    <string name="cs_btn_delete">हटाएं</string>
+    <string name="cs_btn_select">चुनें</string>
+</resources>

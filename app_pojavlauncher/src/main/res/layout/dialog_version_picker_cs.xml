@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Part 3 Version picker shell -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/cs_bg_pure_black"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Version"
+        android:textColor="@color/cs_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/cs_vp_search"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/cs_bg_search_bar"
+        android:hint="Search versions..."
+        android:paddingHorizontal="12dp"
+        android:textColor="@color/cs_text_primary"
+        android:textColorHint="@color/cs_text_tertiary"
+        android:textSize="14sp"
+        android:inputType="text"
+        android:singleLine="true" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/cs_vp_list"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginTop="12dp"
+        android:overScrollMode="never" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/cs_vp_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/cs_btn_outline"
+            android:gravity="center"
+            android:paddingHorizontal="16dp"
+            android:text="@string/cs_btn_cancel"
+            android:textColor="@color/cs_text_primary"
+            android:textSize="13sp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/cs_vp_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="12dp"
+            android:background="@drawable/cs_btn_primary"
+            android:gravity="center"
+            android:paddingHorizontal="20dp"
+            android:text="OK"
+            android:textColor="@color/cs_bg_pure_black"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+</LinearLayout>

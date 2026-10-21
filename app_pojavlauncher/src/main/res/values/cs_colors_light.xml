@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CS Plus light theme tokens (Part 3) -->
+<resources>
+    <color name="cs_light_bg_pure">#FFF5F5F5</color>
+    <color name="cs_light_bg_surface">#FFFFFFFF</color>
+    <color name="cs_light_bg_card">#FFFFFFFF</color>
+    <color name="cs_light_text_primary">#FF0F0F0F</color>
+    <color name="cs_light_text_secondary">#FF666666</color>
+    <color name="cs_light_border">#FFE0E0E0</color>
+</resources>
