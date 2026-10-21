@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CS Launcher Plus component styles — master prompt PART 2.4 + Theme -->
+<!-- CS Launcher Plus styles — dotted names need parent styles for AAPT -->
 <resources>
 
-    <style name="Theme.CSLauncher" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.CSLauncher" parent="@style/Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/cs_brand_green</item>
         <item name="colorOnPrimary">@color/cs_bg_pure_black</item>
         <item name="colorSecondary">@color/cs_brand_purple</item>
@@ -13,27 +13,37 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <style name="CS.Text.SectionLabel">
+    <!-- Parent chain for CS.Text.* -->
+    <style name="CS.Text">
+        <item name="android:textColor">@color/cs_text_primary</item>
+    </style>
+
+    <style name="CS.Text.SectionLabel" parent="CS.Text">
         <item name="android:textColor">@color/cs_text_secondary</item>
         <item name="android:textSize">10sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:letterSpacing">0.1</item>
     </style>
 
-    <style name="CS.Text.Pixel">
+    <style name="CS.Text.Pixel" parent="CS.Text">
         <item name="android:textColor">@color/cs_text_primary</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="CS.Text.CardTitle">
+    <style name="CS.Text.CardTitle" parent="CS.Text">
         <item name="android:textColor">@color/cs_text_primary</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="CS.Text.CardSub">
+    <style name="CS.Text.CardSub" parent="CS.Text">
         <item name="android:textColor">@color/cs_text_secondary</item>
         <item name="android:textSize">10sp</item>
     </style>
+
+    <!-- Parent chain for CS.Card.* / CS.Button.* if used later -->
+    <style name="CS.Card" />
+    <style name="CS.Button" />
+    <style name="CS.Chip" />
 
 </resources>
