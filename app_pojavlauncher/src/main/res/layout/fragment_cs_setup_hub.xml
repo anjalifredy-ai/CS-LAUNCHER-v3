@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cs_bg_pure_black"
+    android:orientation="vertical">
+
+    <include layout="@layout/cs_top_app_bar"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:background="@color/cs_bg_surface"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SETUP HUB"
+                android:textColor="@color/cs_text_primary"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Create Profile"
+                android:textColor="@color/cs_text_primary"
+                android:textStyle="bold"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Choose your play style — each loader has its own profile and game folder."
+                android:textColor="@color/cs_text_secondary"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_loaders"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:padding="16dp"
+            android:clipToPadding="false"/>
+    </LinearLayout>
+</LinearLayout>
