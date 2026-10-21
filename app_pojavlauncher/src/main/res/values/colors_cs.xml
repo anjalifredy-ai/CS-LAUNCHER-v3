@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     RemomLauncher design tokens (on CS V3 / Pojav engine)
-     Blue-forward theme on dark base — landscape UI stays as in base layouts.
+     RemomLauncher + CS Plus design tokens (single file — no duplicates)
 -->
 <resources>
-    <!-- Base layers -->
+    <!-- Base layers (blue dark — legacy Remom) -->
     <color name="cs_bg_base">#0A1628</color>
     <color name="cs_bg_surface">#0F1F35</color>
     <color name="cs_bg_elevated">#152A45</color>
     <color name="cs_bg_overlay">#1C3555</color>
+
+    <!-- CS Plus pure black / cards (master prompt) -->
+    <color name="cs_bg_pure_black">#FF000000</color>
+    <color name="cs_bg_surface_elevated">#FF1A1A1A</color>
+    <color name="cs_bg_card">#FF1E1E1E</color>
+    <color name="cs_bg_card_hover">#FF252525</color>
+    <color name="cs_bg_card_selected">#FF2A2A2A</color>
 
     <!-- Glass -->
     <color name="cs_glass_fill">#14FFFFFF</color>
@@ -23,6 +29,12 @@
     <color name="cs_accent_soft">#333B9EFF</color>
     <color name="cs_accent_glow">#403B9EFF</color>
 
+    <!-- CS Plus brand green -->
+    <color name="cs_brand_green">#FF4ADE80</color>
+    <color name="cs_brand_green_dark">#FF22C55E</color>
+    <color name="cs_brand_purple">#FF8B5CF6</color>
+    <color name="cs_brand_teal">#FF14B8A6</color>
+
     <!-- Legacy names → blue family (compat) -->
     <color name="cs_violet">#5B8DEF</color>
     <color name="cs_violet_deep">#3B6BC4</color>
@@ -35,13 +47,29 @@
     <color name="cs_danger">#FF4444</color>
     <color name="cs_danger_deep">#D63A3A</color>
     <color name="cs_danger_soft">#26FF4444</color>
+    <color name="cs_danger_red">#FFEF4444</color>
     <color name="cs_warning">#FFB020</color>
     <color name="cs_warning_soft">#26FFB020</color>
+    <color name="cs_warning_yellow">#FFF59E0B</color>
+    <color name="cs_warning_orange">#FFF97316</color>
+    <color name="cs_status_active">#FF22C55E</color>
+    <color name="cs_status_compatible">#FF4ADE80</color>
+    <color name="cs_status_update">#FFF97316</color>
+    <color name="cs_status_enabled">#FF22C55E</color>
 
     <!-- Text -->
-    <color name="cs_text_primary">#F0F6FF</color>
-    <color name="cs_text_secondary">#9BB0C9</color>
+    <color name="cs_text_primary">#FFFFFFFF</color>
+    <color name="cs_text_secondary">#FFA0A0A0</color>
+    <color name="cs_text_tertiary">#FF666666</color>
     <color name="cs_text_dim">#6B8299</color>
     <color name="cs_text_on_accent">#0A1628</color>
     <color name="cs_text_accent">#7EC4FF</color>
+
+    <!-- Borders -->
+    <color name="cs_border_default">#FF2A2A2A</color>
+    <color name="cs_border_button_outline">#FF333333</color>
+    <color name="cs_border_selected">#FF4ADE80</color>
+
+    <!-- Overlay -->
+    <color name="cs_overlay_banner_dark">#AA000000</color>
 </resources>
