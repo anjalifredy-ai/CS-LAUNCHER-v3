@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cs_bg_pure_black"
+    android:orientation="vertical">
+
+    <include layout="@layout/cs_top_app_bar"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <ScrollView
+            android:layout_width="160dp"
+            android:layout_height="match_parent"
+            android:background="@color/cs_bg_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="CATEGORIES" android:textColor="@color/cs_text_tertiary"
+                    android:textSize="10sp" android:textAllCaps="true"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView android:id="@+id/cat_all" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="All Mods"
+                    android:textColor="@color/cs_brand_green" android:textStyle="bold"
+                    android:textSize="12sp" android:layout_marginBottom="6dp"/>
+                <TextView android:id="@+id/cat_performance" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Performance"
+                    android:textColor="@color/cs_text_secondary" android:textSize="12sp"
+                    android:layout_marginBottom="6dp"/>
+                <TextView android:id="@+id/cat_utility" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Utility"
+                    android:textColor="@color/cs_text_secondary" android:textSize="12sp"
+                    android:layout_marginBottom="6dp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" android:text="SOURCE"
+                    android:textColor="@color/cs_text_tertiary" android:textSize="10sp"
+                    android:textAllCaps="true" android:layout_marginBottom="8dp"/>
+
+                <TextView android:id="@+id/src_modrinth" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Modrinth"
+                    android:textColor="@color/cs_brand_green" android:textStyle="bold"
+                    android:textSize="12sp" android:layout_marginBottom="6dp"/>
+                <TextView android:id="@+id/src_curseforge" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="CurseForge"
+                    android:textColor="@color/cs_text_secondary" android:textSize="12sp"/>
+            </LinearLayout>
+        </ScrollView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <EditText
+                android:id="@+id/edit_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search mods..."
+                android:textColorHint="@color/cs_text_tertiary"
+                android:textColor="@color/cs_text_primary"
+                android:background="@drawable/cs_card_bg"
+                android:padding="10dp"
+                android:textSize="12sp"
+                android:singleLine="true"
+                android:layout_marginBottom="12dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_mods"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
