@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/cs_card_bg"
+    android:padding="14dp"
+    android:layout_margin="6dp">
+
+    <LinearLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/cs_card_bg"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/txt_loader_letter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="F"
+            android:textColor="@color/cs_brand_green"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txt_loader_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fabric"
+        android:textColor="@color/cs_text_primary"
+        android:textStyle="bold"
+        android:textSize="13sp"/>
+
+    <TextView
+        android:id="@+id/txt_loader_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Lightweight modern mods"
+        android:textColor="@color/cs_text_secondary"
+        android:textSize="10sp"
+        android:maxLines="2"/>
+</LinearLayout>
