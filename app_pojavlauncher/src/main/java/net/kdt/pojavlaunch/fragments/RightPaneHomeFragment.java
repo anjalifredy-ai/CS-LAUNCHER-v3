@@ -156,11 +156,73 @@ public class RightPaneHomeFragment extends Fragment {
 
     private void openCreateProfile() {
         try {
-            Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
-                    ProfileTypeSelectFragment.TAG, null);
+            showNewInstanceDialog();
         } catch (Throwable t) {
-            Toast.makeText(requireContext(), "Open create profile", Toast.LENGTH_SHORT).show();
+            try {
+                Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
+                        ProfileTypeSelectFragment.TAG, null);
+            } catch (Throwable t2) {
+                Toast.makeText(requireContext(), "Open create profile", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+
+    /** CS Plus New Instance dialog — Normal / CS Client / Modpack */
+    private void showNewInstanceDialog() {
+        final Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        View root = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_new_instance_cs, null, false);
+        dialog.setContentView(root);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        View back = root.findViewById(R.id.cs_ni_back);
+        View close = root.findViewById(R.id.cs_ni_close);
+        View normal = root.findViewById(R.id.cs_ni_card_normal);
+        View csClient = root.findViewById(R.id.cs_ni_card_cs_client);
+        View modpack = root.findViewById(R.id.cs_ni_card_modpack);
+
+        View.OnClickListener dismiss = v -> dialog.dismiss();
+        if (back != null) back.setOnClickListener(dismiss);
+        if (close != null) close.setOnClickListener(dismiss);
+
+        if (normal != null) {
+            normal.setOnClickListener(v -> {
+                dialog.dismiss();
+                try {
+                    Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
+                            ProfileTypeSelectFragment.TAG, null);
+                } catch (Throwable t) {
+                    Toast.makeText(requireContext(), "Normal profile", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        if (csClient != null) {
+            csClient.setOnClickListener(v ->
+                    Toast.makeText(requireContext(), "CS Client — coming soon", Toast.LENGTH_SHORT).show());
+        }
+        if (modpack != null) {
+            modpack.setOnClickListener(v -> {
+                dialog.dismiss();
+                try {
+                    Tools.swapFragment(requireActivity(), ProfileTypeSelectFragment.class,
+                            ProfileTypeSelectFragment.TAG, null);
+                } catch (Throwable t) {
+                    try {
+                        Tools.swapFragment(requireActivity(), ModsSearchFragment.class,
+                                ModsSearchFragment.TAG, null);
+                    } catch (Throwable t2) {
+                        Toast.makeText(requireContext(), "Modpack", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+        dialog.show();
     }
 
     private void showProfilePicker() {
