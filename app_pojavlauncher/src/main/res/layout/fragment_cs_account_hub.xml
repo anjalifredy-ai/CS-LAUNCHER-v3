@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cs_bg_pure_black"
+    android:orientation="vertical">
+
+    <include layout="@layout/cs_top_app_bar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCOUNT HUB"
+                android:textColor="@color/cs_text_primary"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Add Account"
+                android:textColor="@color/cs_text_primary"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Choose how you want to sign in"
+                android:textColor="@color/cs_text_secondary"
+                android:textSize="12sp"/>
+
+            <!-- Microsoft -->
+            <LinearLayout
+                android:id="@+id/card_microsoft"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/cs_card_bg"
+                android:padding="16dp"
+                android:layout_marginTop="20dp">
+
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="M"
+                    android:textColor="@color/cs_brand_green"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:background="@drawable/cs_card_bg"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Microsoft Account"
+                            android:textColor="@color/cs_text_primary"
+                            android:textStyle="bold"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="RECOMMENDED"
+                            android:background="@drawable/cs_chip_filled_bg"
+                            android:paddingStart="6dp"
+                            android:paddingEnd="6dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:textColor="@color/cs_text_on_brand"
+                            android:textStyle="bold"
+                            android:textSize="8sp"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Xbox Live, capes, Realms access"
+                        android:textColor="@color/cs_text_secondary"
+                        android:textSize="11sp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="@color/cs_text_secondary"
+                    android:textSize="20sp"/>
+            </LinearLayout>
+
+            <!-- Ely.by -->
+            <LinearLayout
+                android:id="@+id/card_elyby"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/cs_card_bg"
+                android:padding="16dp"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="E"
+                    android:textColor="@color/cs_brand_purple"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:background="@drawable/cs_card_bg"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ely.by Account"
+                            android:textColor="@color/cs_text_primary"
+                            android:textStyle="bold"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="SKINS"
+                            android:background="@drawable/cs_chip_outline_bg"
+                            android:paddingStart="6dp"
+                            android:paddingEnd="6dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:textColor="@color/cs_ely_purple"
+                            android:textStyle="bold"
+                            android:textSize="8sp"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Free skins and capes, no Microsoft account needed"
+                        android:textColor="@color/cs_text_secondary"
+                        android:textSize="11sp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="@color/cs_text_secondary"
+                    android:textSize="20sp"/>
+            </LinearLayout>
+
+            <!-- Offline -->
+            <LinearLayout
+                android:id="@+id/card_offline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/cs_card_bg"
+                android:padding="16dp"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="O"
+                    android:textColor="@color/cs_text_secondary"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:background="@drawable/cs_card_bg"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Offline Account"
+                            android:textColor="@color/cs_text_primary"
+                            android:textStyle="bold"
+                            android:textSize="14sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="LOCAL"
+                            android:background="@drawable/cs_chip_outline_bg"
+                            android:paddingStart="6dp"
+                            android:paddingEnd="6dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:textColor="@color/cs_offline_gray"
+                            android:textStyle="bold"
+                            android:textSize="8sp"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Play locally, no internet"
+                        android:textColor="@color/cs_text_secondary"
+                        android:textSize="11sp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="@color/cs_text_secondary"
+                    android:textSize="20sp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
