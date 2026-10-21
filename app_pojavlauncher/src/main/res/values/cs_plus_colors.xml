@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CS Launcher Plus palette — pure black + green primary, NO blue -->
+<resources>
+    <color name="cs_bg_pure_black">#000000</color>
+    <color name="cs_bg_surface">#0D0D0D</color>
+    <color name="cs_bg_surface_elevated">#1A1A1A</color>
+    <color name="cs_bg_card">#1E1E1E</color>
+    <color name="cs_bg_card_hover">#252525</color>
+    <color name="cs_bg_card_selected">#2A2A2A</color>
+
+    <color name="cs_brand_primary">#4ADE80</color>
+    <color name="cs_brand_accent_purple">#8B5CF6</color>
+    <color name="cs_brand_accent_teal">#14B8A6</color>
+    <color name="cs_brand_green">#4ADE80</color>
+    <color name="cs_brand_purple">#8B5CF6</color>
+
+    <color name="cs_danger_red">#EF4444</color>
+    <color name="cs_warning_yellow">#F59E0B</color>
+    <color name="cs_update_orange">#F97316</color>
+    <color name="cs_active_green">#22C55E</color>
+    <color name="cs_compatible_green">#4ADE80</color>
+
+    <color name="cs_text_primary">#FFFFFF</color>
+    <color name="cs_text_secondary">#A0A0A0</color>
+    <color name="cs_text_tertiary">#666666</color>
+    <color name="cs_text_on_brand">#0D0D0D</color>
+
+    <color name="cs_border">#2A2A2A</color>
+    <color name="cs_border_light">#333333</color>
+    <color name="cs_divider">#1F1F1F</color>
+
+    <color name="cs_banner_overlay">#80000000</color>
+    <color name="cs_banner_overlay_strong">#CC000000</color>
+
+    <color name="cs_tab_indicator">#4ADE80</color>
+    <color name="cs_tab_inactive_text">#A0A0A0</color>
+    <color name="cs_tab_active_text">#FFFFFF</color>
+
+    <color name="cs_tag_fabric">#4ADE80</color>
+    <color name="cs_tag_forge">#F97316</color>
+    <color name="cs_tag_quilt">#8B5CF6</color>
+    <color name="cs_tag_optifine">#F59E0B</color>
+    <color name="cs_tag_neoforge">#EF4444</color>
+    <color name="cs_tag_vanilla">#14B8A6</color>
+    <color name="cs_tag_modpack">#A855F7</color>
+    <color name="cs_tag_remom">#4ADE80</color>
+
+    <color name="cs_microsoft_blue_skip">#4ADE80</color>
+    <color name="cs_ely_purple">#8B5CF6</color>
+    <color name="cs_offline_gray">#666666</color>
+</resources>
