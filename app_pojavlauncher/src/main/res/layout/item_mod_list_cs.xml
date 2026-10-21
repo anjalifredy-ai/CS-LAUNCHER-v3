@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Screen 8 manage mods row — CS Plus -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/cs_bg_card"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/cs_mod_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/cs_chip_outline"
+            android:gravity="center"
+            android:text="J"
+            android:textColor="@color/cs_brand_green"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/cs_mod_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/cs_text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/cs_mod_file"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/cs_text_secondary"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/cs_mod_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="22dp"
+            android:background="@drawable/cs_chip_outline"
+            android:gravity="center"
+            android:paddingHorizontal="8dp"
+            android:text="@string/cs_badge_update"
+            android:textColor="@color/cs_warning_orange"
+            android:textSize="9sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="end|center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/cs_mod_delete"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:text="Del"
+            android:textColor="@color/cs_danger_red"
+            android:textSize="10sp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <Switch
+            android:id="@+id/cs_mod_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:thumbTint="@color/cs_brand_green"
+            android:trackTint="@color/cs_border_default" />
+    </LinearLayout>
+</LinearLayout>
