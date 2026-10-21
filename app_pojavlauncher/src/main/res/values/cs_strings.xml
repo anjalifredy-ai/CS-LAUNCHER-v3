@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CS Launcher Plus strings — master prompt screens -->
+<resources>
+    <string name="cs_app_name">CS LAUNCHER PLUS</string>
+    <string name="cs_tagline">PLAY BEYOND LIMITS</string>
+    <string name="cs_username_demo">ROHIT</string>
+    <string name="cs_home_banner_title">MINECRAFT</string>
+    <string name="cs_home_banner_sub">PLAY WITHOUT LIMITS</string>
+    <string name="cs_badge_fabric">26.3 · Fabric</string>
+    <string name="cs_badge_fast">FAST</string>
+    <string name="cs_badge_stable">STABLE</string>
+    <string name="cs_badge_customizable">CUSTOMIZABLE</string>
+    <string name="cs_profile_default">Spunky Optimized</string>
+    <string name="cs_profile_version">26.3 · Fabric</string>
+    <string name="cs_btn_edit">EDIT</string>
+    <string name="cs_btn_play">PLAY</string>
+    <string name="cs_card_browse_title">BROWSE RESOURCES</string>
+    <string name="cs_card_browse_sub">Mods, Resource Packs, Shaders</string>
+    <string name="cs_card_manager_title">MANAGER</string>
+    <string name="cs_card_manager_sub">Manage installed mods, packs and worlds</string>
+    <string name="cs_new_instance_title">NEW INSTANCE</string>
+    <string name="cs_new_instance_sub">What do you want to create?</string>
+    <string name="cs_option_normal">Normal</string>
+    <string name="cs_option_normal_chip">FABRIC · FORGE</string>
+    <string name="cs_option_normal_desc">Vanilla, Fabric, Forge, Quilt or NeoForge, with custom settings</string>
+    <string name="cs_option_cs_client">CS Client</string>
+    <string name="cs_option_coming_soon">COMING SOON</string>
+    <string name="cs_option_cs_client_desc">Soon you will be able to create CS Client profiles here too</string>
+    <string name="cs_option_modpack">Modpack</string>
+    <string name="cs_option_modpack_desc">Browse and install as a new profile</string>
+    <string name="cs_settings_title">SETTINGS</string>
+    <string name="cs_settings_sub">Customize CS Launcher Plus to match your style</string>
+    <string name="cs_settings_java_tweaks">Java Tweaks</string>
+    <string name="cs_settings_java_tweaks_desc">Java Runtime, JVM Arguments, Memory and Sandbox</string>
+    <string name="cs_settings_misc">Miscellaneous settings</string>
+    <string name="cs_settings_misc_desc">Version list and library checks</string>
+    <string name="cs_settings_video">Video and renderer</string>
+    <string name="cs_settings_video_desc">Resolution, Renderer and Performance</string>
+    <string name="cs_settings_experimental">Experimental Stuff</string>
+    <string name="cs_settings_experimental_desc">Experimental features with no official support</string>
+    <string name="cs_edit_profile_title">EDIT PROFILE</string>
+    <string name="cs_edit_profile_sub">Configure instance identity, art, runtime and renderer</string>
+    <string name="cs_manage_content_title">MANAGE CONTENT / MODS</string>
+    <string name="cs_btn_browse">+ Browse</string>
+    <string name="cs_badge_update">Update</string>
+    <string name="cs_badge_enabled">Enabled</string>
+    <string name="cs_btn_save">Save</string>
+    <string name="cs_btn_cancel">Cancel</string>
+    <string name="cs_btn_delete">Delete</string>
+    <string name="cs_btn_select">Select</string>
+</resources>

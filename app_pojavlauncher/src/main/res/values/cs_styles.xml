@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CS Launcher Plus component styles — master prompt PART 2.4 + Theme -->
+<resources>
+
+    <style name="Theme.CSLauncher" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/cs_brand_green</item>
+        <item name="colorOnPrimary">@color/cs_bg_pure_black</item>
+        <item name="colorSecondary">@color/cs_brand_purple</item>
+        <item name="colorOnSecondary">@color/cs_text_primary</item>
+        <item name="android:windowBackground">@color/cs_bg_pure_black</item>
+        <item name="android:statusBarColor">@color/cs_bg_pure_black</item>
+        <item name="android:navigationBarColor">@color/cs_bg_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="CS.Text.SectionLabel">
+        <item name="android:textColor">@color/cs_text_secondary</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.1</item>
+    </style>
+
+    <style name="CS.Text.Pixel">
+        <item name="android:textColor">@color/cs_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CS.Text.CardTitle">
+        <item name="android:textColor">@color/cs_text_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CS.Text.CardSub">
+        <item name="android:textColor">@color/cs_text_secondary</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+</resources>
