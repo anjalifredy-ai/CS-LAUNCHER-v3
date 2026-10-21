@@ -22,20 +22,23 @@
     <color name="cs_glass_stroke">#332A7AB8</color>
     <color name="cs_glass_stroke_soft">#1A2A7AB8</color>
 
-    <!-- Primary accent — Remom blue -->
+    <!-- Primary accent — Remom blue (legacy) -->
     <color name="cs_accent">#3B9EFF</color>
     <color name="cs_accent_deep">#1E6FD9</color>
     <color name="cs_accent_light">#7EC4FF</color>
     <color name="cs_accent_soft">#333B9EFF</color>
     <color name="cs_accent_glow">#403B9EFF</color>
 
-    <!-- CS Plus brand green -->
+    <!-- CS Plus brand -->
     <color name="cs_brand_green">#FF4ADE80</color>
     <color name="cs_brand_green_dark">#FF22C55E</color>
     <color name="cs_brand_purple">#FF8B5CF6</color>
     <color name="cs_brand_teal">#FF14B8A6</color>
+    <color name="cs_brand_primary">#FF4ADE80</color>
+    <color name="cs_brand_accent_purple">#FF8B5CF6</color>
+    <color name="cs_brand_accent_teal">#FF14B8A6</color>
 
-    <!-- Legacy names → blue family (compat) -->
+    <!-- Legacy names -->
     <color name="cs_violet">#5B8DEF</color>
     <color name="cs_violet_deep">#3B6BC4</color>
     <color name="cs_violet_soft">#335B8DEF</color>
@@ -52,6 +55,9 @@
     <color name="cs_warning_soft">#26FFB020</color>
     <color name="cs_warning_yellow">#FFF59E0B</color>
     <color name="cs_warning_orange">#FFF97316</color>
+    <color name="cs_update_orange">#FFF97316</color>
+    <color name="cs_active_green">#FF22C55E</color>
+    <color name="cs_compatible_green">#FF4ADE80</color>
     <color name="cs_status_active">#FF22C55E</color>
     <color name="cs_status_compatible">#FF4ADE80</color>
     <color name="cs_status_update">#FFF97316</color>
@@ -63,13 +69,35 @@
     <color name="cs_text_tertiary">#FF666666</color>
     <color name="cs_text_dim">#6B8299</color>
     <color name="cs_text_on_accent">#0A1628</color>
+    <color name="cs_text_on_brand">#FF0D0D0D</color>
     <color name="cs_text_accent">#7EC4FF</color>
 
     <!-- Borders -->
     <color name="cs_border_default">#FF2A2A2A</color>
     <color name="cs_border_button_outline">#FF333333</color>
     <color name="cs_border_selected">#FF4ADE80</color>
+    <color name="cs_border_light">#FF333333</color>
+    <color name="cs_border">#FF2A2A2A</color>
+    <color name="cs_divider">#FF1F1F1F</color>
 
-    <!-- Overlay -->
+    <!-- Overlay / tabs -->
     <color name="cs_overlay_banner_dark">#AA000000</color>
+    <color name="cs_banner_overlay">#80000000</color>
+    <color name="cs_banner_overlay_strong">#CC000000</color>
+    <color name="cs_tab_indicator">#FF4ADE80</color>
+    <color name="cs_tab_inactive_text">#FFA0A0A0</color>
+    <color name="cs_tab_active_text">#FFFFFFFF</color>
+
+    <!-- Loader tags -->
+    <color name="cs_tag_fabric">#FF4ADE80</color>
+    <color name="cs_tag_forge">#FFF97316</color>
+    <color name="cs_tag_quilt">#FF8B5CF6</color>
+    <color name="cs_tag_optifine">#FFF59E0B</color>
+    <color name="cs_tag_neoforge">#FFEF4444</color>
+    <color name="cs_tag_vanilla">#FF14B8A6</color>
+    <color name="cs_tag_modpack">#FFA855F7</color>
+    <color name="cs_tag_remom">#FF4ADE80</color>
+    <color name="cs_ely_purple">#FF8B5CF6</color>
+    <color name="cs_offline_gray">#FF666666</color>
+    <color name="cs_microsoft_blue_skip">#FF4ADE80</color>
 </resources>
