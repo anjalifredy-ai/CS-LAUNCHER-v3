@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- CS Launcher Plus strings — master prompt screens -->
+<!-- CS Launcher Plus strings — master prompt screens (no duplicates with strings.xml) -->
 <resources>
     <string name="cs_app_name">CS LAUNCHER PLUS</string>
     <string name="cs_tagline">PLAY BEYOND LIMITS</string>
@@ -28,7 +28,7 @@
     <string name="cs_option_cs_client_desc">Soon you will be able to create CS Client profiles here too</string>
     <string name="cs_option_modpack">Modpack</string>
     <string name="cs_option_modpack_desc">Browse and install as a new profile</string>
-    <string name="cs_settings_title">SETTINGS</string>
+    <!-- cs_settings_title lives in strings.xml -->
     <string name="cs_settings_sub">Customize CS Launcher Plus to match your style</string>
     <string name="cs_settings_java_tweaks">Java Tweaks</string>
     <string name="cs_settings_java_tweaks_desc">Java Runtime, JVM Arguments, Memory and Sandbox</string>
