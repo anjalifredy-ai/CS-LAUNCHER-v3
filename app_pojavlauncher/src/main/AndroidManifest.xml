@@ -17,6 +17,7 @@
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
@@ -43,9 +44,6 @@
             android:name=".MissingStorageActivity"
             android:exported="false" />
 
-        <!-- Full-screen first-launch Java runtime installer -->
-        <!-- sensorLandscape: the launcher itself is landscape (Task 2); the
-             runtime setup page follows with its dedicated layout-land split. -->
         <activity
             android:name=".multirt.RuntimeSetupActivity"
             android:exported="false"
@@ -64,12 +62,9 @@
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- Invisible trampoline opened by home screen shortcuts. Transparent so
-             no blank frame flashes before the launcher appears. -->
         <activity
             android:name=".shortcuts.ShortcutActivity"
             android:exported="true"
@@ -78,7 +73,6 @@
             android:taskAffinity=""
             android:noHistory="true" />
 
-        <!-- Receives confirmation that the home screen actually pinned a shortcut. -->
         <receiver
             android:name=".shortcuts.ShortcutPinReceiver"
             android:exported="false">
@@ -93,10 +87,6 @@
             android:hardwareAccelerated="true"
             android:screenOrientation="sensorLandscape"
             android:windowSoftInputMode="adjustPan"/>
-        <!-- adjustResize + FLAG_LAYOUT_NO_LIMITS got stuck after the IME closed:
-             the window frame kept the shrunken height, so returning from
-             Settings left the home screen partially resized/compressed.
-             adjustPan keeps the window frame fixed and pans content instead. -->
         <activity
             android:name=".ImportControlActivity"
             android:configChanges="keyboard|keyboardHidden"
@@ -109,9 +99,7 @@
                 tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="application/json" />
                 <data android:mimeType="text/json" />
                 <data android:mimeType="text/plain" />
@@ -151,7 +139,6 @@
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name=".CustomControlsActivity" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -190,6 +177,12 @@
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="This application is intended to run a 3rd-party piece of software which cannot be managed using the activity's saved instance state. This service is used for background persistence of this piece of software."/>
         </service>
+
+        <!-- On-device dedicated Minecraft server (keeps process alive) -->
+        <service
+            android:name=".servers.LocalServerService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <service
             android:name="net.kdt.pojavlaunch.remote.CsFirebaseMessagingService"
