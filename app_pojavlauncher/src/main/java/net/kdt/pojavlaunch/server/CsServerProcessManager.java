@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -11,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
  * Spawns a dedicated server process (java -jar server.jar) with console capture.
- * Uses host JRE path provided by caller (CS / Pojav runtime).
  */
 public class CsServerProcessManager {
 
@@ -46,12 +47,14 @@ public class CsServerProcessManager {
             throw new IllegalStateException("Already running");
         }
         File dir = new File(config.serverDir);
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IllegalStateException("Cannot create " + dir);
+        }
 
         File jar = findServerJar(dir);
         if (jar == null) {
-            throw new IllegalStateException("No server jar in " + dir.getAbsolutePath() +
-                    " — install Paper/Vanilla/Fabric jar first");
+            throw new IllegalStateException("No server jar in " + dir.getAbsolutePath()
+                    + " — install jar first (Paper/Vanilla/Fabric)");
         }
 
         writeEula(dir);
@@ -82,7 +85,7 @@ public class CsServerProcessManager {
                 String line;
                 while ((line = br.readLine()) != null) {
                     emitLog(config.id, line);
-                    if (line.contains("Done") && line.contains("For help")) {
+                    if (line.contains("Done") && (line.contains("For help") || line.contains("!"))) {
                         getStatus(config.id).state = State.ONLINE;
                     }
                 }
@@ -113,7 +116,7 @@ public class CsServerProcessManager {
         } catch (Exception ignored) {}
         new Thread(() -> {
             try {
-                if (!p.waitFor(15, java.util.concurrent.TimeUnit.SECONDS)) {
+                if (!p.waitFor(15, TimeUnit.SECONDS)) {
                     p.destroyForcibly();
                 }
             } catch (Exception e) {
@@ -138,19 +141,22 @@ public class CsServerProcessManager {
 
     private void emitLog(String id, String line) {
         List<Consumer<String>> ls = logListeners.get(id);
-        if (ls != null) for (Consumer<String> c : ls) {
-            try { c.accept(line); } catch (Exception ignored) {}
+        if (ls != null) {
+            for (Consumer<String> c : ls) {
+                try { c.accept(line); } catch (Exception ignored) {}
+            }
         }
     }
 
     private static File findServerJar(File dir) {
         File[] files = dir.listFiles((d, n) -> n.endsWith(".jar") && !n.contains("installer"));
         if (files == null || files.length == 0) return null;
-        // prefer server.jar / paper*.jar
         for (File f : files) {
             String n = f.getName().toLowerCase();
             if (n.equals("server.jar") || n.startsWith("paper") || n.startsWith("purpur")
-                    || n.contains("fabric") || n.contains("forge")) return f;
+                    || n.contains("fabric") || n.contains("forge") || n.contains("neoforge")) {
+                return f;
+            }
         }
         return files[0];
     }
@@ -177,10 +183,5 @@ public class CsServerProcessManager {
         try (FileOutputStream fos = new FileOutputStream(props)) {
             fos.write(sb.toString().getBytes());
         }
-    }
-
-    // local import for FileOutputStream without full import clutter in snippet above
-    private static class FileOutputStream extends java.io.FileOutputStream {
-        FileOutputStream(File f) throws java.io.FileNotFoundException { super(f); }
     }
 }
