@@ -228,6 +228,7 @@ public final class LocalServerRunner {
             finally { RUNNING.remove(sid); }
         }, "cs-server-" + e.id).start();
         e.running = true;
+        try { PlayitAccountStore.applyDefaultToServer(ctx, e); } catch (Throwable ignored) {}
         LocalServerStore.update(ctx, e);
         try { LocalServerService.start(ctx, e.name, e.port); } catch (Throwable t) { Log.w(TAG, "FGS start skipped", t); }
     }
