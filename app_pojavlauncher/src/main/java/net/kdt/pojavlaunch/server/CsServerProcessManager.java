@@ -181,17 +181,17 @@ public class CsServerProcessManager {
             if (!force) {
                 sendCommand(serverId, "stop");
                 long waited = 0;
-                while (process.isAlive() && waited < 15000) {
+                while (ProcessCompat.isAlive(process) && waited < 15000) {
                     Thread.sleep(500);
                     waited += 500;
                 }
             }
-            if (process.isAlive()) {
-                process.destroyForcibly();
+            if (ProcessCompat.isAlive(process)) {
+                ProcessCompat.destroyForcibly(process);
             }
         } catch (Exception e) {
             Log.e(TAG, "Stop failed", e);
-            try { process.destroyForcibly(); } catch (Exception ignored) {}
+            try { ProcessCompat.destroyForcibly(process); } catch (Exception ignored) {}
         } finally {
             cleanup(serverId);
             updateStatus(serverId, CsServerState.STOPPED, 0, null);
@@ -250,10 +250,7 @@ public class CsServerProcessManager {
         status.lastError = error;
         Process p = processes.get(serverId);
         if (p != null) {
-            try {
-                // pid() requires API 26+
-                status.pid = p.pid();
-            } catch (Throwable ignored) {}
+            status.pid = ProcessCompat.pid(p);
         }
         statusMap.put(serverId, status);
 
