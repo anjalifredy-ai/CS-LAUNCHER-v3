@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Server name" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <EditText android:id="@+id/sd_set_name" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" android:paddingHorizontal="12dp"
+            android:textColor="#F0F6FF" android:textSize="14sp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:text="MOTD / description" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <EditText android:id="@+id/sd_set_motd" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" android:paddingHorizontal="12dp"
+            android:textColor="#F0F6FF" android:textSize="14sp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:text="Port" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <EditText android:id="@+id/sd_set_port" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" android:inputType="number"
+            android:paddingHorizontal="12dp" android:textColor="#F0F6FF" android:textSize="14sp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:text="Max players" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <EditText android:id="@+id/sd_set_players" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" android:inputType="number"
+            android:paddingHorizontal="12dp" android:textColor="#F0F6FF" android:textSize="14sp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:text="RAM MB (512–4096)" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <EditText android:id="@+id/sd_set_ram" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" android:inputType="number"
+            android:paddingHorizontal="12dp" android:textColor="#F0F6FF" android:textSize="14sp" />
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="14dp" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="Online mode (Microsoft auth)" android:textColor="#F0F6FF" android:textSize="13sp" />
+            <androidx.appcompat.widget.SwitchCompat android:id="@+id/sd_set_online" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="PvP" android:textColor="#F0F6FF" android:textSize="13sp" />
+            <androidx.appcompat.widget.SwitchCompat android:id="@+id/sd_set_pvp" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="Whitelist" android:textColor="#F0F6FF" android:textSize="13sp" />
+            <androidx.appcompat.widget.SwitchCompat android:id="@+id/sd_set_whitelist" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="Hardcore" android:textColor="#F0F6FF" android:textSize="13sp" />
+            <androidx.appcompat.widget.SwitchCompat android:id="@+id/sd_set_hardcore" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="Allow flight" android:textColor="#F0F6FF" android:textSize="13sp" />
+            <androidx.appcompat.widget.SwitchCompat android:id="@+id/sd_set_flight" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp"
+            android:text="Difficulty" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <Spinner android:id="@+id/sd_set_difficulty" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:text="Gamemode" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <Spinner android:id="@+id/sd_set_gamemode" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" />
+
+        <TextView android:id="@+id/sd_btn_save_settings" android:layout_width="match_parent" android:layout_height="48dp"
+            android:layout_marginTop="16dp" android:background="@drawable/bg_remom_play" android:gravity="center"
+            android:text="SAVE SETTINGS" android:textColor="#FFF" android:textStyle="bold" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            android:text="Restart server after changing port / RAM / online-mode for full effect."
+            android:textColor="#7A9BB8" android:textSize="11sp" />
+    </LinearLayout>
+</ScrollView>
