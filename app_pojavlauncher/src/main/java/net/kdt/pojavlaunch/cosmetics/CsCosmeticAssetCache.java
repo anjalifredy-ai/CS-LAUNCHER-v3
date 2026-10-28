@@ -17,7 +17,11 @@ public class CsCosmeticAssetCache {
     private final File cacheDir;
 
     public CsCosmeticAssetCache() {
-        cacheDir = new File(Tools.DIR_GAME_HOME, "cs_cosmetics/cache");
+        String base = Tools.DIR_GAME_HOME;
+        if (base == null || base.isEmpty()) {
+            base = Tools.DIR_DATA != null ? Tools.DIR_DATA : "/data/data/net.kdt.pojavlaunch/files";
+        }
+        cacheDir = new File(base, "cs_cosmetics/cache");
         if (!cacheDir.exists()) cacheDir.mkdirs();
     }
 
