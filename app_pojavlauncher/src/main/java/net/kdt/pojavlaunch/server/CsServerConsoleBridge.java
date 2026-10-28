@@ -6,9 +6,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Bridges process console lines to UI (Activity / Fragment).
- * Thread-safe listener list.
+ * Implements {@link CsServerProcessManager.ConsoleListener}.
  */
-public class CsServerConsoleBridge implements CsServerProcessManager.ConsoleListener {
+public class CsServerConsoleBridge implements CsServerProcessManager.ConsoleListener,
+        CsServerProcessManager.StatusListener {
 
     public interface UiSink {
         void onConsoleLine(String serverId, String line);
@@ -24,7 +25,6 @@ public class CsServerConsoleBridge implements CsServerProcessManager.ConsoleList
         sinks.add(sink);
         synchronized (lock) {
             for (String line : ringBuffer) {
-                // replay without server id prefix format "id|line"
                 int sep = line.indexOf('|');
                 if (sep > 0) {
                     sink.onConsoleLine(line.substring(0, sep), line.substring(sep + 1));
@@ -37,22 +37,34 @@ public class CsServerConsoleBridge implements CsServerProcessManager.ConsoleList
         sinks.remove(sink);
     }
 
+    /** Attach to a process manager once. */
+    public void attach(CsServerProcessManager pm) {
+        pm.addConsoleListener(this);
+        pm.addStatusListener(this);
+    }
+
+    public void detach(CsServerProcessManager pm) {
+        pm.removeConsoleListener(this);
+        pm.removeStatusListener(this);
+    }
+
     @Override
-    public void onLine(String serverId, String line) {
+    public void onConsoleLine(CsServerProcessManager.ConsoleLine line) {
         synchronized (lock) {
-            ringBuffer.add(serverId + "|" + line);
+            ringBuffer.add(line.serverId + "|" + line.line);
             while (ringBuffer.size() > MAX_BUFFER) {
                 ringBuffer.remove(0);
             }
         }
         for (UiSink s : sinks) {
             try {
-                s.onConsoleLine(serverId, line);
+                s.onConsoleLine(line.serverId, line.line);
             } catch (Exception ignored) {}
         }
     }
 
-    public void notifyStatus(String serverId, CsServerRuntimeStatus status) {
+    @Override
+    public void onStatusChanged(String serverId, CsServerRuntimeStatus status) {
         for (UiSink s : sinks) {
             try {
                 s.onStatusChanged(serverId, status);
