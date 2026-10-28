@@ -10,7 +10,7 @@
         android:padding="12dp">
 
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Distant friends (Feather-style)\n1. Start this server\n2. Open playit.gg tunnel pointing to 127.0.0.1:PORT\n3. Paste the public address below\n4. Friends join that address in Multiplayer"
+            android:text="Distant friends (Feather-style)\n1. Start this server\n2. Open playit.gg tunnel on same device or PC pointing to 127.0.0.1:PORT\n3. Paste the public address below\n4. Friends join that address in Multiplayer"
             android:textColor="#F0F6FF" android:textSize="13sp" android:lineSpacingExtra="3dp" />
 
         <TextView android:id="@+id/sd_btn_open_playit" android:layout_width="match_parent" android:layout_height="48dp"
@@ -32,7 +32,7 @@
             android:text="Copy public address" android:textColor="#3B9EFF" />
 
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp"
-            android:text="LAN only: same Wi-Fi friends use the LAN IP on Overview.\nCGNAT / mobile data needs playit tunnel."
+            android:text="LAN only: same Wi‑Fi friends use the LAN IP shown on Overview.\nCGNAT / mobile data needs playit (or similar) tunnel — raw public IP often fails."
             android:textColor="#7A9BB8" android:textSize="12sp" />
     </LinearLayout>
 </ScrollView>
