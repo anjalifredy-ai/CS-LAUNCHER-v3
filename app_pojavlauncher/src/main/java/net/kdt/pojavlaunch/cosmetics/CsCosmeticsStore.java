@@ -153,8 +153,16 @@ public class CsCosmeticsStore {
     }
 
     public File importedSkinsDir() {
-        File dir = new File(Tools.DIR_GAME_HOME, "cs_cosmetics/skins");
-        if (!dir.exists()) dir.mkdirs();
+        String base = Tools.DIR_GAME_HOME;
+        if (base == null || base.isEmpty()) {
+            // Early init / cold start fallback
+            base = Tools.DIR_DATA != null ? Tools.DIR_DATA : "/data/data/net.kdt.pojavlaunch/files";
+        }
+        File dir = new File(base, "cs_cosmetics/skins");
+        if (!dir.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            dir.mkdirs();
+        }
         return dir;
     }
 
