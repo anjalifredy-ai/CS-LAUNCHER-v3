@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Facade for on-device server create / install / start / stop / plugins / worlds.
+ * Auto-resolves MultiRT Java path when starting.
  */
 public class CsServerManager {
 
@@ -18,6 +19,9 @@ public class CsServerManager {
     private final CsPaperServerInstaller paperInstaller = new CsPaperServerInstaller();
     private final CsFabricServerInstaller fabricInstaller = new CsFabricServerInstaller();
     private final CsPurpurServerInstaller purpurInstaller = new CsPurpurServerInstaller();
+    private final CsForgeServerInstaller forgeInstaller = new CsForgeServerInstaller();
+    private final CsNeoForgeServerInstaller neoForgeInstaller = new CsNeoForgeServerInstaller();
+    private final CsQuiltServerInstaller quiltInstaller = new CsQuiltServerInstaller();
     private final CsViaVersionInstaller viaVersionInstaller = new CsViaVersionInstaller();
     private final CsLanAddressHelper lanAddressHelper;
     private final CsServerPluginManager pluginManager = new CsServerPluginManager();
@@ -80,6 +84,8 @@ public class CsServerManager {
 
     public InstallOutcome installSoftware(CsServerConfig config, boolean installViaVersion) {
         InstallOutcome base;
+        String javaBin = CsJavaPathResolver.resolveForMinecraftVersion(config.minecraftVersion);
+
         switch (config.softwareEnum()) {
             case PAPER: {
                 CsPaperServerInstaller.Result pr = paperInstaller.install(config);
@@ -100,13 +106,32 @@ public class CsServerManager {
                         fr.serverJar);
                 break;
             }
-            case FORGE:
-            case NEOFORGE:
-            case QUILT:
+            case QUILT: {
+                CsQuiltServerInstaller.Result qr = quiltInstaller.install(config);
+                base = new InstallOutcome(qr.success, qr.message, qr.serverJar);
+                break;
+            }
+            case FORGE: {
+                if (javaBin == null) {
+                    base = new InstallOutcome(false, CsJavaPathResolver.missingRuntimeMessage(config.minecraftVersion), null);
+                } else {
+                    CsForgeServerInstaller.Result r = forgeInstaller.install(config, javaBin);
+                    base = new InstallOutcome(r.success, r.message, new File(config.serverDir, "server.jar"));
+                }
+                break;
+            }
+            case NEOFORGE: {
+                if (javaBin == null) {
+                    base = new InstallOutcome(false, CsJavaPathResolver.missingRuntimeMessage(config.minecraftVersion), null);
+                } else {
+                    CsNeoForgeServerInstaller.Result r = neoForgeInstaller.install(config, javaBin);
+                    base = new InstallOutcome(r.success, r.message, new File(config.serverDir, "server.jar"));
+                }
+                break;
+            }
             case SPIGOT:
                 base = new InstallOutcome(false,
-                        config.software + " installer not wired yet. Use Vanilla/Paper/Fabric/Purpur for now.",
-                        null);
+                        "Spigot needs BuildTools (heavy on phone). Use Paper for the same API.", null);
                 break;
             case VANILLA:
             default: {
@@ -154,12 +179,26 @@ public class CsServerManager {
     }
 
     /**
-     * @param javaBin absolute path to java binary for the required major version
+     * Start with explicit java binary path.
      * @return null on success, error message on failure
      */
     public String startServer(String serverId, String javaBin) {
         CsServerConfig config = store.getById(serverId);
         if (config == null) return "Server not found";
+        return processManager.start(config, javaBin);
+    }
+
+    /**
+     * Auto-resolve MultiRT Java for this server's MC version, then start.
+     * @return null on success, error message on failure
+     */
+    public String startServerAuto(String serverId) {
+        CsServerConfig config = store.getById(serverId);
+        if (config == null) return "Server not found";
+        String javaBin = CsJavaPathResolver.resolveForMinecraftVersion(config.minecraftVersion);
+        if (javaBin == null) {
+            return CsJavaPathResolver.missingRuntimeMessage(config.minecraftVersion);
+        }
         return processManager.start(config, javaBin);
     }
 

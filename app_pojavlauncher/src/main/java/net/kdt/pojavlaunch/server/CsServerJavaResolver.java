@@ -39,6 +39,11 @@ public final class CsServerJavaResolver {
         return JavaMajor.JAVA_8; // 1.16 and below
     }
 
+    /** Convenience: integer major for MultiRT lookup. */
+    public static int requiredMajor(String minecraftVersion) {
+        return requiredJava(minecraftVersion).major;
+    }
+
     public static JavaMajor[] availableRuntimes() {
         return JavaMajor.values();
     }
