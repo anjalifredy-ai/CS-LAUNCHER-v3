@@ -16,6 +16,8 @@ public class CsServerManager {
     private final CsServerRamAdvisor ramAdvisor;
     private final CsVanillaServerInstaller vanillaInstaller = new CsVanillaServerInstaller();
     private final CsPaperServerInstaller paperInstaller = new CsPaperServerInstaller();
+    private final CsFabricServerInstaller fabricInstaller = new CsFabricServerInstaller();
+    private final CsPurpurServerInstaller purpurInstaller = new CsPurpurServerInstaller();
     private final CsViaVersionInstaller viaVersionInstaller = new CsViaVersionInstaller();
     private final CsLanAddressHelper lanAddressHelper;
     private final CsServerPluginManager pluginManager = new CsServerPluginManager();
@@ -79,16 +81,41 @@ public class CsServerManager {
     public InstallOutcome installSoftware(CsServerConfig config, boolean installViaVersion) {
         InstallOutcome base;
         switch (config.softwareEnum()) {
-            case PAPER:
+            case PAPER: {
                 CsPaperServerInstaller.Result pr = paperInstaller.install(config);
-                base = new InstallOutcome(pr.success, pr.error != null ? pr.error : "Paper build " + pr.buildNumber + " installed", pr.serverJar);
+                base = new InstallOutcome(pr.success,
+                        pr.error != null ? pr.error : "Paper build " + pr.buildNumber + " installed",
+                        pr.serverJar);
+                break;
+            }
+            case PURPUR: {
+                CsPurpurServerInstaller.Result ur = purpurInstaller.install(config);
+                base = new InstallOutcome(ur.success, ur.message, ur.serverJar);
+                break;
+            }
+            case FABRIC: {
+                CsFabricServerInstaller.Result fr = fabricInstaller.install(config);
+                base = new InstallOutcome(fr.success,
+                        fr.error != null ? fr.error : "Fabric loader " + fr.loaderVersion + " installed",
+                        fr.serverJar);
+                break;
+            }
+            case FORGE:
+            case NEOFORGE:
+            case QUILT:
+            case SPIGOT:
+                base = new InstallOutcome(false,
+                        config.software + " installer not wired yet. Use Vanilla/Paper/Fabric/Purpur for now.",
+                        null);
                 break;
             case VANILLA:
-            default:
+            default: {
                 CsVanillaServerInstaller.Result vr = vanillaInstaller.install(config);
-                base = new InstallOutcome(vr.success, vr.error != null ? vr.error : "Vanilla installed", vr.serverJar);
+                base = new InstallOutcome(vr.success,
+                        vr.error != null ? vr.error : "Vanilla installed",
+                        vr.serverJar);
                 break;
-            // Fabric/Forge/etc. can be extended similarly
+            }
         }
 
         if (base.success && installViaVersion) {
@@ -99,6 +126,12 @@ public class CsServerManager {
             }
         }
         return base;
+    }
+
+    public CsViaVersionInstaller.Result installViaVersion(String serverId) {
+        CsServerConfig config = store.getById(serverId);
+        if (config == null) return new CsViaVersionInstaller.Result(false, "Server not found");
+        return viaVersionInstaller.installForCrossVersion(config);
     }
 
     public CsServerConfig acceptEula(String serverId) {
@@ -122,6 +155,7 @@ public class CsServerManager {
 
     /**
      * @param javaBin absolute path to java binary for the required major version
+     * @return null on success, error message on failure
      */
     public String startServer(String serverId, String javaBin) {
         CsServerConfig config = store.getById(serverId);
@@ -159,6 +193,9 @@ public class CsServerManager {
         CsServerConfig c = store.getById(serverId);
         return c != null ? worldManager.listServerWorlds(c) : java.util.Collections.emptyList();
     }
+
+    public CsServerPluginManager getPluginManager() { return pluginManager; }
+    public CsServerWorldManager getWorldManager() { return worldManager; }
 
     private void deleteRecursive(File f) {
         if (f.isDirectory()) {
