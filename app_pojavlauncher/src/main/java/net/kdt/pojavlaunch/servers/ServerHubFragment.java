@@ -7,8 +7,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -96,7 +98,8 @@ public class ServerHubFragment extends Fragment {
                         "5) Yahan paste → Save public address\n" +
                         "6) Friend Multiplayer me woh address add kare\n\n" +
                         "Phone on + tunnel on + local server running hona zaroori.\n" +
-                        "Mobile data / CGNAT pe bhi tunnel kaam karta hai.")
+                        "Mobile data / CGNAT pe bhi tunnel kaam karta hai.\n\n" +
+                        "Server icon + MOTD multiplayer list me dikhte hain.")
                 .setPositiveButton("OK", null)
                 .setNeutralButton("Open playit", (d, w) -> openHostInApp("playit"))
                 .show());
@@ -128,7 +131,11 @@ public class ServerHubFragment extends Fragment {
                 Toast.makeText(requireContext(), lastLanIp, Toast.LENGTH_LONG).show();
             }
         });
-        if (refreshLan != null) refreshLan.setOnClickListener(v -> { refreshLanIp(); refreshLocalStatus(); });
+        if (refreshLan != null) refreshLan.setOnClickListener(v -> {
+            refreshLanIp();
+            refreshLocalStatus();
+            showReachToast();
+        });
 
         if (list != null) {
             list.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -177,6 +184,20 @@ public class ServerHubFragment extends Fragment {
         refreshLocalStatus();
     }
 
+    private void showReachToast() {
+        if (getContext() == null) return;
+        new Thread(() -> {
+            PublicReachHelper.ReachInfo info = PublicReachHelper.probe(requireContext(), 25565);
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() ->
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Who can join?")
+                            .setMessage(info.joinHint)
+                            .setPositiveButton("OK", null)
+                            .show());
+        }).start();
+    }
+
     private void saveTunnelAddress() {
         if (tunnelInput == null || getContext() == null) return;
         String addr = tunnelInput.getText().toString().trim();
@@ -189,6 +210,14 @@ public class ServerHubFragment extends Fragment {
         e.address = addr;
         ServerStore.add(requireContext(), profileKey, e);
         ServerListSync.syncToGameDir(requireContext(), profileKey);
+
+        List<LocalServerEntry> locals = LocalServerStore.load(requireContext());
+        if (!locals.isEmpty()) {
+            LocalServerEntry local = locals.get(0);
+            local.publicAddress = addr;
+            LocalServerStore.update(requireContext(), local);
+        }
+
         Toast.makeText(requireContext(), "Saved — friends is address se join karen", Toast.LENGTH_LONG).show();
         refresh();
     }
@@ -212,36 +241,61 @@ public class ServerHubFragment extends Fragment {
         box.setOrientation(LinearLayout.VERTICAL);
         int pad = (int) (16 * getResources().getDisplayMetrics().density);
         box.setPadding(pad, pad, pad, 0);
+
         final EditText nameIn = new EditText(ctx);
-        nameIn.setHint("Server name");
-        nameIn.setText("Remom Solo");
+        nameIn.setHint("Server name (list title)");
+        nameIn.setText("CS Server");
         box.addView(nameIn);
+
+        final EditText descIn = new EditText(ctx);
+        descIn.setHint("Description / MOTD (multiplayer list)");
+        descIn.setText("A CS Launcher Minecraft Server");
+        box.addView(descIn);
+
         final EditText verIn = new EditText(ctx);
-        verIn.setHint("Version");
+        verIn.setHint("Minecraft version");
         verIn.setText("1.20.4");
         box.addView(verIn);
+
+        final Spinner softSpin = new Spinner(ctx);
+        ArrayAdapter<String> softAd = new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"vanilla", "paper", "purpur", "fabric"});
+        softSpin.setAdapter(softAd);
+        box.addView(softSpin);
+
         final EditText portIn = new EditText(ctx);
         portIn.setHint("Port");
         portIn.setInputType(InputType.TYPE_CLASS_NUMBER);
         portIn.setText("25565");
         box.addView(portIn);
+
+        final EditText memIn = new EditText(ctx);
+        memIn.setHint("RAM MB (512–2048 safe on phone)");
+        memIn.setInputType(InputType.TYPE_CLASS_NUMBER);
+        memIn.setText("1024");
+        box.addView(memIn);
+
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Solo → 127.0.0.1\nWi‑Fi → phone IP\nDoor → Start + playit tunnel")
+                .setMessage("Icon auto-generates (letter). MOTD = description.\nSolo 127.0.0.1 · Wi‑Fi phone IP · Door = playit.")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
+                    String desc = descIn.getText().toString().trim();
                     String ver = verIn.getText().toString().trim();
+                    String soft = (String) softSpin.getSelectedItem();
                     int port = 25565;
+                    int mem = 1024;
                     try { port = Integer.parseInt(portIn.getText().toString().trim()); } catch (Exception ignored) {}
-                    LocalServerEntry e = LocalServerStore.create(ctx, name, ver, port);
-                    Toast.makeText(ctx, "Preparing " + e.name + "…", Toast.LENGTH_SHORT).show();
+                    try { mem = Integer.parseInt(memIn.getText().toString().trim()); } catch (Exception ignored) {}
+                    LocalServerEntry e = LocalServerStore.createFull(ctx, name, ver, port, soft, desc, mem, null);
+                    Toast.makeText(ctx, "Preparing " + e.name + " (" + soft + ")…", Toast.LENGTH_SHORT).show();
                     new Thread(() -> {
                         try {
                             LocalServerRunner.prepare(ctx, e);
                             if (!isAdded()) return;
                             requireActivity().runOnUiThread(() -> {
-                                Toast.makeText(ctx, e.name + " ready — Start", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ctx, e.name + " ready — Start. Icon + MOTD set.", Toast.LENGTH_LONG).show();
                                 refreshLocalStatus();
                             });
                         } catch (Exception ex) {
@@ -278,6 +332,12 @@ public class ServerHubFragment extends Fragment {
                     friends.address = e.displayAddress(lan);
                     ServerStore.add(requireContext(), profileKey, friends);
                 }
+                if (e.publicAddress != null && !e.publicAddress.isEmpty()) {
+                    ServerEntry distant = new ServerEntry();
+                    distant.name = e.name + " (Distant)";
+                    distant.address = e.publicAddress;
+                    ServerStore.add(requireContext(), profileKey, distant);
+                }
                 ServerListSync.syncToGameDir(requireContext(), profileKey);
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
@@ -313,6 +373,7 @@ public class ServerHubFragment extends Fragment {
             e.running = false;
             LocalServerStore.update(requireContext(), e);
         }
+        LocalServerService.stop(requireContext());
         Toast.makeText(requireContext(), "Stopped", Toast.LENGTH_SHORT).show();
         refreshLocalStatus();
     }
@@ -329,9 +390,18 @@ public class ServerHubFragment extends Fragment {
             boolean run = LocalServerRunner.isRunning(e.id);
             e.running = run;
             sb.append(run ? "● " : "○ ")
-                    .append(e.name).append(" · ").append(e.versionId)
-                    .append(" · 127.0.0.1:").append(e.port)
-                    .append(run ? " RUNNING" : " stopped").append('\n');
+                    .append(e.name)
+                    .append(" · ").append(e.software != null ? e.software : "vanilla")
+                    .append(" · ").append(e.versionId)
+                    .append(" · :").append(e.port)
+                    .append(run ? " RUNNING" : " stopped");
+            if (e.description != null && !e.description.isEmpty()) {
+                sb.append("\n   MOTD: ").append(e.description);
+            }
+            if (e.publicAddress != null && !e.publicAddress.isEmpty()) {
+                sb.append("\n   Distant: ").append(e.publicAddress);
+            }
+            sb.append('\n');
         }
         localListView.setText(sb.toString().trim());
     }
@@ -385,15 +455,9 @@ public class ServerHubFragment extends Fragment {
     private void pingAll(){
         if (getContext()==null) return;
         for (ServerEntry e : new ArrayList<>(data)) {
-            ServerPinger.pingAsync(e, new ServerPinger.Callback(){
-                @Override public void onResult(ServerEntry entry){
-                    if(!isAdded()) return;
-                    requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); });
-                }
-                @Override public void onError(ServerEntry entry, Exception ex){
-                    if(!isAdded()) return;
-                    requireActivity().runOnUiThread(()->{ ServerStore.update(requireContext(), profileKey, entry); refresh(); });
-                }
+            ServerPinger.pingAsync(e, updated -> {
+                if (!isAdded() || adapter == null) return;
+                requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
             });
         }
     }
