@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Distant friends (Feather-style)\n1. Start this server\n2. Open playit.gg tunnel pointing to 127.0.0.1:PORT\n3. Paste the public address below\n4. Friends join that address in Multiplayer"
+            android:textColor="#F0F6FF" android:textSize="13sp" android:lineSpacingExtra="3dp" />
+
+        <TextView android:id="@+id/sd_btn_open_playit" android:layout_width="match_parent" android:layout_height="48dp"
+            android:layout_marginTop="14dp" android:background="@drawable/bg_remom_play" android:gravity="center"
+            android:text="OPEN PLAYIT.GG" android:textColor="#FFF" android:textStyle="bold" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14dp"
+            android:text="Public / tunnel address" android:textColor="#7A9BB8" android:textSize="11sp" />
+        <EditText android:id="@+id/sd_reach_public" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="4dp" android:background="@drawable/bg_remom_tile" android:hint="abc.playit.gg:12345"
+            android:paddingHorizontal="12dp" android:textColor="#F0F6FF" android:textColorHint="#5A7A98" android:textSize="14sp" />
+
+        <TextView android:id="@+id/sd_btn_save_reach" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="10dp" android:background="@drawable/bg_remom_tile" android:gravity="center"
+            android:text="Save public address" android:textColor="#3B9EFF" />
+
+        <TextView android:id="@+id/sd_btn_copy_public" android:layout_width="match_parent" android:layout_height="44dp"
+            android:layout_marginTop="8dp" android:background="@drawable/bg_remom_tile" android:gravity="center"
+            android:text="Copy public address" android:textColor="#3B9EFF" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp"
+            android:text="LAN only: same Wi-Fi friends use the LAN IP on Overview.\nCGNAT / mobile data needs playit tunnel."
+            android:textColor="#7A9BB8" android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>
