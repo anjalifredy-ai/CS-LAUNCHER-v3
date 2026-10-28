@@ -21,6 +21,7 @@ import java.util.UUID;
 /**
  * Local cosmetics store + wardrobe persistence.
  * No fake currency. No multiplayer sync claimed.
+ * Equipped skins are synced into offline launch path via {@link CsSkinLaunchSync}.
  */
 public class CsCosmeticsStore {
 
@@ -103,6 +104,9 @@ public class CsCosmeticsStore {
         }
         saveLoadout();
         if (itemId != null) markViewed(itemId);
+        if (category == CsCosmeticCategory.SKINS) {
+            CsSkinLaunchSync.syncForCurrentAccount(context);
+        }
     }
 
     public void setEmoteSlot(int index, String emoteId) {
@@ -128,6 +132,7 @@ public class CsCosmeticsStore {
             if (o.id.equals(id)) {
                 loadout = copyLoadout(o.loadout);
                 saveLoadout();
+                CsSkinLaunchSync.syncForCurrentAccount(context);
                 return;
             }
         }
