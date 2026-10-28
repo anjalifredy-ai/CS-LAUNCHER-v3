@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.util.Log;
 
 import net.kdt.pojavlaunch.Tools;
+import net.kdt.pojavlaunch.server.ProcessCompat;
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.server.CsJavaPathResolver;
@@ -76,13 +77,13 @@ public final class LocalServerRunner {
                 p.getOutputStream().write("stop\n".getBytes(StandardCharsets.UTF_8));
                 p.getOutputStream().flush();
                 long waited = 0;
-                while (p.isAlive() && waited < 12000) {
+                while (ProcessCompat.isAlive(p) && waited < 12000) {
                     Thread.sleep(400);
                     waited += 400;
                 }
             } catch (Throwable ignored) {}
             try {
-                if (p.isAlive()) p.destroyForcibly();
+                if (ProcessCompat.isAlive(p)) ProcessCompat.destroyForcibly(p);
             } catch (Throwable ignored) {}
             try { p.waitFor(); } catch (InterruptedException ignored) {}
         }
