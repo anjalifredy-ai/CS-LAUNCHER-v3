@@ -13,7 +13,6 @@ import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 
 import net.kdt.pojavlaunch.LauncherActivity;
-import net.kdt.pojavlaunch.R;
 
 /**
  * Keeps the process alive while a local dedicated server is running.
@@ -54,11 +53,8 @@ public class LocalServerService extends Service {
         PendingIntent pi = PendingIntent.getActivity(this, 0, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        int icon = android.R.drawable.stat_sys_data_share;
-        try {
-            // Prefer app icon if available
-            icon = R.drawable.ic_menu_play_once;
-        } catch (Throwable ignored) {}
+        // System drawable only — do not reference missing R.drawable.* (compile break)
+        int icon = android.R.drawable.ic_menu_upload;
 
         Notification n = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(name != null ? name : "CS Server")

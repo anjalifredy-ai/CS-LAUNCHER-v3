@@ -3,13 +3,14 @@ package net.kdt.pojavlaunch.servers;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.Log;
 
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.server.CsJavaPathResolver;
-import net.kdt.pojavlaunch.server.CsServerJavaResolver;
 import net.kdt.pojavlaunch.utils.DownloadUtils;
 
 import org.json.JSONObject;
@@ -31,12 +32,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Runs a real Minecraft dedicated server on-device using installed MultiRT JRE.
- * - Solo: 127.0.0.1:port
- * - Same Wi‑Fi: LAN IP:port
- * - Anywhere: start server + playit.gg (or router port-forward) → public address
- *
- * Server icon: writes server-icon.png (64×64) so multiplayer list shows the icon.
- * MOTD/description from entry.motdLine().
  */
 public final class LocalServerRunner {
     private static final String TAG = "LocalServerRunner";
@@ -86,13 +81,11 @@ public final class LocalServerRunner {
                     waited += 400;
                 }
             } catch (Throwable ignored) {}
-            if (p.isAlive()) p.destroyForcibly();
+            try {
+                if (p.isAlive()) p.destroyForcibly();
+            } catch (Throwable ignored) {}
             try { p.waitFor(); } catch (InterruptedException ignored) {}
         }
-        try {
-            LocalServerService.stop(Tools.DIR_GAME_NEW != null
-                    ? null : null); // service stop via context preferred from UI
-        } catch (Throwable ignored) {}
     }
 
     public static void stopAll() {
@@ -110,7 +103,6 @@ public final class LocalServerRunner {
         }
     }
 
-    /** Ensure server jar + eula + properties + icon exist. */
     public static void prepare(Context ctx, LocalServerEntry e) throws Exception {
         File dir = serverDir(ctx, e);
         if (!dir.exists() && !dir.mkdirs()) throw new Exception("Cannot create server folder");
@@ -163,7 +155,6 @@ public final class LocalServerRunner {
         }
     }
 
-    /** Minecraft multiplayer list shows server-icon.png (64×64 PNG). */
     public static void writeServerIcon(File dir, LocalServerEntry e) {
         try {
             File dest = new File(dir, "server-icon.png");
@@ -173,14 +164,13 @@ public final class LocalServerRunner {
                 if (f.exists()) src = BitmapFactory.decodeFile(f.getAbsolutePath());
             }
             if (src == null) {
-                // Generate a simple branded 64×64 icon so list is never blank
                 src = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888);
-                android.graphics.Canvas c = new android.graphics.Canvas(src);
+                Canvas c = new Canvas(src);
                 c.drawColor(0xFF1B5E20);
-                android.graphics.Paint p = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+                Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
                 p.setColor(0xFFFFEB3B);
                 p.setTextSize(22f);
-                p.setTextAlign(android.graphics.Paint.Align.CENTER);
+                p.setTextAlign(Paint.Align.CENTER);
                 String letter = e.name != null && !e.name.isEmpty()
                         ? e.name.substring(0, 1).toUpperCase() : "S";
                 c.drawText(letter, 32, 40, p);
@@ -189,9 +179,6 @@ public final class LocalServerRunner {
             }
             try (FileOutputStream out = new FileOutputStream(dest)) {
                 src.compress(Bitmap.CompressFormat.PNG, 100, out);
-            }
-            if (src != null && !src.isRecycled()) {
-                // scaled copy may differ from original; recycle carefully
             }
         } catch (Throwable t) {
             Log.w(TAG, "server-icon write failed", t);
@@ -203,6 +190,7 @@ public final class LocalServerRunner {
         Bitmap b = BitmapFactory.decodeFile(png.getAbsolutePath());
         if (b == null) throw new Exception("Not a valid image");
         File dir = serverDir(ctx, e);
+        //noinspection ResultOfMethodCallIgnored
         dir.mkdirs();
         File stored = new File(dir, "custom-icon-src.png");
         try (FileInputStream in = new FileInputStream(png);
@@ -224,7 +212,12 @@ public final class LocalServerRunner {
         File jar = new File(dir, "server.jar");
         if (!jar.exists()) throw new Exception("server.jar missing");
 
-        String javaBin = CsJavaPathResolver.resolveForMinecraftVersion(e.versionId);
+        String javaBin = null;
+        try {
+            javaBin = CsJavaPathResolver.resolveForMinecraftVersion(e.versionId);
+        } catch (Throwable t) {
+            Log.w(TAG, "CsJavaPathResolver failed", t);
+        }
         if (javaBin == null) javaBin = findJavaBinary();
         if (javaBin == null) {
             throw new Exception(CsJavaPathResolver.missingRuntimeMessage(
@@ -289,7 +282,6 @@ public final class LocalServerRunner {
     private static String findJavaBinary() {
         try {
             List<Runtime> rts = MultiRTUtils.getInstalledRuntimes();
-            // Prefer higher Java for modern MC
             Runtime best = null;
             for (Runtime r : rts) {
                 if (r == null || r.name == null || r.javaVersion <= 0) continue;
