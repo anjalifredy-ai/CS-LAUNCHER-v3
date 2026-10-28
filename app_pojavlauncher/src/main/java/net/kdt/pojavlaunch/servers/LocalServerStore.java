@@ -1,7 +1,6 @@
 package net.kdt.pojavlaunch.servers;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -36,14 +35,24 @@ public final class LocalServerStore {
     }
 
     public static LocalServerEntry create(Context ctx, String name, String versionId, int port) {
+        return createFull(ctx, name, versionId, port, "vanilla", "", 1024, null);
+    }
+
+    public static LocalServerEntry createFull(Context ctx, String name, String versionId, int port,
+                                             String software, String description, int memoryMb,
+                                             String iconPath) {
         List<LocalServerEntry> list = load(ctx);
         LocalServerEntry e = new LocalServerEntry(
                 UUID.randomUUID().toString().substring(0, 8),
-                name == null || name.trim().isEmpty() ? "Remom Server" : name.trim(),
+                name == null || name.trim().isEmpty() ? "CS Server" : name.trim(),
                 versionId == null || versionId.isEmpty() ? "1.20.4" : versionId.trim()
         );
         e.port = port > 0 ? port : 25565;
         e.onlineMode = false;
+        e.software = software != null ? software : "vanilla";
+        e.description = description != null ? description : "";
+        e.memoryMb = memoryMb > 0 ? memoryMb : 1024;
+        e.iconPath = iconPath;
         list.add(0, e);
         save(ctx, list);
         return e;

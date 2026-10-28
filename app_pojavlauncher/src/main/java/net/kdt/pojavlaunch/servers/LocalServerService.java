@@ -39,7 +39,9 @@ public class LocalServerService extends Service {
 
     public static void stop(Context ctx) {
         if (ctx == null) return;
-        ctx.stopService(new Intent(ctx, LocalServerService.class));
+        try {
+            ctx.stopService(new Intent(ctx, LocalServerService.class));
+        } catch (Throwable ignored) {}
     }
 
     @Override
@@ -52,10 +54,16 @@ public class LocalServerService extends Service {
         PendingIntent pi = PendingIntent.getActivity(this, 0, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        int icon = android.R.drawable.stat_sys_data_share;
+        try {
+            // Prefer app icon if available
+            icon = R.drawable.ic_menu_play_once;
+        } catch (Throwable ignored) {}
+
         Notification n = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(name != null ? name : "CS Server")
-                .setContentText("Running on port " + port + " — keep app open / tunnel on for friends")
-                .setSmallIcon(R.drawable.ic_menu_play_once)
+                .setContentText("Port " + port + " · keep open · tunnel for distant friends")
+                .setSmallIcon(icon)
                 .setContentIntent(pi)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
