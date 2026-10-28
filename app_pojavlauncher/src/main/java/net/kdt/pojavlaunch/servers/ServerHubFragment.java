@@ -455,9 +455,15 @@ public class ServerHubFragment extends Fragment {
     private void pingAll(){
         if (getContext()==null) return;
         for (ServerEntry e : new ArrayList<>(data)) {
-            ServerPinger.pingAsync(e, updated -> {
-                if (!isAdded() || adapter == null) return;
-                requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+            ServerPinger.pingAsync(e, new ServerPinger.Callback() {
+                @Override public void onResult(ServerEntry entry) {
+                    if (!isAdded() || adapter == null) return;
+                    requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+                }
+                @Override public void onError(ServerEntry entry, Exception ex) {
+                    if (!isAdded() || adapter == null) return;
+                    requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+                }
             });
         }
     }
