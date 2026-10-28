@@ -1,12 +1,14 @@
 package net.kdt.pojavlaunch.server;
 
-import android.os.Build;
 import android.util.Log;
 
 import java.lang.reflect.Method;
 
 /**
- * API-21 safe Process helpers. isAlive()/destroyForcibly()/pid() are API 26+.
+ * API-21 safe Process helpers.
+ * Never call Process.isAlive / destroyForcibly / pid directly — those methods
+ * are API 26+ and may be missing from the compile classpath / cause hard errors.
+ * All access is via reflection or exitValue fallback.
  */
 public final class ProcessCompat {
     private static final String TAG = "ProcessCompat";
@@ -22,34 +24,42 @@ public final class ProcessCompat {
         sReflectTried = true;
         try {
             sIsAlive = Process.class.getMethod("isAlive");
-            sDestroyForcibly = Process.class.getMethod("destroyForcibly");
-            try {
-                sPid = Process.class.getMethod("pid");
-            } catch (NoSuchMethodException ignored) {}
         } catch (Throwable t) {
-            Log.w(TAG, "reflect Process methods", t);
+            Log.w(TAG, "no isAlive", t);
+        }
+        try {
+            sDestroyForcibly = Process.class.getMethod("destroyForcibly");
+        } catch (Throwable t) {
+            Log.w(TAG, "no destroyForcibly", t);
+        }
+        try {
+            sPid = Process.class.getMethod("pid");
+        } catch (Throwable t) {
+            Log.w(TAG, "no pid", t);
         }
     }
 
     public static boolean isAlive(Process p) {
         if (p == null) return false;
-        if (Build.VERSION.SDK_INT >= 26) {
-            return p.isAlive();
+        ensureReflect();
+        if (sIsAlive != null) {
+            try {
+                Object v = sIsAlive.invoke(p);
+                if (v instanceof Boolean) return (Boolean) v;
+            } catch (Throwable ignored) {}
         }
         try {
             p.exitValue();
-            return false;
+            return false; // already exited
         } catch (IllegalThreadStateException e) {
-            return true;
+            return true; // still running
+        } catch (Throwable t) {
+            return false;
         }
     }
 
     public static void destroyForcibly(Process p) {
         if (p == null) return;
-        if (Build.VERSION.SDK_INT >= 26) {
-            p.destroyForcibly();
-            return;
-        }
         ensureReflect();
         if (sDestroyForcibly != null) {
             try {
@@ -62,13 +72,9 @@ public final class ProcessCompat {
         } catch (Throwable ignored) {}
     }
 
+    /** @return process pid, or -1 if unavailable */
     public static long pid(Process p) {
         if (p == null) return -1;
-        if (Build.VERSION.SDK_INT >= 26) {
-            try {
-                return p.pid();
-            } catch (Throwable ignored) {}
-        }
         ensureReflect();
         if (sPid != null) {
             try {
