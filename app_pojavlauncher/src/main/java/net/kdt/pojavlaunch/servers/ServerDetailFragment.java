@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Full per-server screen: overview, console, settings, world import, public reach. */
+/** Full per-server screen: overview, console, settings, world, reach (playit one-time). */
 public class ServerDetailFragment extends Fragment {
 
     public static final String TAG = "ServerDetailFragment";
@@ -51,7 +51,6 @@ public class ServerDetailFragment extends Fragment {
     private TextView consoleText;
     private ScrollView consoleScroll;
     private EditText consoleInput;
-
     private TextView worldListTv;
     private String selectedWorldName;
 
@@ -68,9 +67,7 @@ public class ServerDetailFragment extends Fragment {
         }
     };
 
-    public ServerDetailFragment() {
-        super(R.layout.fragment_server_detail);
-    }
+    public ServerDetailFragment() { super(R.layout.fragment_server_detail); }
 
     public static Bundle args(String serverId) {
         Bundle b = new Bundle();
@@ -169,14 +166,12 @@ public class ServerDetailFragment extends Fragment {
         styleTab(tabSettings, index == 2);
         styleTab(tabWorld, index == 3);
         styleTab(tabReach, index == 4);
-        if (index == 1) {
+        if (index == 1 && consoleText != null) {
             List<String> snap = LocalServerRunner.getLogSnapshot(serverId);
-            if (consoleText != null) {
-                StringBuilder sb = new StringBuilder();
-                for (String l : snap) sb.append(l).append('\n');
-                if (sb.length() == 0) sb.append("Console idle. Start server to see logs.\n");
-                consoleText.setText(sb.toString());
-            }
+            StringBuilder sb = new StringBuilder();
+            for (String l : snap) sb.append(l).append('\n');
+            if (sb.length() == 0) sb.append("Console idle. Start server to see logs.\n");
+            consoleText.setText(sb.toString());
         }
         if (index == 3) refreshWorldList();
     }
@@ -224,12 +219,10 @@ public class ServerDetailFragment extends Fragment {
         SwitchCompat flight = panelSettings.findViewById(R.id.sd_set_flight);
         Spinner diff = panelSettings.findViewById(R.id.sd_set_difficulty);
         Spinner gm = panelSettings.findViewById(R.id.sd_set_gamemode);
-
         String[] diffs = {"peaceful", "easy", "normal", "hard"};
         String[] gms = {"survival", "creative", "adventure", "spectator"};
         if (diff != null) diff.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, diffs));
         if (gm != null) gm.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, gms));
-
         if (name != null) name.setText(entry.name);
         if (motd != null) motd.setText(entry.description != null ? entry.description : "");
         if (port != null) port.setText(String.valueOf(entry.port));
@@ -242,7 +235,6 @@ public class ServerDetailFragment extends Fragment {
         if (flight != null) flight.setChecked(entry.allowFlight);
         setSpinner(diff, diffs, entry.difficulty);
         setSpinner(gm, gms, entry.gamemode);
-
         View saveBtn = panelSettings.findViewById(R.id.sd_btn_save_settings);
         if (saveBtn != null) saveBtn.setOnClickListener(v -> {
             try {
@@ -261,7 +253,7 @@ public class ServerDetailFragment extends Fragment {
                 LocalServerStore.update(requireContext(), entry);
                 LocalServerRunner.applySettings(requireContext(), entry);
                 titleTv.setText(entry.name);
-                Toast.makeText(requireContext(), "Settings saved + server.properties updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Settings saved", Toast.LENGTH_SHORT).show();
                 refreshStatus();
             } catch (Exception e) {
                 Toast.makeText(requireContext(), "Save failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -283,31 +275,60 @@ public class ServerDetailFragment extends Fragment {
 
     private void bindReach() {
         EditText pub = panelReach.findViewById(R.id.sd_reach_public);
-        if (pub != null && entry.publicAddress != null) pub.setText(entry.publicAddress);
-        View openPlayit = panelReach.findViewById(R.id.sd_btn_open_playit);
-        if (openPlayit != null) openPlayit.setOnClickListener(v -> {
+        TextView status = panelReach.findViewById(R.id.sd_playit_status);
+        String def = PlayitAccountStore.getDefaultPublicAddress(requireContext());
+        if (pub != null) {
+            if (entry.publicAddress != null && !entry.publicAddress.isEmpty()) pub.setText(entry.publicAddress);
+            else if (def != null && !def.isEmpty()) pub.setText(def);
+        }
+        if (status != null) status.setText(PlayitAccountStore.statusLine(requireContext()));
+
+        View link = panelReach.findViewById(R.id.sd_btn_link_playit);
+        if (link != null) link.setOnClickListener(v -> {
             try {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://playit.gg/download")));
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://playit.gg/login")));
+                PlayitAccountStore.setLinked(requireContext(), true);
+                if (status != null) status.setText(PlayitAccountStore.statusLine(requireContext()));
+                Toast.makeText(requireContext(),
+                        "Sign in → Tunnel → Minecraft Java → 127.0.0.1 + port → copy address → paste here",
+                        Toast.LENGTH_LONG).show();
             } catch (Throwable t) {
                 Toast.makeText(requireContext(), "Open https://playit.gg", Toast.LENGTH_SHORT).show();
             }
         });
-        View saveReach = panelReach.findViewById(R.id.sd_btn_save_reach);
-        if (saveReach != null) saveReach.setOnClickListener(v -> {
-            if (pub != null) entry.publicAddress = pub.getText().toString().trim();
+
+        View save = panelReach.findViewById(R.id.sd_btn_save_reach);
+        if (save != null) save.setOnClickListener(v -> {
+            String a = pub != null ? pub.getText().toString().trim() : "";
+            if (a.isEmpty()) {
+                Toast.makeText(requireContext(), "Public address paste karo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            entry.publicAddress = a;
             LocalServerStore.update(requireContext(), entry);
-            Toast.makeText(requireContext(), "Public address saved", Toast.LENGTH_SHORT).show();
+            PlayitAccountStore.setDefaultPublicAddress(requireContext(), a);
+            if (status != null) status.setText(PlayitAccountStore.statusLine(requireContext()));
+            Toast.makeText(requireContext(), "Saved — har server Start pe auto", Toast.LENGTH_LONG).show();
             refreshStatus();
         });
-        View copyPub = panelReach.findViewById(R.id.sd_btn_copy_public);
-        if (copyPub != null) copyPub.setOnClickListener(v -> {
+
+        View copy = panelReach.findViewById(R.id.sd_btn_copy_public);
+        if (copy != null) copy.setOnClickListener(v -> {
             String a = pub != null ? pub.getText().toString().trim() : "";
             if (a.isEmpty()) a = entry.publicAddress;
+            if (a == null || a.isEmpty()) a = PlayitAccountStore.getDefaultPublicAddress(requireContext());
             if (a == null || a.isEmpty()) {
                 Toast.makeText(requireContext(), "No public address", Toast.LENGTH_SHORT).show();
                 return;
             }
             copyText(a);
+        });
+
+        View clear = panelReach.findViewById(R.id.sd_btn_clear_playit);
+        if (clear != null) clear.setOnClickListener(v -> {
+            PlayitAccountStore.clear(requireContext());
+            if (status != null) status.setText(PlayitAccountStore.statusLine(requireContext()));
+            Toast.makeText(requireContext(), "Playit unlinked", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -316,9 +337,14 @@ public class ServerDetailFragment extends Fragment {
         new Thread(() -> {
             try {
                 LocalServerRunner.start(requireContext(), entry);
+                PlayitAccountStore.applyDefaultToServer(requireContext(), entry);
                 ui.post(() -> {
                     reloadEntry();
-                    Toast.makeText(requireContext(), "Server started", Toast.LENGTH_SHORT).show();
+                    String msg = "Server started";
+                    if (entry.publicAddress != null && !entry.publicAddress.isEmpty()) {
+                        msg = "Started · Public: " + entry.publicAddress;
+                    }
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
                     refreshStatus();
                     showTab(1);
                 });
@@ -343,7 +369,7 @@ public class ServerDetailFragment extends Fragment {
         new Thread(() -> {
             try {
                 LocalServerRunner.prepare(requireContext(), entry);
-                ui.post(() -> Toast.makeText(requireContext(), "Ready — JAR + properties + icon", Toast.LENGTH_LONG).show());
+                ui.post(() -> Toast.makeText(requireContext(), "Ready", Toast.LENGTH_LONG).show());
             } catch (Exception e) {
                 ui.post(() -> Toast.makeText(requireContext(), "Prepare failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
@@ -364,16 +390,16 @@ public class ServerDetailFragment extends Fragment {
         TextView bg = panelOverview.findViewById(R.id.sd_stat_bg);
         TextView lan = panelOverview.findViewById(R.id.sd_addr_lan);
         TextView pub = panelOverview.findViewById(R.id.sd_addr_public);
-        if (ram != null) ram.setText("RAM allocated: " + entry.memoryMb + " MB" + (on ? " (process live)" : ""));
-        if (port != null) port.setText("Port: " + entry.port + " · Online-mode: " + entry.onlineMode);
-        if (soft != null) soft.setText("Software: " + entry.softwareLabel() + " · MC " + entry.versionId);
-        if (bg != null) bg.setText(on ? "Background: foreground service keeping process alive" : "Background: idle");
+        if (ram != null) ram.setText("RAM: " + entry.memoryMb + " MB" + (on ? " (live)" : ""));
+        if (port != null) port.setText("Port: " + entry.port + " · online-mode: " + entry.onlineMode);
+        if (soft != null) soft.setText(entry.softwareLabel() + " · MC " + entry.versionId);
+        if (bg != null) bg.setText(on ? "Background: FGS on" : "Background: idle");
         String lanIp = LanHostHelper.getLanIpv4(requireContext());
         if (lan != null) lan.setText("LAN: " + entry.displayAddress(lanIp));
         if (pub != null) {
             pub.setText(entry.publicAddress != null && !entry.publicAddress.isEmpty()
                     ? "Public: " + entry.publicAddress
-                    : "Public: not set (open Reach tab → playit)");
+                    : "Public: Reach tab → playit once");
         }
     }
 
@@ -381,9 +407,7 @@ public class ServerDetailFragment extends Fragment {
         if (consoleText == null) return;
         consoleText.append(line);
         consoleText.append("\n");
-        if (consoleScroll != null) {
-            consoleScroll.post(() -> consoleScroll.fullScroll(View.FOCUS_DOWN));
-        }
+        if (consoleScroll != null) consoleScroll.post(() -> consoleScroll.fullScroll(View.FOCUS_DOWN));
     }
 
     private void loadIcon() {
@@ -391,27 +415,17 @@ public class ServerDetailFragment extends Fragment {
         try {
             if (entry.iconPath != null) {
                 File f = new File(entry.iconPath);
-                if (f.exists()) {
-                    iconView.setImageBitmap(BitmapFactory.decodeFile(f.getAbsolutePath()));
-                    return;
-                }
+                if (f.exists()) { iconView.setImageBitmap(BitmapFactory.decodeFile(f.getAbsolutePath())); return; }
             }
-            File dir = LocalServerRunner.serverDir(requireContext(), entry);
-            File icon = new File(dir, "server-icon.png");
-            if (icon.exists()) {
-                iconView.setImageBitmap(BitmapFactory.decodeFile(icon.getAbsolutePath()));
-            }
+            File icon = new File(LocalServerRunner.serverDir(requireContext(), entry), "server-icon.png");
+            if (icon.exists()) iconView.setImageBitmap(BitmapFactory.decodeFile(icon.getAbsolutePath()));
         } catch (Throwable ignored) {}
     }
 
     private void copyBestAddress() {
-        String addr;
-        if (entry.publicAddress != null && !entry.publicAddress.trim().isEmpty()) {
-            addr = entry.publicAddress.trim();
-        } else {
-            String lanIp = LanHostHelper.getLanIpv4(requireContext());
-            addr = entry.displayAddress(lanIp);
-        }
+        String addr = (entry.publicAddress != null && !entry.publicAddress.trim().isEmpty())
+                ? entry.publicAddress.trim()
+                : entry.displayAddress(LanHostHelper.getLanIpv4(requireContext()));
         copyText(addr);
     }
 
@@ -428,73 +442,61 @@ public class ServerDetailFragment extends Fragment {
     private void refreshWorldList() {
         if (worldListTv == null || getContext() == null) return;
         File saves = new File(net.kdt.pojavlaunch.Tools.DIR_GAME_NEW, "saves");
-        List<String> names = new ArrayList<>();
-        if (saves.isDirectory()) {
-            File[] dirs = saves.listFiles(File::isDirectory);
-            if (dirs != null) for (File d : dirs) names.add(d.getName());
+        File[] dirs = saves.exists() ? saves.listFiles(File::isDirectory) : null;
+        if (dirs == null || dirs.length == 0) {
+            worldListTv.setText("No worlds in saves/");
+            return;
         }
-        if (names.isEmpty()) {
-            worldListTv.setText("No singleplayer worlds found in saves/");
-        } else {
-            StringBuilder sb = new StringBuilder("Worlds:\n");
-            for (String n : names) sb.append("• ").append(n).append('\n');
-            if (selectedWorldName != null) sb.append("\nSelected: ").append(selectedWorldName);
-            worldListTv.setText(sb.toString());
-        }
+        StringBuilder sb = new StringBuilder();
+        for (File d : dirs) sb.append("• ").append(d.getName()).append('\n');
+        worldListTv.setText(sb.toString());
     }
 
     private void pickWorldDialog() {
         File saves = new File(net.kdt.pojavlaunch.Tools.DIR_GAME_NEW, "saves");
-        List<String> names = new ArrayList<>();
-        if (saves.isDirectory()) {
-            File[] dirs = saves.listFiles(File::isDirectory);
-            if (dirs != null) for (File d : dirs) names.add(d.getName());
-        }
-        if (names.isEmpty()) {
+        File[] dirs = saves.exists() ? saves.listFiles(File::isDirectory) : null;
+        if (dirs == null || dirs.length == 0) {
             Toast.makeText(requireContext(), "No worlds", Toast.LENGTH_SHORT).show();
             return;
         }
-        String[] arr = names.toArray(new String[0]);
+        String[] names = new String[dirs.length];
+        for (int i = 0; i < dirs.length; i++) names[i] = dirs[i].getName();
         new AlertDialog.Builder(requireContext())
-                .setTitle("Pick world to import")
-                .setItems(arr, (d, which) -> {
-                    selectedWorldName = arr[which];
+                .setTitle("Select world")
+                .setItems(names, (d, which) -> {
+                    selectedWorldName = names[which];
                     if (worldListTv != null) worldListTv.setText("Selected: " + selectedWorldName);
-                })
-                .show();
+                }).show();
     }
 
     private void importSelectedWorld() {
         if (selectedWorldName == null || selectedWorldName.isEmpty()) {
+            pickWorldDialog();
             Toast.makeText(requireContext(), "Pehle world select karo", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (LocalServerRunner.isRunning(serverId)) {
-            Toast.makeText(requireContext(), "Stop server first", Toast.LENGTH_SHORT).show();
             return;
         }
         Toast.makeText(requireContext(), "Importing " + selectedWorldName + "…", Toast.LENGTH_SHORT).show();
         new Thread(() -> {
             try {
-                LocalServerRunner.importWorld(requireContext(), entry, selectedWorldName);
-                ui.post(() -> Toast.makeText(requireContext(), "World imported as active world", Toast.LENGTH_LONG).show());
+                entry.worldName = selectedWorldName;
+                LocalServerStore.update(requireContext(), entry);
+                LocalServerRunner.applySettings(requireContext(), entry);
+                ui.post(() -> Toast.makeText(requireContext(), "World set: " + selectedWorldName, Toast.LENGTH_LONG).show());
             } catch (Exception e) {
                 ui.post(() -> Toast.makeText(requireContext(), "Import failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         }).start();
     }
 
-    private void setSpinner(Spinner sp, String[] values, String current) {
-        if (sp == null || current == null) return;
+    private static void setSpinner(Spinner sp, String[] values, String current) {
+        if (sp == null || values == null) return;
+        if (current == null) return;
         for (int i = 0; i < values.length; i++) {
-            if (values[i].equalsIgnoreCase(current)) {
-                sp.setSelection(i);
-                return;
-            }
+            if (current.equalsIgnoreCase(values[i])) { sp.setSelection(i); return; }
         }
     }
 
-    private int parseInt(String s, int def) {
+    private static int parseInt(String s, int def) {
         try { return Integer.parseInt(s.trim()); } catch (Exception e) { return def; }
     }
 }
