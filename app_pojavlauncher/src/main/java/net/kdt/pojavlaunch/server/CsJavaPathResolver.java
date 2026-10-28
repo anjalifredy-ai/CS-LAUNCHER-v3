@@ -14,32 +14,41 @@ public final class CsJavaPathResolver {
 
     private CsJavaPathResolver() {}
 
-    /**
-     * @param requiredMajor 8, 17, or 21
-     * @return absolute path to java binary, or null if no suitable runtime installed
-     */
     public static String resolveJavaBin(int requiredMajor) {
-        String name = MultiRTUtils.getExactJreName(requiredMajor);
-        if (name == null) {
-            name = MultiRTUtils.getNearestJreName(requiredMajor);
-        }
-        if (name == null) return null;
-
         try {
-            File home = MultiRTUtils.getRuntimeHome(name);
+            String name = MultiRTUtils.getExactJreName(requiredMajor);
+            if (name == null) {
+                name = MultiRTUtils.getNearestJreName(requiredMajor);
+            }
+            if (name == null) return null;
+
+            // Do not call getRuntimeHome() — it throws if release file is broken
+            File home = new File(Tools.MULTIRT_HOME, name);
+            if (!home.isDirectory()) return null;
             File java = findJavaBinary(home);
-            if (java != null && java.canExecute()) {
+            if (java != null && java.exists()) {
                 return java.getAbsolutePath();
             }
-        } catch (Exception e) {
-            // broken runtime
+        } catch (Throwable ignored) {
         }
         return null;
     }
 
     public static String resolveForMinecraftVersion(String mcVersion) {
         int major = CsServerJavaResolver.requiredMajor(mcVersion);
-        return resolveJavaBin(major);
+        String path = resolveJavaBin(major);
+        if (path != null) return path;
+        // Fallback: any installed higher/equal runtime
+        try {
+            for (Runtime r : MultiRTUtils.getInstalledRuntimes()) {
+                if (r == null || r.javaVersion <= 0) continue;
+                if (r.javaVersion < major) continue;
+                File home = new File(Tools.MULTIRT_HOME, r.name);
+                File java = findJavaBinary(home);
+                if (java != null && java.exists()) return java.getAbsolutePath();
+            }
+        } catch (Throwable ignored) {}
+        return null;
     }
 
     public static String missingRuntimeMessage(String mcVersion) {
@@ -49,7 +58,7 @@ public final class CsJavaPathResolver {
     }
 
     private static File findJavaBinary(File runtimeHome) {
-        // Common MultiRT layouts
+        if (runtimeHome == null || !runtimeHome.isDirectory()) return null;
         String[] candidates = {
                 "bin/java",
                 "jre/bin/java",
@@ -59,7 +68,6 @@ public final class CsJavaPathResolver {
             File f = new File(runtimeHome, rel);
             if (f.exists()) return f;
         }
-        // Walk one level for nested jre-
         File[] kids = runtimeHome.listFiles();
         if (kids != null) {
             for (File k : kids) {
@@ -77,11 +85,13 @@ public final class CsJavaPathResolver {
 
     public static java.util.List<String> installedJavaMajors() {
         java.util.ArrayList<String> out = new java.util.ArrayList<>();
-        for (Runtime r : MultiRTUtils.getInstalledRuntimes()) {
-            if (r.javaVersion > 0) {
-                out.add(r.name + " (Java " + r.javaVersion + ")");
+        try {
+            for (Runtime r : MultiRTUtils.getInstalledRuntimes()) {
+                if (r != null && r.javaVersion > 0) {
+                    out.add(r.name + " (Java " + r.javaVersion + ")");
+                }
             }
-        }
+        } catch (Throwable ignored) {}
         return out;
     }
 }
