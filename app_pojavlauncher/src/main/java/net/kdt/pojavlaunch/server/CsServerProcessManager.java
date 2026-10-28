@@ -3,8 +3,8 @@ package net.kdt.pojavlaunch.server;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -12,176 +12,253 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * Spawns a dedicated server process (java -jar server.jar) with console capture.
+ * Runs at most one active Minecraft Java server process on-device.
+ * Real ProcessBuilder. Real stdout. ONLINE only after readiness markers.
  */
 public class CsServerProcessManager {
 
     private static final String TAG = "CsServerProcess";
 
-    public enum State { STOPPED, STARTING, ONLINE, STOPPING, FAILED }
+    public static class ConsoleLine {
+        public final String serverId;
+        public final String line;
+        public final long timestamp;
 
-    public static class RuntimeStatus {
-        public State state = State.STOPPED;
-        public long startedAt;
-        public String lastError;
+        public ConsoleLine(String serverId, String line) {
+            this.serverId = serverId;
+            this.line = line;
+            this.timestamp = System.currentTimeMillis();
+        }
+    }
+
+    public interface ConsoleListener {
+        void onConsoleLine(ConsoleLine line);
+    }
+
+    public interface StatusListener {
+        void onStatusChanged(String serverId, CsServerRuntimeStatus status);
     }
 
     private final Map<String, Process> processes = new ConcurrentHashMap<>();
-    private final Map<String, RuntimeStatus> statuses = new ConcurrentHashMap<>();
-    private final Map<String, List<Consumer<String>>> logListeners = new ConcurrentHashMap<>();
+    private final Map<String, BufferedWriter> writers = new ConcurrentHashMap<>();
+    private final Map<String, Long> startTimes = new ConcurrentHashMap<>();
+    private final Map<String, CsServerRuntimeStatus> statusMap = new ConcurrentHashMap<>();
+    private final List<ConsoleListener> consoleListeners = new CopyOnWriteArrayList<>();
+    private final List<StatusListener> statusListeners = new CopyOnWriteArrayList<>();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public RuntimeStatus getStatus(String serverId) {
-        return statuses.computeIfAbsent(serverId, k -> new RuntimeStatus());
+    private final CsServerRamAdvisor ramAdvisor;
+
+    public CsServerProcessManager(CsServerRamAdvisor ramAdvisor) {
+        this.ramAdvisor = ramAdvisor;
     }
 
-    public void addLogListener(String serverId, Consumer<String> listener) {
-        logListeners.computeIfAbsent(serverId, k -> new CopyOnWriteArrayList<>()).add(listener);
+    public void addConsoleListener(ConsoleListener l) {
+        consoleListeners.add(l);
     }
 
-    public synchronized void start(CsServerConfig config, String javaBinary) throws Exception {
+    public void removeConsoleListener(ConsoleListener l) {
+        consoleListeners.remove(l);
+    }
+
+    public void addStatusListener(StatusListener l) {
+        statusListeners.add(l);
+    }
+
+    public void removeStatusListener(StatusListener l) {
+        statusListeners.remove(l);
+    }
+
+    /**
+     * @param javaBin absolute path to java executable (from installed JRE)
+     */
+    public synchronized String start(CsServerConfig config, String javaBin) {
         if (processes.containsKey(config.id)) {
-            throw new IllegalStateException("Already running");
+            return "Server already running";
         }
-        File dir = new File(config.serverDir);
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new IllegalStateException("Cannot create " + dir);
+        if (!processes.isEmpty()) {
+            return "Another server is already running. Stop it first.";
+        }
+        if (!config.eulaAccepted) {
+            return "Minecraft EULA not accepted.";
+        }
+        if (ramAdvisor != null && !ramAdvisor.isAllocationSafe(config.memoryMb)) {
+            return "Requested " + config.memoryMb + " MB outside safe range.";
         }
 
-        File jar = findServerJar(dir);
-        if (jar == null) {
-            throw new IllegalStateException("No server jar in " + dir.getAbsolutePath()
-                    + " — install jar first (Paper/Vanilla/Fabric)");
+        File serverDir = new File(config.serverDir);
+        File jar = new File(serverDir, "server.jar");
+        if (!jar.exists()) {
+            return "server.jar not found. Install first.";
+        }
+        if (javaBin == null || javaBin.isEmpty() || !new File(javaBin).exists()) {
+            return "Java binary not found: " + javaBin;
         }
 
-        writeEula(dir);
-        writeProperties(config, dir);
+        updateStatus(config.id, CsServerState.STARTING, config.memoryMb, null);
 
-        RuntimeStatus st = getStatus(config.id);
-        st.state = State.STARTING;
-        st.lastError = null;
-        st.startedAt = System.currentTimeMillis();
+        try {
+            List<String> args = new ArrayList<>();
+            args.add(javaBin);
+            int xms = Math.max(config.memoryMb / 2, 256);
+            args.add("-Xms" + xms + "m");
+            args.add("-Xmx" + config.memoryMb + "m");
+            args.add("-XX:+UseG1GC");
+            args.add("-XX:+ParallelRefProcEnabled");
+            args.add("-Djava.awt.headless=true");
+            if (config.jvmArgs != null && !config.jvmArgs.trim().isEmpty()) {
+                for (String part : config.jvmArgs.trim().split("\\s+")) {
+                    if (!part.isEmpty()) args.add(part);
+                }
+            }
+            args.add("-jar");
+            args.add(jar.getAbsolutePath());
+            args.add("nogui");
 
-        List<String> cmd = new ArrayList<>();
-        cmd.add(javaBinary);
-        cmd.add("-Xms" + Math.max(256, config.memoryMb / 2) + "m");
-        cmd.add("-Xmx" + config.memoryMb + "m");
-        cmd.add("-XX:+UseG1GC");
-        cmd.add("-jar");
-        cmd.add(jar.getAbsolutePath());
-        cmd.add("nogui");
+            ProcessBuilder pb = new ProcessBuilder(args);
+            pb.directory(serverDir);
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
 
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(dir);
-        pb.redirectErrorStream(true);
-        Process p = pb.start();
-        processes.put(config.id, p);
+            processes.put(config.id, process);
+            startTimes.put(config.id, System.currentTimeMillis());
+            writers.put(config.id, new BufferedWriter(new OutputStreamWriter(process.getOutputStream())));
 
-        Thread t = new Thread(() -> {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    emitLog(config.id, line);
-                    if (line.contains("Done") && (line.contains("For help") || line.contains("!"))) {
-                        getStatus(config.id).state = State.ONLINE;
+            final String serverId = config.id;
+            final int mem = config.memoryMb;
+            executor.execute(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        ConsoleLine cl = new ConsoleLine(serverId, line);
+                        for (ConsoleListener l : consoleListeners) {
+                            try { l.onConsoleLine(cl); } catch (Exception ignored) {}
+                        }
+                        if (isReadyMarker(line)) {
+                            updateStatus(serverId, CsServerState.ONLINE, mem, null);
+                        }
+                        if (line.toLowerCase().contains("failed to start") ||
+                                line.contains("OutOfMemoryError")) {
+                            updateStatus(serverId, CsServerState.FAILED, mem, line);
+                        }
                     }
+                } catch (Exception e) {
+                    Log.e(TAG, "Server output read error", e);
+                } finally {
+                    int code = -1;
+                    try {
+                        code = process.waitFor();
+                    } catch (Exception ignored) {}
+                    cleanup(serverId);
+                    updateStatus(serverId,
+                            code == 0 ? CsServerState.STOPPED : CsServerState.FAILED,
+                            mem,
+                            code != 0 ? "Exit code " + code : null);
                 }
-                int code = p.waitFor();
-                processes.remove(config.id);
-                RuntimeStatus s = getStatus(config.id);
-                s.state = code == 0 ? State.STOPPED : State.FAILED;
-                if (code != 0) s.lastError = "Exit code " + code;
-            } catch (Exception e) {
-                Log.e(TAG, "server log", e);
-                getStatus(config.id).state = State.FAILED;
-                getStatus(config.id).lastError = e.getMessage();
-                processes.remove(config.id);
-            }
-        }, "cs-server-" + config.id);
-        t.setDaemon(true);
-        t.start();
-    }
+            });
 
-    public synchronized void stop(String serverId) {
-        Process p = processes.get(serverId);
-        if (p == null) return;
-        getStatus(serverId).state = State.STOPPING;
-        try {
-            OutputStreamWriter w = new OutputStreamWriter(p.getOutputStream());
-            w.write("stop\n");
-            w.flush();
-        } catch (Exception ignored) {}
-        new Thread(() -> {
-            try {
-                if (!p.waitFor(15, TimeUnit.SECONDS)) {
-                    p.destroyForcibly();
-                }
-            } catch (Exception e) {
-                p.destroyForcibly();
-            }
-            processes.remove(serverId);
-            getStatus(serverId).state = State.STOPPED;
-        }).start();
-    }
-
-    public void sendCommand(String serverId, String command) {
-        Process p = processes.get(serverId);
-        if (p == null) return;
-        try {
-            OutputStreamWriter w = new OutputStreamWriter(p.getOutputStream());
-            w.write(command.endsWith("\n") ? command : command + "\n");
-            w.flush();
+            return null; // success
         } catch (Exception e) {
-            Log.e(TAG, "cmd", e);
+            cleanup(config.id);
+            updateStatus(config.id, CsServerState.FAILED, config.memoryMb, e.getMessage());
+            return e.getMessage() != null ? e.getMessage() : "Start failed";
         }
     }
 
-    private void emitLog(String id, String line) {
-        List<Consumer<String>> ls = logListeners.get(id);
-        if (ls != null) {
-            for (Consumer<String> c : ls) {
-                try { c.accept(line); } catch (Exception ignored) {}
+    public synchronized void stop(String serverId, boolean force) {
+        Process process = processes.get(serverId);
+        if (process == null) return;
+
+        CsServerRuntimeStatus cur = statusMap.get(serverId);
+        int mem = cur != null ? (int) cur.memoryMaxMb : 0;
+        updateStatus(serverId, CsServerState.STOPPING, mem, null);
+
+        try {
+            if (!force) {
+                sendCommand(serverId, "stop");
+                long waited = 0;
+                while (process.isAlive() && waited < 15000) {
+                    Thread.sleep(500);
+                    waited += 500;
+                }
             }
-        }
-    }
-
-    private static File findServerJar(File dir) {
-        File[] files = dir.listFiles((d, n) -> n.endsWith(".jar") && !n.contains("installer"));
-        if (files == null || files.length == 0) return null;
-        for (File f : files) {
-            String n = f.getName().toLowerCase();
-            if (n.equals("server.jar") || n.startsWith("paper") || n.startsWith("purpur")
-                    || n.contains("fabric") || n.contains("forge") || n.contains("neoforge")) {
-                return f;
+            if (process.isAlive()) {
+                process.destroyForcibly();
             }
-        }
-        return files[0];
-    }
-
-    private static void writeEula(File dir) throws Exception {
-        File eula = new File(dir, "eula.txt");
-        if (!eula.exists()) {
-            try (FileOutputStream fos = new FileOutputStream(eula)) {
-                fos.write("eula=true\n".getBytes());
-            }
+        } catch (Exception e) {
+            Log.e(TAG, "Stop failed", e);
+            try { process.destroyForcibly(); } catch (Exception ignored) {}
+        } finally {
+            cleanup(serverId);
+            updateStatus(serverId, CsServerState.STOPPED, 0, null);
         }
     }
 
-    private static void writeProperties(CsServerConfig c, File dir) throws Exception {
-        File props = new File(dir, "server.properties");
-        StringBuilder sb = new StringBuilder();
-        sb.append("server-port=").append(c.port).append('\n');
-        sb.append("max-players=").append(c.maxPlayers).append('\n');
-        sb.append("online-mode=").append(c.onlineMode).append('\n');
-        sb.append("white-list=").append(c.whitelist).append('\n');
-        sb.append("pvp=").append(c.pvp).append('\n');
-        sb.append("motd=").append(c.motd).append('\n');
-        sb.append("level-name=").append(c.worldDir).append('\n');
-        try (FileOutputStream fos = new FileOutputStream(props)) {
-            fos.write(sb.toString().getBytes());
+    public boolean sendCommand(String serverId, String command) {
+        BufferedWriter writer = writers.get(serverId);
+        if (writer == null) return false;
+        try {
+            writer.write(command);
+            writer.newLine();
+            writer.flush();
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Command send failed", e);
+            return false;
+        }
+    }
+
+    public CsServerRuntimeStatus getStatus(String serverId) {
+        CsServerRuntimeStatus s = statusMap.get(serverId);
+        return s != null ? s : new CsServerRuntimeStatus(serverId, CsServerState.STOPPED);
+    }
+
+    public boolean isAnyRunning() {
+        return !processes.isEmpty();
+    }
+
+    private boolean isReadyMarker(String line) {
+        String lower = line.toLowerCase();
+        return lower.contains("done (") ||
+                lower.contains("for help, type") ||
+                (lower.contains("started") && lower.contains("server"));
+    }
+
+    private void cleanup(String serverId) {
+        try {
+            BufferedWriter w = writers.remove(serverId);
+            if (w != null) w.close();
+        } catch (Exception ignored) {}
+        processes.remove(serverId);
+        startTimes.remove(serverId);
+    }
+
+    private void updateStatus(String serverId, CsServerState state, int memoryMaxMb, String error) {
+        long uptime = 0;
+        Long start = startTimes.get(serverId);
+        if (start != null) uptime = System.currentTimeMillis() - start;
+
+        CsServerRuntimeStatus status = new CsServerRuntimeStatus();
+        status.serverId = serverId;
+        status.state = state;
+        status.uptimeMs = uptime;
+        status.memoryMaxMb = memoryMaxMb;
+        status.lastError = error;
+        Process p = processes.get(serverId);
+        if (p != null) {
+            try {
+                // pid() requires API 26+
+                status.pid = p.pid();
+            } catch (Throwable ignored) {}
+        }
+        statusMap.put(serverId, status);
+
+        for (StatusListener l : statusListeners) {
+            try { l.onStatusChanged(serverId, status); } catch (Exception ignored) {}
         }
     }
 }

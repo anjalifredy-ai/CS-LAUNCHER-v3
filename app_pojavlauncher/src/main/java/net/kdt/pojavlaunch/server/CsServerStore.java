@@ -1,98 +1,134 @@
 package net.kdt.pojavlaunch.server;
 
+import android.content.Context;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import net.kdt.pojavlaunch.Tools;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-/** Persist server list under game directory. */
+/**
+ * Persists server configs as JSON under CS servers/index.json.
+ */
 public class CsServerStore {
 
-    private final File storeFile;
+    private static final Gson GSON = new Gson();
+    private static final Type LIST_TYPE = new TypeToken<List<CsServerConfig>>(){}.getType();
 
-    public CsServerStore() {
-        File dir = new File(Tools.DIR_GAME_HOME, "cs_servers");
-        if (!dir.exists()) dir.mkdirs();
-        storeFile = new File(dir, "servers.json");
+    private final Context context;
+    private final List<CsServerConfig> servers = new CopyOnWriteArrayList<>();
+    private final List<Listener> listeners = new ArrayList<>();
+
+    public interface Listener {
+        void onServersChanged(List<CsServerConfig> servers);
     }
 
-    public synchronized List<CsServerConfig> loadAll() {
-        List<CsServerConfig> list = new ArrayList<>();
-        if (!storeFile.exists()) return list;
-        try {
-            byte[] data = readAll(storeFile);
-            JSONArray arr = new JSONArray(new String(data, StandardCharsets.UTF_8));
-            for (int i = 0; i < arr.length(); i++) {
-                list.add(CsServerConfig.fromJson(arr.getJSONObject(i)));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public CsServerStore(Context context) {
+        this.context = context.getApplicationContext();
+    }
+
+    private File serversRoot() {
+        File root = new File(Tools.DIR_GAME_HOME, "../servers");
+        if (!root.exists()) root.mkdirs();
+        return root;
+    }
+
+    private File indexFile() {
+        return new File(serversRoot(), "index.json");
+    }
+
+    public synchronized void load() {
+        File idx = indexFile();
+        if (!idx.exists()) {
+            servers.clear();
+            notifyListeners();
+            return;
         }
-        return list;
-    }
-
-    public synchronized void saveAll(List<CsServerConfig> list) {
-        try {
-            JSONArray arr = new JSONArray();
-            for (CsServerConfig c : list) arr.put(c.toJson());
-            writeAll(storeFile, arr.toString(2).getBytes(StandardCharsets.UTF_8));
+        try (FileReader reader = new FileReader(idx)) {
+            List<CsServerConfig> list = GSON.fromJson(reader, LIST_TYPE);
+            servers.clear();
+            if (list != null) servers.addAll(list);
         } catch (Exception e) {
-            e.printStackTrace();
+            servers.clear();
         }
+        notifyListeners();
     }
 
-    public synchronized void upsert(CsServerConfig config) {
-        List<CsServerConfig> list = loadAll();
+    public synchronized void save(CsServerConfig config) {
+        config.updatedAt = System.currentTimeMillis();
         boolean found = false;
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).id.equals(config.id)) {
-                list.set(i, config);
+        for (int i = 0; i < servers.size(); i++) {
+            if (servers.get(i).id.equals(config.id)) {
+                servers.set(i, config);
                 found = true;
                 break;
             }
         }
-        if (!found) list.add(config);
-        saveAll(list);
+        if (!found) servers.add(config);
+        persist();
+        notifyListeners();
     }
 
-    public synchronized void delete(String id) {
-        List<CsServerConfig> list = loadAll();
-        list.removeIf(c -> c.id.equals(id));
-        saveAll(list);
+    public synchronized void delete(String serverId) {
+        servers.removeIf(s -> s.id.equals(serverId));
+        persist();
+        notifyListeners();
     }
 
-    public CsServerConfig getById(String id) {
-        for (CsServerConfig c : loadAll()) {
-            if (c.id.equals(id)) return c;
+    public CsServerConfig getById(String serverId) {
+        for (CsServerConfig s : servers) {
+            if (s.id.equals(serverId)) return s;
         }
         return null;
     }
 
-    private static byte[] readAll(File f) throws Exception {
-        try (FileInputStream in = new FileInputStream(f)) {
-            byte[] buf = new byte[(int) f.length()];
-            int off = 0;
-            while (off < buf.length) {
-                int n = in.read(buf, off, buf.length - off);
-                if (n < 0) break;
-                off += n;
-            }
-            return buf;
-        }
+    public List<CsServerConfig> getAll() {
+        return new ArrayList<>(servers);
     }
 
-    private static void writeAll(File f, byte[] data) throws Exception {
-        File parent = f.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
-        try (FileOutputStream out = new FileOutputStream(f)) {
-            out.write(data);
+    public String createId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public File defaultServerDir(String serverId) {
+        File dir = new File(serversRoot(), serverId);
+        if (!dir.exists()) dir.mkdirs();
+        return dir;
+    }
+
+    public void addListener(Listener l) {
+        listeners.add(l);
+    }
+
+    public void removeListener(Listener l) {
+        listeners.remove(l);
+    }
+
+    private void persist() {
+        try {
+            File idx = indexFile();
+            idx.getParentFile().mkdirs();
+            try (FileWriter w = new FileWriter(idx)) {
+                GSON.toJson(servers, w);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void notifyListeners() {
+        List<CsServerConfig> snapshot = getAll();
+        for (Listener l : listeners) {
+            try {
+                l.onServersChanged(snapshot);
+            } catch (Exception ignored) {}
         }
     }
 }
