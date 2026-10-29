@@ -109,6 +109,9 @@ public final class LocalServerRunner {
                 DownloadUtils.downloadFile(url, jar);
             }
         }
+        if ("paper".equals(soft) || "purpur".equals(soft)) {
+            new File(dir, "plugins").mkdirs();
+        }
         File eula = new File(dir, "eula.txt");
         try (OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(eula), StandardCharsets.UTF_8)) {
             w.write("# Accepted in CS Launcher\neula=true\n");
@@ -118,34 +121,7 @@ public final class LocalServerRunner {
     }
 
     private static void writeProperties(File dir, LocalServerEntry e) throws Exception {
-        File props = new File(dir, "server.properties");
-        try (OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(props), StandardCharsets.UTF_8)) {
-            w.write("# CS Launcher local server\n");
-            w.write("server-port=" + e.port + "\n");
-            w.write("server-ip=0.0.0.0\n");
-            w.write("max-players=" + e.maxPlayers + "\n");
-            w.write("online-mode=" + e.onlineMode + "\n");
-            w.write("white-list=" + e.whitelist + "\n");
-            String motd = e.motdLine().replace("\n", " ").replace("=", "-");
-            w.write("motd=" + motd + "\n");
-            String diff = e.difficulty != null ? e.difficulty : "normal";
-            String gm = e.gamemode != null ? e.gamemode : "survival";
-            w.write("difficulty=" + diff + "\n");
-            w.write("gamemode=" + gm + "\n");
-            w.write("pvp=" + e.pvp + "\n");
-            w.write("hardcore=" + e.hardcore + "\n");
-            w.write("allow-flight=" + e.allowFlight + "\n");
-            w.write("spawn-protection=0\n");
-            int vd = e.viewDistance > 0 ? e.viewDistance : 8;
-            int sd = e.simulationDistance > 0 ? e.simulationDistance : 6;
-            w.write("view-distance=" + vd + "\n");
-            w.write("simulation-distance=" + sd + "\n");
-            String level = e.worldName != null && !e.worldName.isEmpty() ? e.worldName : "world";
-            w.write("level-name=" + level + "\n");
-            w.write("max-tick-time=60000\n");
-            w.write("enable-status=true\n");
-            w.write("hide-online-players=false\n");
-        }
+        CsServerPropertiesWriter.write(dir, e);
     }
 
     public static void applySettings(Context ctx, LocalServerEntry e) throws Exception {
