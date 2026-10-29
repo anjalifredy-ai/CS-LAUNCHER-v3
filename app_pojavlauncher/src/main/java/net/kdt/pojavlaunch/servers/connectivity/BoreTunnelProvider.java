@@ -22,17 +22,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Free TCP public tunnel via the open-source bore client (MIT) against the public
- * bore.pub relay. Friends join with vanilla Minecraft only — they do not install a tunnel app.
+ * Default free remote path for EVERY local server (MineServe-style).
+ * On Start: auto run bore → bore.pub → public address on the server entry.
+ * Friends need only Minecraft. Host does not open a separate tunnel app UI.
  *
- * Honest limits:
- * - Relay is external (bore.pub), not our infrastructure. Availability and abuse limits are theirs.
- * - Official bore releases are Linux/macOS/Windows; Android uses statically linked aarch64 when it runs.
- * - Public address is only set after the agent prints an assigned host:port. Remote join is not
- *   claimed verified until a second network device successfully connects.
- *
- * Architecture inspiration: MineServe embeds bore/playit agents; we do not copy GPL MineServe code.
- * VoxelPort public join depends on their operated relay (MIT client, external infra).
+ * Relay: third-party bore.pub (not our VPS). MIT bore client.
  */
 public final class BoreTunnelProvider implements ConnectivityProvider {
     private static final String TAG = "CsBoreTunnel";
@@ -42,56 +36,57 @@ public final class BoreTunnelProvider implements ConnectivityProvider {
     private static final String URL_LINUX_AARCH64 =
             "https://github.com/ekzhang/bore/releases/download/v" + BORE_VERSION
                     + "/bore-v" + BORE_VERSION + "-aarch64-unknown-linux-musl.tar.gz";
+    private static final String URL_ANDROID_AARCH64 =
+            "https://raw.githubusercontent.com/Azathothas/Static-Binaries/main/bore/bore_aarch64_arm64_Android";
 
     private static final Pattern ADDR = Pattern.compile(
-            "(?:listening at|bore\\.pub)[^\\d]*((?:bore\\.pub|\\d{1,3}(?:\\.\\d{1,3}){3}):(\\d{2,5}))",
-            Pattern.CASE_INSENSITIVE);
+            "bore\\.pub:(\\d{2,5})", Pattern.CASE_INSENSITIVE);
 
     private static final ConcurrentHashMap<String, Process> AGENTS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, String> ADDRESSES = new ConcurrentHashMap<>();
 
     @Override public String id() { return ID; }
-
-    @Override public String displayName() { return "Free TCP (bore.pub)"; }
+    @Override public String displayName() { return "bore.pub (auto on every server)"; }
 
     @Override
     public String limitationsSummary() {
-        return "Uses open-source bore client + free public relay bore.pub. "
-                + "No paid VPS. Friends need only Minecraft. "
-                + "Relay is third-party (not CS Launcher). Ports are random; service may rate-limit. "
-                + "Local server still works if tunnel fails.";
+        return "Every server Start tries bore.pub automatically (like MineServe). "
+                + "Free public relay; random port; third-party limits apply. "
+                + "Friends join with only Minecraft. Local host works if tunnel fails.";
     }
 
     @Override
-    public boolean isConfigured(Context ctx) {
-        return true;
-    }
+    public boolean isConfigured(Context ctx) { return true; }
 
     @Override
     public ConnectivityResult onServerStarted(Context ctx, LocalServerEntry server) throws Exception {
         stopAgent(server.id);
         File bin = ensureBoreBinary(ctx);
-        if (bin == null || !bin.exists()) {
+        if (bin == null) {
             return new ConnectivityResult(null, false,
-                    "bore binary not available for this CPU. Use Reach → manual tunnel, or LAN.");
+                    "bore binary missing for this device. Server is local-only until fixed.");
         }
         ProcessBuilder pb = new ProcessBuilder(
                 bin.getAbsolutePath(), "local", String.valueOf(server.port), "--to", "bore.pub");
         pb.redirectErrorStream(true);
+        File cwd = bin.getParentFile();
+        if (cwd != null) pb.directory(cwd);
         Process p = pb.start();
         AGENTS.put(server.id, p);
 
-        String publicAddr = readAssignedAddress(p, 20);
+        String publicAddr = readAssignedAddress(p, 25);
+        if (publicAddr == null) publicAddr = readAssignedAddress(p, 10);
         if (publicAddr == null) {
             stopAgent(server.id);
             return new ConnectivityResult(null, false,
-                    "bore started but no public port yet (relay busy or binary incompatible). Try again or manual tunnel.");
+                    "bore did not get a public port (relay or binary). Server still local.");
         }
         ADDRESSES.put(server.id, publicAddr);
         server.publicAddress = publicAddr;
         LocalServerStore.update(ctx, server);
+        Log.i(TAG, "server " + server.id + " public " + publicAddr);
         return new ConnectivityResult(publicAddr, false,
-                "Public candidate " + publicAddr + " via bore.pub. Confirm remote join from another network before sharing as verified.");
+                "Public: " + publicAddr + " (auto bore.pub). Test from another network to verify.");
     }
 
     @Override
@@ -100,18 +95,15 @@ public final class BoreTunnelProvider implements ConnectivityProvider {
         ADDRESSES.remove(server.id);
     }
 
-    public static String lastAddress(String serverId) {
-        return ADDRESSES.get(serverId);
-    }
+    public static String lastAddress(String serverId) { return ADDRESSES.get(serverId); }
 
     public static void stopAgent(String serverId) {
         Process p = AGENTS.remove(serverId);
-        if (p != null) {
-            try { p.destroy(); } catch (Throwable ignored) {}
-            try {
-                if (Build.VERSION.SDK_INT >= 26) p.destroyForcibly();
-            } catch (Throwable ignored) {}
-        }
+        if (p == null) return;
+        try { p.destroy(); } catch (Throwable ignored) {}
+        try {
+            if (Build.VERSION.SDK_INT >= 26) p.destroyForcibly();
+        } catch (Throwable ignored) {}
     }
 
     public static void stopAll() {
@@ -130,21 +122,18 @@ public final class BoreTunnelProvider implements ConnectivityProvider {
                     Log.i(TAG, line);
                     buf.append(line).append('\n');
                     Matcher m = ADDR.matcher(line);
-                    if (m.find()) return m.group(1);
-                    if (line.contains("bore.pub:")) {
-                        int i = line.indexOf("bore.pub:");
-                        String rest = line.substring(i).trim().split("\\s+")[0];
-                        if (rest.matches("bore\\.pub:\\d+")) return rest;
-                    }
+                    if (m.find()) return "bore.pub:" + m.group(1);
                 }
-                if (Build.VERSION.SDK_INT >= 26 && !p.isAlive()) break;
-                try { Thread.sleep(300); } catch (InterruptedException ie) { break; }
+                if (Build.VERSION.SDK_INT >= 26) {
+                    try { if (!p.isAlive()) break; } catch (Throwable ignored) {}
+                }
+                try { Thread.sleep(250); } catch (InterruptedException ie) { break; }
             }
         } catch (Throwable t) {
             Log.w(TAG, "readAssignedAddress", t);
         }
         Matcher m2 = ADDR.matcher(buf.toString());
-        if (m2.find()) return m2.group(1);
+        if (m2.find()) return "bore.pub:" + m2.group(1);
         return null;
     }
 
@@ -158,23 +147,33 @@ public final class BoreTunnelProvider implements ConnectivityProvider {
             String abi = Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0
                     ? Build.SUPPORTED_ABIS[0] : "unknown";
             if (!"arm64-v8a".equals(abi) && !"aarch64".equals(abi)) {
-                Log.w(TAG, "unsupported ABI for bore: " + abi);
+                Log.w(TAG, "unsupported ABI: " + abi);
                 return null;
             }
 
+            if (download(URL_ANDROID_AARCH64, bin)) {
+                //noinspection ResultOfMethodCallIgnored
+                bin.setExecutable(true, false);
+                if (bin.canExecute() && bin.length() > 10000) return bin;
+            }
             File tar = new File(dir, "bore.tgz");
-            if (!download(URL_LINUX_AARCH64, tar)) return null;
-            Process untar = new ProcessBuilder("tar", "-xzf", tar.getAbsolutePath(), "-C", dir.getAbsolutePath())
-                    .redirectErrorStream(true).start();
-            untar.waitFor(60, TimeUnit.SECONDS);
-            if (!bin.exists()) {
-                File[] kids = dir.listFiles();
-                if (kids != null) {
-                    for (File f : kids) {
-                        if (f.isFile() && f.length() > 10000 && !f.getName().endsWith(".tgz")
-                                && !f.getName().equals("bore")) {
-                            //noinspection ResultOfMethodCallIgnored
-                            f.renameTo(bin);
+            if (download(URL_LINUX_AARCH64, tar)) {
+                try {
+                    Process untar = new ProcessBuilder("tar", "-xzf", tar.getAbsolutePath(), "-C", dir.getAbsolutePath())
+                            .redirectErrorStream(true).start();
+                    untar.waitFor(60, TimeUnit.SECONDS);
+                } catch (Throwable t) {
+                    Log.w(TAG, "tar extract", t);
+                }
+                if (!bin.exists()) {
+                    File[] kids = dir.listFiles();
+                    if (kids != null) {
+                        for (File f : kids) {
+                            if (f.isFile() && f.length() > 10000 && !f.getName().endsWith(".tgz")
+                                    && !"bore".equals(f.getName())) {
+                                //noinspection ResultOfMethodCallIgnored
+                                f.renameTo(bin);
+                            }
                         }
                     }
                 }
@@ -184,7 +183,6 @@ public final class BoreTunnelProvider implements ConnectivityProvider {
                 bin.setExecutable(true, false);
                 return bin;
             }
-            Log.w(TAG, "bore extract failed");
             return null;
         } catch (Throwable t) {
             Log.e(TAG, "ensureBoreBinary", t);
