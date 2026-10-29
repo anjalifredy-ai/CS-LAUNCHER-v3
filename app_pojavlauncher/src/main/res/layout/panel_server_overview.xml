@@ -28,7 +28,11 @@
                     android:layout_marginEnd="8dp" />
                 <TextView android:id="@+id/sd_btn_stop" android:layout_width="0dp" android:layout_height="44dp"
                     android:layout_weight="1" android:background="@drawable/bg_cs_danger_button" android:gravity="center"
-                    android:text="■ STOP" android:textColor="#FFF" android:textStyle="bold" />
+                    android:text="■ STOP" android:textColor="#FFF" android:textStyle="bold"
+                    android:layout_marginEnd="8dp" />
+                <TextView android:id="@+id/sd_btn_restart" android:layout_width="0dp" android:layout_height="44dp"
+                    android:layout_weight="1" android:background="@drawable/bg_remom_tile" android:gravity="center"
+                    android:text="↻ RESTART" android:textColor="#3B9EFF" android:textStyle="bold" />
             </LinearLayout>
 
             <TextView android:id="@+id/sd_btn_prepare" android:layout_width="match_parent" android:layout_height="40dp"
@@ -56,7 +60,7 @@
             <TextView android:id="@+id/sd_stat_bg" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:text="Background: —" android:textColor="#F0F6FF" android:textSize="13sp" />
             <TextView android:id="@+id/sd_stat_battery" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="Battery: keep charging recommended while hosting" android:textColor="#7A9BB8" android:textSize="12sp" />
+                android:layout_marginTop="4dp" android:text="Battery: keep screen on / charging recommended" android:textColor="#7A9BB8" android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -72,10 +76,10 @@
             <TextView android:id="@+id/sd_addr_lan" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" android:text="LAN: —" android:textColor="#F0F6FF" android:textSize="13sp" />
             <TextView android:id="@+id/sd_addr_public" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="Public: not set" android:textColor="#F0F6FF" android:textSize="13sp" />
+                android:layout_marginTop="4dp" android:text="Public: —" android:textColor="#F0F6FF" android:textSize="13sp" />
             <TextView android:id="@+id/sd_btn_copy_addr" android:layout_width="match_parent" android:layout_height="40dp"
                 android:layout_marginTop="10dp" android:background="@drawable/bg_remom_tile" android:gravity="center"
-                android:text="Copy best address" android:textColor="#3B9EFF" />
+                android:text="Copy best address" android:textColor="#3B9EFF" android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
