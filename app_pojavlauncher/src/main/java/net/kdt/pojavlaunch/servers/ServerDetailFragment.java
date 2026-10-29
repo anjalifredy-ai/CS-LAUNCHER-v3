@@ -234,6 +234,10 @@ public class ServerDetailFragment extends Fragment {
         if (port != null) port.setText(String.valueOf(entry.port));
         if (players != null) players.setText(String.valueOf(entry.maxPlayers));
         if (ram != null) ram.setText(String.valueOf(entry.memoryMb));
+        EditText viewDist = panelSettings.findViewById(R.id.sd_set_view);
+        EditText simDist = panelSettings.findViewById(R.id.sd_set_sim);
+        if (viewDist != null) viewDist.setText(String.valueOf(entry.viewDistance > 0 ? entry.viewDistance : 8));
+        if (simDist != null) simDist.setText(String.valueOf(entry.simulationDistance > 0 ? entry.simulationDistance : 6));
         if (online != null) online.setChecked(entry.onlineMode);
         if (pvp != null) pvp.setChecked(entry.pvp);
         if (wl != null) wl.setChecked(entry.whitelist);
@@ -249,6 +253,8 @@ public class ServerDetailFragment extends Fragment {
                 if (port != null) entry.port = parseInt(port.getText().toString(), 25565);
                 if (players != null) entry.maxPlayers = parseInt(players.getText().toString(), 10);
                 if (ram != null) entry.memoryMb = Math.max(512, Math.min(4096, parseInt(ram.getText().toString(), 1024)));
+                if (viewDist != null) entry.viewDistance = Math.max(3, Math.min(16, parseInt(viewDist.getText().toString(), 8)));
+                if (simDist != null) entry.simulationDistance = Math.max(3, Math.min(12, parseInt(simDist.getText().toString(), 6)));
                 if (online != null) entry.onlineMode = online.isChecked();
                 if (pvp != null) entry.pvp = pvp.isChecked();
                 if (wl != null) entry.whitelist = wl.isChecked();
@@ -504,7 +510,6 @@ public class ServerDetailFragment extends Fragment {
         Toast.makeText(requireContext(), "Importing…", Toast.LENGTH_SHORT).show();
         new Thread(() -> {
             try {
-                File src = new File(net.kdt.pojavlaunch.Tools.DIR_GAME_NEW, "saves/" + selectedWorldName);
                 entry.worldName = selectedWorldName;
                 LocalServerStore.update(requireContext(), entry);
                 LocalServerRunner.applySettings(requireContext(), entry);
