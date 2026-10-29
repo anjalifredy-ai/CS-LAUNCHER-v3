@@ -38,6 +38,9 @@
             <TextView android:id="@+id/sd_btn_prepare" android:layout_width="match_parent" android:layout_height="40dp"
                 android:layout_marginTop="8dp" android:background="@drawable/bg_remom_tile" android:gravity="center"
                 android:text="Install / Prepare JAR" android:textColor="#3B9EFF" android:textSize="13sp" />
+            <TextView android:id="@+id/sd_btn_plugins" android:layout_width="match_parent" android:layout_height="40dp"
+                android:layout_marginTop="8dp" android:background="@drawable/bg_remom_tile" android:gravity="center"
+                android:text="Browse plugins / mods" android:textColor="#3B9EFF" android:textSize="13sp" />
         </LinearLayout>
 
         <LinearLayout
