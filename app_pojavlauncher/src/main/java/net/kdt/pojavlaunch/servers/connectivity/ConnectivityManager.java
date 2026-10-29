@@ -19,6 +19,7 @@ public final class ConnectivityManager {
     private static final List<ConnectivityProvider> PROVIDERS = new ArrayList<>();
 
     static {
+        PROVIDERS.add(new BoreTunnelProvider());
         PROVIDERS.add(new ManualTunnelProvider());
         PROVIDERS.add(new DirectNetworkProvider());
     }
@@ -37,10 +38,6 @@ public final class ConnectivityManager {
         return sb.toString().trim();
     }
 
-    /**
-     * Apply providers after Minecraft server process is up.
-     * Prefer manual tunnel address when configured.
-     */
     public static ConnectivityProvider.ConnectivityResult afterServerStart(Context ctx, LocalServerEntry server) {
         ConnectivityProvider.ConnectivityResult best = null;
         for (ConnectivityProvider p : PROVIDERS) {
@@ -51,6 +48,7 @@ public final class ConnectivityManager {
                     server.publicAddress = r.publicAddress;
                     LocalServerStore.update(ctx, server);
                     best = r;
+                    if (BoreTunnelProvider.ID.equals(p.id())) break;
                     if (ManualTunnelProvider.ID.equals(p.id())) break;
                 } else if (best == null) {
                     best = r;
