@@ -29,6 +29,11 @@ public final class LocalServerStore {
         }
     }
 
+    /** Alias used by port allocator / connectivity. */
+    public static List<LocalServerEntry> list(Context ctx) {
+        return load(ctx);
+    }
+
     public static void save(Context ctx, List<LocalServerEntry> list) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit().putString(KEY, GSON.toJson(list)).apply();
@@ -47,8 +52,12 @@ public final class LocalServerStore {
                 name == null || name.trim().isEmpty() ? "CS Server" : name.trim(),
                 versionId == null || versionId.isEmpty() ? "1.20.4" : versionId.trim()
         );
-        e.port = port > 0 ? port : 25565;
-        e.onlineMode = false;
+        int p = port;
+        if (p <= 0) {
+            try { p = CsServerPortAllocator.allocate(ctx); } catch (Throwable t) { p = 25565; }
+        }
+        e.port = p > 0 ? p : 25565;
+        e.onlineMode = false; // offline players allowed by default
         e.software = software != null ? software : "vanilla";
         e.description = description != null ? description : "";
         e.memoryMb = memoryMb > 0 ? memoryMb : 1024;
