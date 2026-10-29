@@ -62,6 +62,9 @@ public final class LocalServerRunner {
     }
 
     public static void stop(String id) {
+        try {
+            net.kdt.pojavlaunch.servers.connectivity.BoreTunnelProvider.stopAgent(id);
+        } catch (Throwable ignored) {}
         Process p = RUNNING.remove(id);
         if (p != null) {
             try {
@@ -76,6 +79,9 @@ public final class LocalServerRunner {
     }
 
     public static void stopAll() {
+        try {
+            net.kdt.pojavlaunch.servers.connectivity.BoreTunnelProvider.stopAll();
+        } catch (Throwable ignored) {}
         for (String id : new ArrayList<>(RUNNING.keySet())) stop(id);
     }
 
