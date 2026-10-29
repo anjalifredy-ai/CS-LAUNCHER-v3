@@ -24,9 +24,6 @@ import java.util.regex.Pattern;
 /**
  * Default free remote path for EVERY local server (MineServe-style).
  * On Start: auto run bore → bore.pub → public address on the server entry.
- * Friends need only Minecraft. Host does not open a separate tunnel app UI.
- *
- * Relay: third-party bore.pub (not our VPS). MIT bore client.
  */
 public final class BoreTunnelProvider implements ConnectivityProvider {
     private static final String TAG = "CsBoreTunnel";
@@ -60,6 +57,18 @@ public final class BoreTunnelProvider implements ConnectivityProvider {
 
     @Override
     public ConnectivityResult onServerStarted(Context ctx, LocalServerEntry server) throws Exception {
+        String existing = ADDRESSES.get(server.id);
+        Process existingProc = AGENTS.get(server.id);
+        if (existing != null && !existing.isEmpty() && existingProc != null) {
+            try {
+                if (Build.VERSION.SDK_INT < 26 || existingProc.isAlive()) {
+                    server.publicAddress = existing;
+                    LocalServerStore.update(ctx, server);
+                    return new ConnectivityResult(existing, false,
+                            "Public: " + existing + " (bore.pub already up)");
+                }
+            } catch (Throwable ignored) {}
+        }
         stopAgent(server.id);
         File bin = ensureBoreBinary(ctx);
         if (bin == null) {
