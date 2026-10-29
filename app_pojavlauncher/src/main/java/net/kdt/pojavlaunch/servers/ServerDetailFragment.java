@@ -343,26 +343,11 @@ public class ServerDetailFragment extends Fragment {
     }
 
     private void startServer() {
-        Toast.makeText(requireContext(), "Starting " + entry.name + "…", Toast.LENGTH_SHORT).show();
-        new Thread(() -> {
-            try {
-                LocalServerRunner.start(requireContext(), entry);
-                PlayitAccountStore.applyDefaultToServer(requireContext(), entry);
-                ui.post(() -> {
-                    reloadEntry();
-                    String msg = "Server started";
-                    if (entry.publicAddress != null && !entry.publicAddress.isEmpty()) {
-                        msg = "Started · Public: " + entry.publicAddress;
-                    }
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
-                    refreshStatus();
-                    showTab(1);
-                });
-            } catch (Exception e) {
-                ui.post(() -> Toast.makeText(requireContext(),
-                        "Start failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
-            }
-        }, "sd-start").start();
+        CsServerDetailBinder.startAndWaitPublic(this, serverId, () -> {
+            reloadEntry();
+            refreshStatus();
+            showTab(1);
+        });
     }
 
     private void stopServer() {
