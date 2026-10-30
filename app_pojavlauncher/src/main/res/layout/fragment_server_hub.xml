@@ -2,380 +2,175 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A1628"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#0B1220">
 
     <LinearLayout
         android:id="@+id/server_hub_header"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@drawable/bg_remom_header"
-        android:elevation="2dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="12dp">
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/bg_remom_card">
 
         <TextView
             android:id="@+id/server_hub_back"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/bg_remom_tile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:gravity="center"
-            android:text="‹"
+            android:text="←"
             android:textColor="#F0F6FF"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textSize="20sp"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/server_hub_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/server_hub_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Host / Servers"
-                android:textColor="#F0F6FF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Solo · Wi‑Fi · Tunnel · Cloud"
-                android:textColor="#7A9BB8"
-                android:textSize="10sp" />
-        </LinearLayout>
+            android:text="Servers"
+            android:textColor="#F0F6FF"
+            android:textStyle="bold"
+            android:textSize="17sp"
+            android:paddingStart="8dp" />
 
         <TextView
             android:id="@+id/server_hub_refresh"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:background="@drawable/bg_remom_tile"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
             android:gravity="center"
-            android:text="↻"
+            android:paddingHorizontal="12dp"
+            android:text="Refresh"
             android:textColor="#3B9EFF"
-            android:textSize="18sp" />
+            android:textStyle="bold"
+            android:background="@drawable/bg_remom_tile"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:clipToPadding="false"
-        android:fillViewport="true"
-        android:overScrollMode="never"
-        android:padding="12dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="12dp">
 
-            <!-- LOCAL -->
+            <!-- HOST ON THIS PHONE -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_remom_card"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
                     android:text="HOST ON THIS PHONE"
                     android:textColor="#3B9EFF"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="1) Create   2) Start   3) Copy public address"
+                    android:textColor="#F0F6FF"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Create → Start. Solo 127.0.0.1 · Wi‑Fi = phone IP · Door = tunnel neeche."
+                    android:text="Solo 127.0.0.1 · Wi‑Fi phone IP · Internet bore.pub auto"
                     android:textColor="#7A9BB8"
-                    android:textSize="10sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/local_servers_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:background="@drawable/bg_remom_tile"
-                    android:padding="12dp"
-                    android:text="No local servers — Create"
+                    android:padding="14dp"
+                    android:text="No local servers — tap CREATE SERVER"
                     android:textColor="#F0F6FF"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView android:id="@+id/btn_create_local_server"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_play"
-                        android:gravity="center" android:text="Create" android:textColor="#0A1628"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-
-                    <TextView android:id="@+id/btn_start_local_server"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp" android:background="@drawable/bg_remom_tile"
-                        android:gravity="center" android:text="Start" android:textColor="#3B9EFF"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-
-                    <TextView android:id="@+id/btn_stop_local_server"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginStart="4dp" android:background="@drawable/bg_remom_tile"
-                        android:gravity="center" android:text="Stop" android:textColor="#FF8A80"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- DISTANT TUNNEL -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_remom_card"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="DISTANT FRIENDS · TUNNEL"
-                    android:textColor="#81C784"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Phone local server door city se tabhi join hoga jab free tunnel (playit.gg) public address de. 1) Local Start 2) playit open 3) port 25565 tunnel 4) address yahan SAVE."
-                    android:textColor="#7A9BB8"
-                    android:textSize="10sp" />
-
-                <TextView
-                    android:id="@+id/btn_open_playit"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_remom_play"
-                    android:gravity="center"
-                    android:text="Open playit.gg (free tunnel)"
-                    android:textColor="#0A1628"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <EditText
-                    android:id="@+id/tunnel_public_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:hint="Public address from playit (e.g. xxx.playit.gg:12345)"
-                    android:paddingHorizontal="12dp"
-                    android:singleLine="true"
-                    android:inputType="textUri"
-                    android:textColor="#F0F6FF"
-                    android:textColorHint="#5A7A9A"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:id="@+id/btn_save_tunnel"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:gravity="center"
-                    android:text="Save public address → server list"
-                    android:textColor="#3B9EFF"
-                    android:textStyle="bold"
-                    android:clickable="true"
-                    android:focusable="true" />
-
-                <TextView
-                    android:id="@+id/btn_tunnel_help"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:text="Help · step by step"
-                    android:textColor="#5A7A9A"
-                    android:textSize="10sp"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
-
-            <!-- ADD SERVER -->
-            <LinearLayout
-                android:id="@+id/server_hub_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_remom_card"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="ADD SERVER"
-                    android:textColor="#F0F6FF"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Any IP / hostname. List saves with profile."
-                    android:textColor="#7A9BB8"
-                    android:textSize="10sp" />
-
-                <EditText
-                    android:id="@+id/server_hub_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:hint="Server name"
-                    android:paddingHorizontal="12dp"
-                    android:singleLine="true"
-                    android:textColor="#F0F6FF"
-                    android:textColorHint="#5A7A9A"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    android:minHeight="56dp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="4dp">
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/server_hub_input"
+                    <TextView
+                        android:id="@+id/btn_create_local_server"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1.5"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_remom_play"
+                        android:gravity="center"
+                        android:text="＋ CREATE SERVER"
+                        android:textColor="#0A1628"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/btn_start_local_server"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="@null"
-                        android:hint="IP or address:port"
-                        android:imeOptions="actionDone"
-                        android:inputType="textUri"
-                        android:paddingHorizontal="10dp"
-                        android:singleLine="true"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:gravity="center"
+                        android:text="Open"
                         android:textColor="#F0F6FF"
-                        android:textColorHint="#5A7A9A"
-                        android:textSize="13sp" />
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
-                        android:id="@+id/server_hub_add"
-                        android:layout_width="76dp"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_remom_play"
+                        android:id="@+id/btn_stop_local_server"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_remom_tile"
                         android:gravity="center"
-                        android:text="ADD"
-                        android:textColor="#0A1628"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        android:text="Stop all"
+                        android:textColor="#F0F6FF"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/server_hub_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="#7A9BB8"
-                    android:textSize="10sp"
-                    android:visibility="gone" />
             </LinearLayout>
 
-            <!-- CLOUD -->
+            <!-- LAN -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
                 android:background="@drawable/bg_remom_card"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="CLOUD HOST · IN APP"
-                    android:textColor="#FFB74D"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Server cloud pe (phone off bhi chal sakta). Free tiers auto-stop kar sakte hain."
-                    android:textColor="#7A9BB8"
-                    android:textSize="10sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <TextView android:id="@+id/free_host_exaroton"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_play"
-                        android:gravity="center" android:text="Exaroton" android:textColor="#0A1628"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-
-                    <TextView android:id="@+id/free_host_aternos"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp" android:background="@drawable/bg_remom_tile"
-                        android:gravity="center" android:text="Aternos" android:textColor="#3B9EFF"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-
-                    <TextView android:id="@+id/free_host_minehut"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginStart="4dp" android:background="@drawable/bg_remom_tile"
-                        android:gravity="center" android:text="Minehut" android:textColor="#3B9EFF"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-                </LinearLayout>
-
-                <TextView android:id="@+id/free_host_help"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" android:gravity="center"
-                    android:text="Help · cracked / online-mode"
-                    android:textColor="#5A7A9A" android:textSize="10sp"
-                    android:clickable="true" android:focusable="true" />
-            </LinearLayout>
-
-            <!-- WIFI -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_remom_card"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:letterSpacing="0.08"
-                    android:text="SAME WIFI"
+                    android:text="LAN / WIFI"
                     android:textColor="#3B9EFF"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -384,65 +179,180 @@
                     android:id="@+id/lan_host_ip"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_remom_tile"
-                    android:padding="12dp"
-                    android:text="Detecting…"
+                    android:layout_marginTop="8dp"
+                    android:text="—"
                     android:textColor="#F0F6FF"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:fontFamily="monospace" />
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
-
-                    <TextView android:id="@+id/lan_copy_ip"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_play"
-                        android:gravity="center" android:text="Copy IP" android:textColor="#0A1628"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
-
-                    <TextView android:id="@+id/lan_refresh_ip"
-                        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                        android:layout_marginStart="6dp" android:background="@drawable/bg_remom_tile"
-                        android:gravity="center" android:text="Refresh" android:textColor="#3B9EFF"
-                        android:textStyle="bold" android:clickable="true" android:focusable="true" />
+                    <TextView android:id="@+id/lan_copy_ip" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Copy IP" android:textColor="#F0F6FF" android:textStyle="bold" />
+                    <TextView android:id="@+id/lan_refresh_ip" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Refresh" android:textColor="#F0F6FF" android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Tunnel help -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:letterSpacing="0.06"
-                android:text="YOUR SERVERS"
-                android:textColor="#5A7A9A"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:background="@drawable/bg_remom_card"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="REMOTE FRIENDS"
+                    android:textColor="#3B9EFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Start local server — public bore.pub:PORT appears on dashboard. Friends paste in Multiplayer."
+                    android:textColor="#7A9BB8"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/tunnel_public_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_remom_tile"
+                    android:hint="Optional: paste public address"
+                    android:textColor="#F0F6FF"
+                    android:textColorHint="#5A7A9A"
+                    android:paddingHorizontal="12dp"
+                    android:textSize="13sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+                    <TextView android:id="@+id/btn_open_playit" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Help" android:textColor="#F0F6FF" android:textStyle="bold" />
+                    <TextView android:id="@+id/btn_save_tunnel" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Save" android:textColor="#F0F6FF" android:textStyle="bold" />
+                    <TextView android:id="@+id/btn_tunnel_help" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Tips" android:textColor="#F0F6FF" android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Add remote server to list -->
+            <LinearLayout
+                android:id="@+id/server_hub_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_remom_card"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ADD TO MULTIPLAYER LIST"
+                    android:textColor="#3B9EFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/server_hub_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_remom_tile"
+                    android:hint="Name"
+                    android:textColor="#F0F6FF"
+                    android:textColorHint="#5A7A9A"
+                    android:paddingHorizontal="12dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+                    <EditText
+                        android:id="@+id/server_hub_input"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_remom_tile"
+                        android:hint="Address / IP"
+                        android:textColor="#F0F6FF"
+                        android:textColorHint="#5A7A9A"
+                        android:paddingHorizontal="12dp" />
+                    <TextView
+                        android:id="@+id/server_hub_add"
+                        android:layout_width="72dp"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_remom_play"
+                        android:gravity="center"
+                        android:text="ADD"
+                        android:textColor="#0A1628"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/server_hub_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="0 saved"
+                    android:textColor="#7A9BB8"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Cloud hosts -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_remom_card"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CLOUD HOST · IN APP"
+                    android:textColor="#3B9EFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+                    <TextView android:id="@+id/free_host_aternos" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Aternos" android:textColor="#F0F6FF" android:textSize="12sp" />
+                    <TextView android:id="@+id/free_host_exaroton" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Exaroton" android:textColor="#F0F6FF" android:textSize="12sp" />
+                    <TextView android:id="@+id/free_host_minehut" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="Minehut" android:textColor="#F0F6FF" android:textSize="12sp" />
+                    <TextView android:id="@+id/free_host_help" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_remom_tile" android:gravity="center" android:text="?" android:textColor="#F0F6FF" android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/server_hub_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:nestedScrollingEnabled="false"
-                android:overScrollMode="never" />
+                android:nestedScrollingEnabled="false" />
 
             <TextView
                 android:id="@+id/server_hub_empty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_remom_tile"
                 android:gravity="center"
-                android:padding="16dp"
-                android:text="Local · Tunnel · or Cloud"
-                android:textColor="#7A9BB8"
-                android:textSize="11sp"
-                android:visibility="visible" />
+                android:padding="20dp"
+                android:text="No saved multiplayer addresses"
+                android:textColor="#5A7A9A"
+                android:textSize="12sp" />
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 </LinearLayout>
