@@ -37,15 +37,30 @@ public final class CsServerCreateDialog {
         descIn.setText("A CS Launcher Minecraft Server");
         box.addView(descIn);
 
-        final EditText verIn = new EditText(ctx);
-        verIn.setHint("Minecraft version e.g. 1.20.4");
-        verIn.setText("1.20.4");
-        box.addView(verIn);
-
+        // Software first
         final Spinner softSpin = new Spinner(ctx);
         softSpin.setAdapter(new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_dropdown_item,
                 new String[]{"vanilla", "paper", "purpur", "fabric"}));
         box.addView(softSpin);
+
+        // Version list (select — not free-text only)
+        final Spinner verSpin = new Spinner(ctx);
+        java.util.List<String> versions;
+        try {
+            versions = CsServerVersionCatalog.fetchReleaseIds(40);
+        } catch (Throwable t) {
+            versions = null;
+        }
+        if (versions == null || versions.isEmpty()) {
+            versions = java.util.Arrays.asList(
+                    "1.21.1", "1.21", "1.20.6", "1.20.4", "1.20.1", "1.19.4", "1.19.2", "1.18.2", "1.16.5", "1.12.2");
+        }
+        verSpin.setAdapter(new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_dropdown_item, versions));
+        for (int i = 0; i < versions.size(); i++) {
+            if ("1.20.4".equals(versions.get(i))) { verSpin.setSelection(i); break; }
+            if ("1.20.1".equals(versions.get(i))) { verSpin.setSelection(i); }
+        }
+        box.addView(verSpin);
 
         final EditText portIn = new EditText(ctx);
         portIn.setHint("Port (auto free port)");
@@ -69,12 +84,12 @@ public final class CsServerCreateDialog {
 
         new AlertDialog.Builder(ctx)
                 .setTitle("Create local server")
-                .setMessage("Icon auto · Port auto · Paper/Fabric for plugins/mods.\nOptiFine is client-only.")
+                .setMessage("Pick software + version from list.\nIcon auto · Port auto · Paper/Fabric for plugins/mods.")
                 .setView(box)
                 .setPositiveButton("Create & Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
                     String desc = descIn.getText().toString().trim();
-                    String ver = verIn.getText().toString().trim();
+                    String ver = verSpin.getSelectedItem() != null ? verSpin.getSelectedItem().toString().trim() : "1.20.4";
                     String soft = (String) softSpin.getSelectedItem();
                     int port = 0;
                     int mem = 1024;

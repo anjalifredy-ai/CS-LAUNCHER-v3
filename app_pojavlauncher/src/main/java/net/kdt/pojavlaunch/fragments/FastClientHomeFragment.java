@@ -21,6 +21,7 @@ import net.kdt.pojavlaunch.extra.ExtraConstants;
 import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 import net.kdt.pojavlaunch.profiles.ProfileIconCache;
+import net.kdt.pojavlaunch.servers.ServerHubFragment;
 import net.kdt.pojavlaunch.ui.PremiumPlayButtonView;
 import net.kdt.pojavlaunch.value.MinecraftAccount;
 import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
@@ -78,120 +79,59 @@ public class FastClientHomeFragment extends Fragment {
 
         setupServerCards(view);
 
-        View sponsorPlay = view.findViewById(R.id.infrawire_card_play);
-        if (sponsorPlay != null) sponsorPlay.setVisibility(View.GONE);
-        int feedId = getResources().getIdentifier("infrawire_card_feed", "id", requireContext().getPackageName());
-        View sponsorFeed = feedId != 0 ? view.findViewById(feedId) : null;
-        if (sponsorFeed != null) sponsorFeed.setVisibility(View.GONE);
-
-        updateNotificationBanner(view);
-
-        view.post(() -> {
-            if (isAdded() && !isRemoving()) {
-                try { net.kdt.pojavlaunch.UiMotion.revealScreen(view); } catch (Throwable ignored) {}
+        // HOST / CREATE local server — dedicated server navigation
+        View btnHostServers = view.findViewById(R.id.btn_add_server);
+        if (btnHostServers != null) {
+            if (btnHostServers instanceof TextView) {
+                ((TextView) btnHostServers).setText("  HOST · CREATE SERVER");
             }
-        });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        View view = getView();
-        if (view != null) {
-            bindAccountData(view);
-            bindProfileData(view);
-            updateNotificationBanner(view);
-        }
-        try {
-            if (getActivity() != null)
-                net.kdt.pojavlaunch.edition.EditionMode.bindHeader(getActivity());
-        } catch (Throwable ignored) {}
-        try {
-            net.kdt.pojavlaunch.remote.FirebaseSyncManager.setHomeBannerListener(() -> updateNotificationBanner(getView()));
-        } catch (Throwable ignored) {}
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        try { net.kdt.pojavlaunch.remote.FirebaseSyncManager.setHomeBannerListener(null); } catch (Throwable ignored) {}
-    }
-
-    private void updateNotificationBanner(View root) {
-        if (root == null || getActivity() == null) return;
-        View card = root.findViewById(R.id.card_notification);
-        if (card == null) return;
-        try {
-            net.kdt.pojavlaunch.remote.FirebaseSyncManager.HomeBannerItem banner =
-                    net.kdt.pojavlaunch.remote.FirebaseSyncManager.getLatestHomeBanner();
-            if (banner == null) { card.setVisibility(View.GONE); return; }
-            TextView tvTitle = root.findViewById(R.id.tv_notification_title);
-            TextView tvBody = root.findViewById(R.id.tv_notification_body);
-            View btnClose = root.findViewById(R.id.btn_dismiss_notification);
-            if (tvTitle != null) tvTitle.setText(banner.title);
-            if (tvBody != null) {
-                String snippet = banner.body.replaceAll("[#*`>\\[\\]()-_]", "").trim();
-                if (snippet.isEmpty()) tvBody.setVisibility(View.GONE);
-                else { tvBody.setVisibility(View.VISIBLE); tvBody.setText(snippet); }
-            }
-            card.setVisibility(View.VISIBLE);
-            card.setOnClickListener(v -> {
+            btnHostServers.setOnClickListener(v -> {
                 try {
-                    net.kdt.pojavlaunch.remote.FirebaseSyncManager.showMarkdownDialog(requireActivity(), banner.title, banner.body);
+                    Bundle args = new Bundle();
+                    String key = LauncherPreferences.DEFAULT_PREF.getString(
+                            LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+                    args.putString("profileKey", key);
+                    Tools.swapFragment(requireActivity(), ServerHubFragment.class,
+                            ServerHubFragment.TAG, args);
                 } catch (Throwable t) {
-                    Toast.makeText(requireContext(), banner.title, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Open Servers: " + t.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
-            if (btnClose != null) {
-                btnClose.setOnClickListener(v -> {
-                    try {
-                        net.kdt.pojavlaunch.remote.FirebaseSyncManager.dismissBanner(banner.id, requireContext());
-                    } catch (Throwable ignored) {}
-                    card.setVisibility(View.GONE);
-                });
-            }
-        } catch (Throwable t) {
-            card.setVisibility(View.GONE);
         }
     }
 
     private void bindAccountData(View view) {
-        MinecraftAccount account = PojavProfile.getCurrentProfileContent(requireContext(), null);
-        TextView tvPlayerName = view.findViewById(R.id.tv_player_name);
-        ImageView ivPlayerHead = view.findViewById(R.id.iv_player_head);
-        TextView tvPlayerStatus = view.findViewById(R.id.tv_player_status);
-        if (account != null) {
-            if (tvPlayerName != null) tvPlayerName.setText(account.username);
-            if (ivPlayerHead != null) {
-                try {
-                    Bitmap head = net.kdt.pojavlaunch.ui.SkinHead3DRenderer.resolve(getResources(), account);
-                    if (head != null) ivPlayerHead.setImageBitmap(head);
-                    else ivPlayerHead.setImageResource(R.drawable.ic_cs_logo_placeholder);
-                } catch (Throwable t) {
-                    ivPlayerHead.setImageResource(R.drawable.ic_cs_logo_placeholder);
-                }
+        TextView tvName = view.findViewById(R.id.tv_player_name);
+        TextView tvStatus = view.findViewById(R.id.tv_player_status);
+        ImageView ivHead = view.findViewById(R.id.iv_player_head);
+        try {
+            MinecraftAccount acc = PojavProfile.getCurrentProfileContent(requireContext(), null);
+            if (acc != null && acc.username != null) {
+                if (tvName != null) tvName.setText(acc.username);
+                if (tvStatus != null) tvStatus.setText(acc.isOffline() ? "Offline" : "Online");
+            } else {
+                if (tvName != null) tvName.setText("Player");
+                if (tvStatus != null) tvStatus.setText("Offline");
             }
-            if (tvPlayerStatus != null) {
-                boolean isOnline = account.accessToken != null && !account.accessToken.equals("0");
-                tvPlayerStatus.setText(isOnline ? "Online" : "Offline");
-            }
+        } catch (Throwable t) {
+            if (tvName != null) tvName.setText("Player");
         }
     }
 
     private void bindProfileData(View view) {
-        String profileKey = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, "");
-        LauncherProfiles.load();
-        MinecraftProfile profile = LauncherProfiles.mainProfileJson.profiles.get(profileKey);
         TextView tvProfileName = view.findViewById(R.id.tv_profile_name);
-        TextView tvFolderName = view.findViewById(R.id.tv_folder_name);
+        TextView tvFolder = view.findViewById(R.id.tv_folder_name);
         TextView chipVersion = view.findViewById(R.id.chip_version);
         TextView chipLoader = view.findViewById(R.id.chip_loader);
         TextView chipJava = view.findViewById(R.id.chip_java);
         TextView chipRam = view.findViewById(R.id.chip_ram);
-        ImageView ivProfileIcon = view.findViewById(R.id.iv_player_head);
-        if (profile != null) {
+        ImageView ivProfileIcon = view.findViewById(R.id.iv_profile_icon);
+        try {
+            LauncherProfiles.load();
+            String profileKey = LauncherPreferences.DEFAULT_PREF.getString(LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+            MinecraftProfile profile = profileKey != null ? LauncherProfiles.mainProfileJson.profiles.get(profileKey) : null;
+            if (profile == null) return;
             if (tvProfileName != null) tvProfileName.setText(profile.name != null ? profile.name : "Default");
-            if (tvFolderName != null) tvFolderName.setText(profile.name != null ? profile.name : "Default");
             if (chipVersion != null) chipVersion.setText(profile.lastVersionId != null ? profile.lastVersionId : "Unknown");
             String loader = "Vanilla";
             if (profile.lastVersionId != null) {
@@ -211,7 +151,7 @@ public class FastClientHomeFragment extends Fragment {
                     ivProfileIcon.setImageDrawable(icon);
                 } catch (Throwable ignored) {}
             }
-        }
+        } catch (Throwable ignored) {}
     }
 
     private void setupServerCards(View view) {
