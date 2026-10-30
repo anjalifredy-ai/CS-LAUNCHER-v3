@@ -79,31 +79,22 @@ public class FastClientHomeFragment extends Fragment {
 
         setupServerCards(view);
 
-        // HOST / CREATE local server — dedicated server navigation
         View btnHostServers = view.findViewById(R.id.btn_add_server);
         if (btnHostServers != null) {
             if (btnHostServers instanceof TextView) {
                 ((TextView) btnHostServers).setText("  HOST · CREATE SERVER");
             }
-            btnHostServers.setOnClickListener(v -> {
-                try {
-                    Bundle args = new Bundle();
-                    String key = LauncherPreferences.DEFAULT_PREF.getString(
-                            LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
-                    args.putString("profileKey", key);
-                    Tools.swapFragment(requireActivity(), ServerHubFragment.class,
-                            ServerHubFragment.TAG, args);
-                } catch (Throwable t) {
-                    Toast.makeText(requireContext(), "Open Servers: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
+            btnHostServers.setOnClickListener(v -> openServerHub());
+        }
+        View btnHostMain = view.findViewById(R.id.btn_host_create_main);
+        if (btnHostMain != null) {
+            btnHostMain.setOnClickListener(v -> openServerHub());
         }
     }
 
     private void bindAccountData(View view) {
         TextView tvName = view.findViewById(R.id.tv_player_name);
         TextView tvStatus = view.findViewById(R.id.tv_player_status);
-        ImageView ivHead = view.findViewById(R.id.iv_player_head);
         try {
             MinecraftAccount acc = PojavProfile.getCurrentProfileContent(requireContext(), null);
             if (acc != null && acc.username != null) {
@@ -120,7 +111,6 @@ public class FastClientHomeFragment extends Fragment {
 
     private void bindProfileData(View view) {
         TextView tvProfileName = view.findViewById(R.id.tv_profile_name);
-        TextView tvFolder = view.findViewById(R.id.tv_folder_name);
         TextView chipVersion = view.findViewById(R.id.chip_version);
         TextView chipLoader = view.findViewById(R.id.chip_loader);
         TextView chipJava = view.findViewById(R.id.chip_java);
@@ -152,6 +142,19 @@ public class FastClientHomeFragment extends Fragment {
                 } catch (Throwable ignored) {}
             }
         } catch (Throwable ignored) {}
+    }
+
+    private void openServerHub() {
+        try {
+            Bundle args = new Bundle();
+            String key = LauncherPreferences.DEFAULT_PREF.getString(
+                    LauncherPreferences.PREF_KEY_CURRENT_PROFILE, null);
+            args.putString("profileKey", key);
+            Tools.swapFragment(requireActivity(), ServerHubFragment.class,
+                    ServerHubFragment.TAG, args);
+        } catch (Throwable t) {
+            Toast.makeText(requireContext(), "Open Servers: " + t.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setupServerCards(View view) {

@@ -37,13 +37,11 @@ public final class CsServerCreateDialog {
         descIn.setText("A CS Launcher Minecraft Server");
         box.addView(descIn);
 
-        // Software first
         final Spinner softSpin = new Spinner(ctx);
         softSpin.setAdapter(new ArrayAdapter<>(ctx, android.R.layout.simple_spinner_dropdown_item,
                 new String[]{"vanilla", "paper", "purpur", "fabric"}));
         box.addView(softSpin);
 
-        // Version list (select — not free-text only)
         final Spinner verSpin = new Spinner(ctx);
         java.util.List<String> versions;
         try {
@@ -86,7 +84,7 @@ public final class CsServerCreateDialog {
                 .setTitle("Create local server")
                 .setMessage("Pick software + version from list.\nIcon auto · Port auto · Paper/Fabric for plugins/mods.")
                 .setView(box)
-                .setPositiveButton("Create & Prepare", (d, w) -> {
+                .setPositiveButton("Create \u0026 Prepare", (d, w) -> {
                     String name = nameIn.getText().toString().trim();
                     String desc = descIn.getText().toString().trim();
                     String ver = verSpin.getSelectedItem() != null ? verSpin.getSelectedItem().toString().trim() : "1.20.4";
