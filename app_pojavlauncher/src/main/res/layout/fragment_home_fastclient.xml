@@ -1,1 +1,206 @@
-PLACEHOLDER_XML
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/home_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="#0B1220"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:id="@+id/left_pane"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1.05"
+        android:orientation="vertical"
+        android:background="@drawable/bg_remom_card"
+        android:padding="14dp"
+        android:layout_marginEnd="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PLAYER"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#5A7A9A"
+            android:letterSpacing="0.15"
+            android:layout_marginBottom="10dp" />
+
+        <LinearLayout
+            android:id="@+id/card_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:background="@drawable/bg_remom_tile"
+            android:layout_marginBottom="14dp">
+
+            <ImageView
+                android:id="@+id/iv_player_head"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="Player" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tv_player_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Player"
+                    android:textColor="#F0F6FF"
+                    android:textStyle="bold"
+                    android:textSize="15sp" />
+                <TextView
+                    android:id="@+id/tv_player_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Offline"
+                    android:textColor="#7A9BB8"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btn_profile_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                android:textColor="#3B9EFF"
+                android:textSize="12sp"
+                android:padding="8dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="INSTANCE"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#5A7A9A"
+            android:letterSpacing="0.15"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_profile_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Default"
+            android:textColor="#F0F6FF"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/tv_folder_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="—"
+            android:textColor="#7A9BB8"
+            android:textSize="11sp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView android:id="@+id/chip_version" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" />
+            <TextView android:id="@+id/chip_loader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" />
+            <TextView android:id="@+id/chip_java" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" />
+            <TextView android:id="@+id/chip_ram" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:background="@drawable/bg_remom_tile" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/tv_profile_ram_badge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/btn_select_profile"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="Change instance"
+            android:textColor="#0A1628"
+            android:textStyle="bold"
+            android:background="@drawable/bg_remom_play" />
+
+        <ImageView android:id="@+id/iv_profile_icon" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1.2"
+        android:orientation="vertical"
+        android:background="@drawable/bg_remom_card"
+        android:padding="20dp"
+        android:layout_marginEnd="10dp"
+        android:gravity="center_horizontal">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="READY TO PLAY" android:textSize="11sp" android:textStyle="bold" android:textColor="#5A7A9A" android:letterSpacing="0.2" android:layout_marginBottom="8dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Minecraft Java" android:textSize="22sp" android:textStyle="bold" android:textColor="#F0F6FF" android:layout_marginBottom="6dp" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Same profile · mods · worlds" android:textSize="12sp" android:textColor="#7A9BB8" android:gravity="center" android:layout_marginBottom="22dp" />
+
+        <net.kdt.pojavlaunch.ui.PremiumPlayButtonView
+            android:id="@+id/btn_play_main"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_remom_play"
+            android:gravity="center"
+            android:text="PLAY"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/btn_host_create_main"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="HOST · CREATE SERVER"
+            android:textColor="#F0F6FF"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:background="@drawable/bg_remom_tile"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <LinearLayout
+            android:id="@+id/card_notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:padding="12dp"
+            android:background="@drawable/bg_remom_tile"
+            android:visibility="gone">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <TextView android:id="@+id/tv_notification_title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                <ImageView android:id="@+id/btn_dismiss_notification" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            </LinearLayout>
+            <TextView android:id="@+id/tv_notification_body" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#9BB0C9" android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1.0"
+        android:orientation="vertical"
+        android:background="@drawable/bg_remom_card"
+        android:padding="14dp">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="QUICK" android:textSize="10sp" android:textStyle="bold" android:textColor="#5A7A9A" android:letterSpacing="0.15" android:layout_marginBottom="10dp" />
+
+        <TextView android:id="@+id/btn_add_server" android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:paddingStart="14dp" android:paddingEnd="14dp" android:layout_marginBottom="8dp" android:text="  HOST · CREATE SERVER" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8F0FA" android:background="@drawable/bg_remom_tile" android:clickable="true" android:focusable="true" />
+        <TextView android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:paddingStart="14dp" android:paddingEnd="14dp" android:layout_marginBottom="8dp" android:text="  Mods · packs" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8F0FA" android:background="@drawable/bg_remom_tile" />
+        <TextView android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:paddingStart="14dp" android:paddingEnd="14dp" android:layout_marginBottom="8dp" android:text="  Skins" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8F0FA" android:background="@drawable/bg_remom_tile" />
+        <TextView android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:paddingStart="14dp" android:paddingEnd="14dp" android:layout_marginBottom="8dp" android:text="  Controls" android:textSize="14sp" android:textStyle="bold" android:textColor="#E8F0FA" android:background="@drawable/bg_remom_tile" />
+
+        <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:text="Remom · Java on mobile" android:textSize="10sp" android:textColor="#3A5570" />
+    </LinearLayout>
+</LinearLayout>
