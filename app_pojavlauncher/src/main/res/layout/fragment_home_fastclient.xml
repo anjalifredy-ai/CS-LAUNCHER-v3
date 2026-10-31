@@ -3,14 +3,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#0B1220">
+    android:background="@drawable/bg_premium_surface"
+    android:scrollbars="none">
 
     <LinearLayout
         android:id="@+id/home_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="CS LAUNCHER"
+                android:textColor="#94A3B8"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.2" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PREMIUM"
+                android:textColor="#A78BFA"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/bg_premium_chip" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/card_profile"
@@ -18,15 +46,15 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="12dp"
-            android:background="@drawable/bg_remom_card"
-            android:layout_marginBottom="12dp">
+            android:padding="16dp"
+            android:background="@drawable/bg_premium_card"
+            android:layout_marginBottom="14dp">
 
             <ImageView
                 android:id="@+id/iv_player_head"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_marginEnd="12dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="14dp"
                 android:contentDescription="Player" />
 
             <LinearLayout
@@ -39,16 +67,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Player"
-                    android:textColor="#F0F6FF"
+                    android:textColor="#F8FAFC"
                     android:textStyle="bold"
-                    android:textSize="16sp" />
+                    android:textSize="17sp" />
                 <TextView
                     android:id="@+id/tv_player_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Offline"
-                    android:textColor="#7A9BB8"
-                    android:textSize="12sp" />
+                    android:textColor="#64748B"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp" />
             </LinearLayout>
 
             <TextView
@@ -56,11 +85,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:gravity="center"
-                android:paddingHorizontal="14dp"
-                android:text="Edit"
-                android:textColor="#3B9EFF"
+                android:paddingHorizontal="16dp"
+                android:text="Account"
+                android:textColor="#A78BFA"
                 android:textStyle="bold"
-                android:background="@drawable/bg_remom_tile" />
+                android:textSize="12sp"
+                android:background="@drawable/bg_premium_tile" />
         </LinearLayout>
 
         <LinearLayout
@@ -68,46 +98,47 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp"
-            android:background="@drawable/bg_remom_card"
-            android:layout_marginBottom="12dp">
+            android:padding="16dp"
+            android:background="@drawable/bg_premium_card"
+            android:layout_marginBottom="14dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="INSTANCE"
+                android:text="ACTIVE INSTANCE"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:textColor="#5A7A9A"
-                android:letterSpacing="0.12"
-                android:layout_marginBottom="8dp" />
+                android:textColor="#64748B"
+                android:letterSpacing="0.14"
+                android:layout_marginBottom="10dp" />
 
             <TextView
                 android:id="@+id/tv_profile_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Default"
-                android:textColor="#F0F6FF"
+                android:textColor="#F8FAFC"
                 android:textStyle="bold"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/tv_folder_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="—"
-                android:textColor="#7A9BB8"
+                android:textColor="#64748B"
                 android:textSize="11sp"
-                android:layout_marginBottom="10dp" />
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="12dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <TextView android:id="@+id/chip_version" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" android:text="—" />
-                <TextView android:id="@+id/chip_loader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" android:text="—" />
-                <TextView android:id="@+id/chip_java" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:layout_marginEnd="6dp" android:background="@drawable/bg_remom_tile" android:text="Java" />
-                <TextView android:id="@+id/chip_ram" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E8F0FA" android:textSize="11sp" android:padding="6dp" android:background="@drawable/bg_remom_tile" android:text="—" />
+                <TextView android:id="@+id/chip_version" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E2E8F0" android:textSize="11sp" android:paddingHorizontal="12dp" android:paddingVertical="6dp" android:layout_marginEnd="8dp" android:background="@drawable/bg_premium_chip" android:text="—" />
+                <TextView android:id="@+id/chip_loader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E2E8F0" android:textSize="11sp" android:paddingHorizontal="12dp" android:paddingVertical="6dp" android:layout_marginEnd="8dp" android:background="@drawable/bg_premium_chip" android:text="—" />
+                <TextView android:id="@+id/chip_java" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E2E8F0" android:textSize="11sp" android:paddingHorizontal="12dp" android:paddingVertical="6dp" android:layout_marginEnd="8dp" android:background="@drawable/bg_premium_chip" android:text="Java" />
+                <TextView android:id="@+id/chip_ram" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#E2E8F0" android:textSize="11sp" android:paddingHorizontal="12dp" android:paddingVertical="6dp" android:background="@drawable/bg_premium_chip" android:text="—" />
             </LinearLayout>
 
             <TextView android:id="@+id/tv_profile_ram_badge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
@@ -116,48 +147,57 @@
             <TextView
                 android:id="@+id/btn_select_profile"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="12dp"
+                android:layout_height="46dp"
+                android:layout_marginTop="14dp"
                 android:gravity="center"
-                android:text="Change instance"
-                android:textColor="#0A1628"
+                android:text="Switch instance"
+                android:textColor="#E2E8F0"
                 android:textStyle="bold"
-                android:background="@drawable/bg_remom_play" />
+                android:textSize="13sp"
+                android:background="@drawable/bg_premium_tile" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="@drawable/bg_remom_card"
-            android:layout_marginBottom="12dp"
+            android:padding="20dp"
+            android:background="@drawable/bg_premium_card_glow"
+            android:layout_marginBottom="14dp"
             android:gravity="center_horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="READY TO PLAY"
-                android:textSize="11sp"
+                android:text="LAUNCH"
+                android:textSize="10sp"
                 android:textStyle="bold"
-                android:textColor="#5A7A9A"
-                android:letterSpacing="0.15"
+                android:textColor="#64748B"
+                android:letterSpacing="0.2"
                 android:layout_marginBottom="6dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Minecraft Java"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="#F0F6FF"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#F8FAFC"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="One-tap play with your instance"
+                android:textSize="12sp"
+                android:textColor="#64748B"
+                android:layout_marginBottom="18dp" />
 
             <net.kdt.pojavlaunch.ui.PremiumPlayButtonView
                 android:id="@+id/btn_play_main"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_remom_play"
+                android:layout_height="58dp"
+                android:background="@drawable/bg_premium_play"
                 android:gravity="center"
                 android:text="PLAY"
                 android:textSize="18sp"
@@ -169,15 +209,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="14dp"
                 android:padding="12dp"
-                android:background="@drawable/bg_remom_tile"
+                android:background="@drawable/bg_premium_tile"
                 android:visibility="gone">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                    <TextView android:id="@+id/tv_notification_title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F0F6FF" android:textSize="13sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/tv_notification_title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#F8FAFC" android:textSize="13sp" android:textStyle="bold" />
                     <ImageView android:id="@+id/btn_dismiss_notification" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
                 </LinearLayout>
-                <TextView android:id="@+id/tv_notification_body" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#9BB0C9" android:textSize="12sp" />
+                <TextView android:id="@+id/tv_notification_body" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#94A3B8" android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -185,9 +225,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="@drawable/bg_remom_card"
-            android:layout_marginBottom="12dp">
+            android:padding="18dp"
+            android:background="@drawable/bg_premium_card"
+            android:layout_marginBottom="14dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -195,26 +235,26 @@
                 android:text="SERVER HOSTING"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:textColor="#3B9EFF"
-                android:letterSpacing="0.12"
-                android:layout_marginBottom="6dp" />
+                android:textColor="#38BDF8"
+                android:letterSpacing="0.14"
+                android:layout_marginBottom="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Phone pe apna Minecraft server"
-                android:textColor="#F0F6FF"
+                android:text="Host on this phone"
+                android:textColor="#F8FAFC"
                 android:textStyle="bold"
-                android:textSize="17sp"
+                android:textSize="18sp"
                 android:layout_marginBottom="4dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Create → Start → friends join via bore.pub (free)"
-                android:textColor="#7A9BB8"
+                android:text="Create · Start · Share bore.pub address with friends"
+                android:textColor="#64748B"
                 android:textSize="12sp"
-                android:layout_marginBottom="14dp" />
+                android:layout_marginBottom="16dp" />
 
             <TextView
                 android:id="@+id/btn_host_create_main"
@@ -222,10 +262,10 @@
                 android:layout_height="52dp"
                 android:gravity="center"
                 android:text="HOST · CREATE SERVER"
-                android:textColor="#0A1628"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:textSize="15sp"
-                android:background="@drawable/bg_remom_play"
+                android:textSize="14sp"
+                android:background="@drawable/bg_premium_host"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -236,10 +276,10 @@
                 android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:text="Open server manager"
-                android:textColor="#E8F0FA"
+                android:textColor="#CBD5E1"
                 android:textStyle="bold"
                 android:textSize="13sp"
-                android:background="@drawable/bg_remom_tile"
+                android:background="@drawable/bg_premium_tile"
                 android:clickable="true"
                 android:focusable="true" />
         </LinearLayout>
@@ -248,62 +288,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp"
-            android:background="@drawable/bg_remom_card"
-            android:layout_marginBottom="8dp">
+            android:padding="16dp"
+            android:background="@drawable/bg_premium_card"
+            android:layout_marginBottom="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="QUICK"
+                android:text="WORKSPACE"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:textColor="#5A7A9A"
-                android:letterSpacing="0.12"
-                android:layout_marginBottom="10dp" />
+                android:textColor="#64748B"
+                android:letterSpacing="0.14"
+                android:layout_marginBottom="12dp" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:gravity="center_vertical"
-                android:paddingStart="14dp"
-                android:text="  Mods · packs"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#E8F0FA"
-                android:background="@drawable/bg_remom_tile"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:gravity="center_vertical"
-                android:paddingStart="14dp"
-                android:text="  Skins"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#E8F0FA"
-                android:background="@drawable/bg_remom_tile"
-                android:layout_marginBottom="8dp" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:gravity="center_vertical"
-                android:paddingStart="14dp"
-                android:text="  Controls"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#E8F0FA"
-                android:background="@drawable/bg_remom_tile" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:orientation="horizontal" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="8dp" android:gravity="center" android:text="Mods" android:textColor="#E2E8F0" android:textStyle="bold" android:background="@drawable/bg_premium_tile" />
+                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Packs" android:textColor="#E2E8F0" android:textStyle="bold" android:background="@drawable/bg_premium_tile" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:orientation="horizontal">
+                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginEnd="8dp" android:gravity="center" android:text="Skins" android:textColor="#E2E8F0" android:textStyle="bold" android:background="@drawable/bg_premium_tile" />
+                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:gravity="center" android:text="Controls" android:textColor="#E2E8F0" android:textStyle="bold" android:background="@drawable/bg_premium_tile" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="CS Launcher · Host on this phone"
+            android:text="Premium mobile Minecraft experience"
             android:textSize="10sp"
-            android:textColor="#3A5570"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="12dp" />
+            android:textColor="#334155"
+            android:layout_marginBottom="20dp" />
     </LinearLayout>
 </ScrollView>
