@@ -1,38 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Control Buttons -->
     <color name="control_button_color">#33FFFFFF</color>
     <color name="control_button_pressed_color">#66FFFFFF</color>
 
-    <!-- Main Button -->
     <color name="minebutton_color">#FFFFFF</color>
-    <color name="cu_bg_app">#0A1628</color>
-    <color name="cu_bg_status_bar">#0A1628</color>
-    <color name="cu_bg_bottom_bar">#0A1628</color>
+    <color name="cu_bg_app">#05080F</color>
+    <color name="cu_bg_status_bar">#05080F</color>
+    <color name="cu_bg_bottom_bar">#0A101C</color>
     <color name="cu_divider">#1A3B9EFF</color>
 
-    <!-- BACKGROUND SYSTEM -->
-    <color name="background_app">#0F1F35</color>
-    <color name="background_overlay">#1C3555</color>
-    <color name="background_surface">#152A45</color>
-    <color name="divider">#1C3555</color>
-    <color name="background_status_bar">#0A1628</color>
-    <color name="background_bottom_bar">#0F1F35</color>
+    <color name="background_app">#05080F</color>
+    <color name="background_overlay">#1E293B</color>
+    <color name="background_surface">#121A2A</color>
+    <color name="divider">#1E293B</color>
+    <color name="background_status_bar">#05080F</color>
+    <color name="background_bottom_bar">#0A101C</color>
 
-    <color name="primary_text">#F0F6FF</color>
-    <color name="secondary_text">#9BB0C9</color>
+    <color name="primary_text">#F8FAFC</color>
+    <color name="secondary_text">#94A3B8</color>
 
-    <!-- Midnight Blue preset -->
-    <color name="mb_bg_app">#0A1628</color>
-    <color name="mb_bg_bottom_bar">#0F1F35</color>
-    <color name="mb_bg_status_bar">#081220</color>
-    <color name="mb_divider">#1E3A5F</color>
-    <color name="mb_accent">#3B9EFF</color>
-    <color name="mb_text_primary">#F0F6FF</color>
-    <color name="mb_text_secondary">#9BB0C9</color>
+    <color name="mb_bg_app">#05080F</color>
+    <color name="mb_bg_bottom_bar">#0A101C</color>
+    <color name="mb_bg_status_bar">#05080F</color>
+    <color name="mb_divider">#1E293B</color>
+    <color name="mb_accent">#8B7CFF</color>
+    <color name="mb_text_primary">#F8FAFC</color>
+    <color name="mb_text_secondary">#94A3B8</color>
 
-    <!-- Forest Green preset -->
     <color name="fg_bg_app">#0F1F0F</color>
     <color name="fg_bg_bottom_bar">#1A2E1A</color>
     <color name="fg_bg_status_bar">#0C1A0C</color>
@@ -41,82 +36,21 @@
     <color name="fg_text_primary">#E8F5E9</color>
     <color name="fg_text_secondary">#9CCC9C</color>
 
-    <!-- Crimson preset -->
     <color name="cr_bg_app">#1A0A0A</color>
     <color name="cr_bg_bottom_bar">#2A1010</color>
     <color name="cr_bg_status_bar">#150808</color>
     <color name="cr_divider">#4A1A1A</color>
     <color name="cr_accent">#E53935</color>
     <color name="cr_text_primary">#FFF0F0</color>
-    <color name="cr_text_secondary">#CCA0A0</color>
+    <color name="cr_text_secondary">#FFCDD2</color>
 
-    <!-- Amethyst preset -->
-    <color name="am_bg_app">#13091A</color>
-    <color name="am_bg_bottom_bar">#15161B</color>
-    <color name="am_bg_status_bar">#0F0714</color>
-    <color name="am_divider">#303139</color>
-    <color name="am_accent">#3B9EFF</color>
-    <color name="am_text_primary">#F2F2F2</color>
-    <color name="am_text_secondary">#A0A0A0</color>
-
-    <!-- Arctic preset -->
-    <color name="ar_bg_app">#0E1A20</color>
-    <color name="ar_bg_bottom_bar">#162530</color>
-    <color name="ar_bg_status_bar">#0B1418</color>
-    <color name="ar_divider">#1E3A47</color>
-    <color name="ar_accent">#3B9EFF</color>
-    <color name="ar_text_primary">#E0F7FA</color>
-    <color name="ar_text_secondary">#80C8D4</color>
-
-    <!-- RemomLauncher theme (blue) -->
-    <color name="bg_primary">#0A1628</color>
-    <color name="bg_launcher_dark">#0A1628</color>
-    <color name="bg_sidebar">#0F1F35</color>
-    <color name="bg_header">#152A45</color>
-    <color name="bg_bottom_bar">#0F1F35</color>
-    <color name="bg_card">#152A45</color>
-    <color name="bg_card_dark">#1C3555</color>
-    <color name="bg_elevated">#1C3555</color>
-    <color name="bg_client_features">#0A1628</color>
-    <color name="bg_client_features_card">#152A45</color>
-
-    <color name="accent_primary">#3B9EFF</color>
-    <color name="accent_light">#7EC4FF</color>
-    <color name="accent_purple">#3B9EFF</color>
-    <color name="accent_purple_client">#3B9EFF</color>
-    <color name="accent_purple_deep">#1E6FD9</color>
-    <color name="accent_bg_subtle">#0D1B2A</color>
-    <color name="accent_border">#3B9EFF</color>
-
-    <color name="accent_green">#3B9EFF</color>
-    <color name="accent_green_light">#7EC4FF</color>
-    <color name="accent_green_bg">#0D1B2A</color>
-    <color name="accent_green_border">#3B9EFF</color>
-
-    <color name="text_primary_white">#F0F6FF</color>
-    <color name="text_primary_light">#F0F6FF</color>
-    <color name="text_primary">#FFF0F6FF</color>
-    <color name="text_secondary_light">#9BB0C9</color>
-    <color name="text_secondary_dim">#6B8299</color>
-    <color name="text_secondary">#B39BB0C9</color>
-
-    <color name="border_default">#1C3555</color>
-    <color name="border_hover">#3B9EFF</color>
-    <color name="divider_color">#1C3555</color>
-
-    <color name="play_btn_bg">#3B9EFF</color>
-    <color name="play_btn_text">#0A1628</color>
-
-    <color name="settings_bg">#081220</color>
-    <color name="card_bg">#0F1F35</color>
-    <color name="card_bg_pressed">#152A45</color>
-    <color name="neon_green">#3B9EFF</color>
-    <color name="neon_green_dim">#3F3B9EFF</color>
-    <color name="stroke_neon">#333B9EFF</color>
-    <color name="like_active">#FF4444</color>
-    <color name="installed_color">#22C55E</color>
-
-    <color name="bg_nav_item_active">#AA3B9EFF</color>
-    <color name="premium_cyan">#3B9EFF</color>
+    <color name="premium_bg">#05080F</color>
+    <color name="premium_surface">#0A101C</color>
+    <color name="premium_card">#121A2A</color>
+    <color name="premium_tile">#0E1624</color>
+    <color name="premium_accent">#8B7CFF</color>
+    <color name="premium_accent_2">#38BDF8</color>
+    <color name="premium_text">#F8FAFC</color>
+    <color name="premium_muted">#64748B</color>
 
 </resources>
