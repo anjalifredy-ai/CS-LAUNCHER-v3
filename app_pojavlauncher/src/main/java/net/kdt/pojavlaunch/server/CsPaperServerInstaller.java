@@ -12,9 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Downloads Paper server jar via Paper API.
- */
+/** Downloads Paper server jar via Paper API (fill v3 preferred, v2 fallback). */
 public class CsPaperServerInstaller {
 
     private static final String TAG = "CsPaperInstaller";
@@ -42,6 +40,21 @@ public class CsPaperServerInstaller {
         File jar = new File(dir, "server.jar");
         try {
             String ver = config.minecraftVersion;
+            try {
+                String fill = "https://fill.papermc.io/v3/projects/paper/versions/" + ver + "/builds/latest/downloads/server:default";
+                downloadTo(fill, jar);
+                if (jar.exists() && jar.length() > 1000) {
+                    File eula = new File(dir, "eula.txt");
+                    if (!eula.exists()) {
+                        try (FileOutputStream fos = new FileOutputStream(eula)) {
+                            fos.write("eula=false\n".getBytes(StandardCharsets.UTF_8));
+                        }
+                    }
+                    return new Result(true, null, jar, 0);
+                }
+            } catch (Exception fillEx) {
+                Log.w(TAG, "Paper fill v3 failed, trying API v2", fillEx);
+            }
             String buildsJson = httpGet(API + "/versions/" + ver);
             JSONObject buildsRoot = new JSONObject(buildsJson);
             JSONArray builds = buildsRoot.getJSONArray("builds");
