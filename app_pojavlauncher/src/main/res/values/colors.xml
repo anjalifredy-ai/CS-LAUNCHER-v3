@@ -1,33 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Control Buttons -->
     <color name="control_button_color">#33FFFFFF</color>
     <color name="control_button_pressed_color">#66FFFFFF</color>
 
+    <!-- Main Button -->
     <color name="minebutton_color">#FFFFFF</color>
     <color name="cu_bg_app">#05080F</color>
     <color name="cu_bg_status_bar">#05080F</color>
     <color name="cu_bg_bottom_bar">#0A101C</color>
     <color name="cu_divider">#1A3B9EFF</color>
 
+    <!-- BACKGROUND SYSTEM -->
     <color name="background_app">#05080F</color>
-    <color name="background_overlay">#1E293B</color>
+    <color name="background_overlay">#1C3555</color>
     <color name="background_surface">#121A2A</color>
-    <color name="divider">#1E293B</color>
+    <color name="divider">#1C3555</color>
     <color name="background_status_bar">#05080F</color>
     <color name="background_bottom_bar">#0A101C</color>
 
     <color name="primary_text">#F8FAFC</color>
     <color name="secondary_text">#94A3B8</color>
 
+    <!-- Midnight Blue preset -->
     <color name="mb_bg_app">#05080F</color>
     <color name="mb_bg_bottom_bar">#0A101C</color>
     <color name="mb_bg_status_bar">#05080F</color>
-    <color name="mb_divider">#1E293B</color>
+    <color name="mb_divider">#1E3A5F</color>
     <color name="mb_accent">#8B7CFF</color>
-    <color name="mb_text_primary">#F8FAFC</color>
-    <color name="mb_text_secondary">#94A3B8</color>
+    <color name="mb_text_primary">#F0F6FF</color>
+    <color name="mb_text_secondary">#9BB0C9</color>
 
+    <!-- Forest Green preset -->
     <color name="fg_bg_app">#0F1F0F</color>
     <color name="fg_bg_bottom_bar">#1A2E1A</color>
     <color name="fg_bg_status_bar">#0C1A0C</color>
@@ -36,6 +41,7 @@
     <color name="fg_text_primary">#E8F5E9</color>
     <color name="fg_text_secondary">#9CCC9C</color>
 
+    <!-- Crimson preset -->
     <color name="cr_bg_app">#1A0A0A</color>
     <color name="cr_bg_bottom_bar">#2A1010</color>
     <color name="cr_bg_status_bar">#150808</color>
@@ -44,6 +50,69 @@
     <color name="cr_text_primary">#FFF0F0</color>
     <color name="cr_text_secondary">#FFCDD2</color>
 
+    <!-- Ocean preset -->
+    <color name="oc_bg_app">#0A1A2A</color>
+    <color name="oc_bg_bottom_bar">#0F2438</color>
+    <color name="oc_bg_status_bar">#081420</color>
+    <color name="oc_divider">#1E3A5F</color>
+    <color name="oc_accent">#00BCD4</color>
+    <color name="oc_text_primary">#E0F7FA</color>
+    <color name="oc_text_secondary">#80DEEA</color>
+
+    <!-- Purple preset -->
+    <color name="pu_bg_app">#1A0A2A</color>
+    <color name="pu_bg_bottom_bar">#241038</color>
+    <color name="pu_bg_status_bar">#140820</color>
+    <color name="pu_divider">#3A1E5F</color>
+    <color name="pu_accent">#AB47BC</color>
+    <color name="pu_text_primary">#F3E5F5</color>
+    <color name="pu_text_secondary">#CE93D8</color>
+
+    <!-- Amber preset -->
+    <color name="am_bg_app">#1A140A</color>
+    <color name="am_bg_bottom_bar">#2A2010</color>
+    <color name="am_bg_status_bar">#151008</color>
+    <color name="am_divider">#4A3A1A</color>
+    <color name="am_accent">#FFB300</color>
+    <color name="am_text_primary">#FFF8E1</color>
+    <color name="am_text_secondary">#FFE082</color>
+
+    <!-- Generic UI -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="error_color">#EF5350</color>
+    <color name="success_color">#66BB6A</color>
+    <color name="warning_color">#FFA726</color>
+
+    <color name="accent_color">#3B9EFF</color>
+    <color name="accent_color_dark">#1E6FCC</color>
+    <color name="ripple_material_dark">#33FFFFFF</color>
+
+    <!-- Nav / chrome -->
+    <color name="nav_bar_color">#0A1628</color>
+    <color name="status_bar_color">#0A1628</color>
+
+    <!-- Extra theme tokens used across layouts -->
+    <color name="card_background">#12263F</color>
+    <color name="tile_background">#0E1C30</color>
+    <color name="stroke_color">#2A4A70</color>
+    <color name="hint_text">#5A7A9A</color>
+    <color name="disabled_text">#3A5570</color>
+
+    <!-- Neon / social -->
+    <color name="neon_blue">#3B9EFF</color>
+    <color name="neon_blue_dim">#1A4A8A</color>
+    <color name="neon_purple">#A78BFA</color>
+    <color name="neon_green">#4ADE80</color>
+    <color name="neon_green_dim">#166534</color>
+    <color name="stroke_neon">#3B9EFF</color>
+    <color name="like_active">#F43F5E</color>
+    <color name="installed_color">#22C55E</color>
+    <color name="bg_nav_item_active">#1A3B9EFF</color>
+    <color name="premium_cyan">#22D3EE</color>
+
+    <!-- Premium UI system -->
     <color name="premium_bg">#05080F</color>
     <color name="premium_surface">#0A101C</color>
     <color name="premium_card">#121A2A</color>
