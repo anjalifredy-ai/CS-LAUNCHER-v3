@@ -1,77 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background_app">
+    android:background="@drawable/bg_premium_surface">
 
-    <!-- ── Header bar: back arrow | profile name - Mods | + | ⋮ ── -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_52sdp"
+        android:layout_height="64dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/padding_medium">
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/bg_premium_card"
+        android:layout_margin="12dp">
 
         <ImageButton
             android:id="@+id/manage_mods_back"
-            android:layout_width="@dimen/_38sdp"
-            android:layout_height="@dimen/_38sdp"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back_white"
             android:contentDescription="@string/global_back" />
 
-        <TextView
-            android:id="@+id/manage_mods_title"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="@dimen/padding_moderate"
-            android:textColor="@color/primary_text"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="10dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LIBRARY"
+                android:textColor="#64748B"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.14" />
+            <TextView
+                android:id="@+id/manage_mods_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#F8FAFC"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:text="@string/mcl_button_manage_mods" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="MODS"
+            android:textColor="#A78BFA"
+            android:textSize="10sp"
             android:textStyle="bold"
-            android:textSize="@dimen/_14ssp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:text="@string/mcl_button_manage_mods" />
+            android:background="@drawable/bg_premium_chip"
+            android:layout_marginEnd="8dp" />
 
         <ImageButton
             android:id="@+id/manage_mods_add"
-            android:layout_width="@dimen/_38sdp"
-            android:layout_height="@dimen/_38sdp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_premium_tile"
             android:src="@drawable/ic_add"
-            android:contentDescription="@string/global_add" />
-
+            android:contentDescription="@string/global_add"
+            android:padding="8dp" />
     </LinearLayout>
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_1sdp"
-        android:background="@color/divider" />
-
-    <!-- Mod list -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/manage_mods_recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="@dimen/fragment_padding_medium"
-        android:paddingVertical="@dimen/padding_medium"
-        android:clipToPadding="false" />
-
-    <!-- Empty state -->
     <TextView
-        android:id="@+id/manage_mods_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        android:text="Tap + to import mods · Long-press items for options"
+        android:textColor="#64748B"
+        android:textSize="12sp" />
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center"
-        android:textColor="@color/secondary_text"
-        android:textSize="@dimen/_13ssp"
-        android:visibility="gone"
-        android:text="@string/manage_mods_empty" />
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_premium_card"
+        android:padding="6dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/manage_mods_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/manage_mods_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="#64748B"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:text="@string/manage_mods_empty"
+            android:padding="24dp" />
+    </FrameLayout>
 
 </LinearLayout>
