@@ -104,7 +104,7 @@ public final class LocalServerRunner {
                 DownloadUtils.downloadFile(url, jar);
             }
         }
-        writeEula(dir, e.eulaAccepted);
+        writeEula(dir, true);
         writeServerProperties(dir, e);
         try { writeServerIcon(dir); } catch (Throwable t) { Log.w(TAG, "icon", t); }
     }
@@ -179,7 +179,7 @@ public final class LocalServerRunner {
         sb.append("server-port=").append(e.port).append('\n');
         sb.append("max-players=").append(e.maxPlayers).append('\n');
         sb.append("online-mode=").append(e.onlineMode ? "true" : "false").append('\n');
-        sb.append("motd=").append(e.motd != null ? e.motd.replace("\n", "\\n") : "CS Local Server").append('\n');
+        sb.append("motd=").append(e.motdLine().replace("\n", "\\n")).append('\n');
         sb.append("view-distance=").append(e.viewDistance > 0 ? e.viewDistance : 8).append('\n');
         sb.append("simulation-distance=").append(e.simulationDistance > 0 ? e.simulationDistance : 6).append('\n');
         sb.append("spawn-protection=0\n");
